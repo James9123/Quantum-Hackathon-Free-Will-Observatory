@@ -5,3 +5,6 @@ scipy
 pytest
 # cross-checks only (density-matrix reference for the noise dial)
 qiskit-aer==0.17.2
+# local checks against the real provider classes Qollab uses (not needed for tests)
+qiskit-ibm-runtime==0.50.0
+qiskit-ionq>=1.0,<1.2
