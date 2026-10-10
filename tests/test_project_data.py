@@ -36,7 +36,7 @@ def test_data_file_valid_small_and_literal(name):
 
 
 def test_chsh_noise_dataset_content():
-    d = qk_data.parse_dataset(open(os.path.join(DATA, "chsh_noise.json")).read())
+    d = qk_data.parse_dataset(open(os.path.join(ROOT, "reference", "chsh", "data", "chsh_noise.json")).read())
     assert abs(d["results"]["derived"]["lambda_star_numeric"] - (1 - 2 ** -0.5)) < 1e-8
     rows = d["results"]["rows"]
     assert len(rows) == 71 and abs(rows[0]["S"] - 2 * 2 ** 0.5) < 1e-12

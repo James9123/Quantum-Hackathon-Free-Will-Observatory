@@ -13,16 +13,16 @@ This effort is supported by Qollab & IonQ
 
 | File | Uploaded? | Role |
 |---|---|---|
-| `qollab_project/index.html` | yes | Body fragment: header, backend badge, status line, Run panel, Result, noise dial, chart, footer with the attribution line. No scripts, no `on*` attributes, no inline styles. |
-| `qollab_project/main.css` | yes | The only stylesheet. Every selector is scoped under `#qh-app`. Colors are CSS variables on `#qh-app`. |
-| `qollab_project/main.js` | yes | Entry point. Waits for the DOM, wires the components, calls Python, ends with `await new Promise(() => {})`. |
-| `qollab_project/ui/dom.js` | yes | Helpers: `whenMounted`, `h`/`svg` element builders (text only, never `innerHTML`), number formatting, z-score text, a debounce that needs only `setTimeout`, accessible tables. |
-| `qollab_project/ui/experiment.js` | yes | **Everything CHSH-specific**: labels, dial presets, chart descriptions, text summaries, data-table columns. |
-| `qollab_project/ui/badge.js` | yes | Backend badge. |
-| `qollab_project/ui/card.js` | yes | Claim-card component and run-error view. |
-| `qollab_project/ui/dial.js` | yes | Noise dial (preset select, sliders, gauge, plain-language reading). |
-| `qollab_project/ui/chart.js` | yes | Hand-rolled SVG line chart and legend (no external libraries). |
-| `qollab_project/ui_api.py` | yes | The Python side: JSON strings in, JSON strings out. |
+| `reference/chsh/index.html` | yes | Body fragment: header, backend badge, status line, Run panel, Result, noise dial, chart, footer with the attribution line. No scripts, no `on*` attributes, no inline styles. |
+| `reference/chsh/main.css` | yes | The only stylesheet. Every selector is scoped under `#qh-app`. Colors are CSS variables on `#qh-app`. |
+| `reference/chsh/main.js` | yes | Entry point. Waits for the DOM, wires the components, calls Python, ends with `await new Promise(() => {})`. |
+| `reference/chsh/ui/dom.js` | yes | Helpers: `whenMounted`, `h`/`svg` element builders (text only, never `innerHTML`), number formatting, z-score text, a debounce that needs only `setTimeout`, accessible tables. |
+| `reference/chsh/ui/experiment.js` | yes | **Everything CHSH-specific**: labels, dial presets, chart descriptions, text summaries, data-table columns. |
+| `reference/chsh/ui/badge.js` | yes | Backend badge. |
+| `reference/chsh/ui/card.js` | yes | Claim-card component and run-error view. |
+| `reference/chsh/ui/dial.js` | yes | Noise dial (preset select, sliders, gauge, plain-language reading). |
+| `reference/chsh/ui/chart.js` | yes | Hand-rolled SVG line chart and legend (no external libraries). |
+| `reference/chsh/ui_api.py` | yes | The Python side: JSON strings in, JSON strings out. |
 | `dev/index.html`, `dev/boot.js`, `dev/stub_api.js`, `dev/stub_data.js` | no | Stub mode for local testing. |
 | `tools/make_ui_stubs.py` | no | Regenerates `dev/stub_data.js` from the real `ui_api` functions. |
 | `tests/test_ui_api.py` | no | Tests for `ui_api` and static checks on the JS shell. |
@@ -128,7 +128,7 @@ later, so the `whenMounted` polling is exercised the way Qollab would.
    leaves `backend` undefined, to check the missing-backend path),
    `&mount=1500` delays the HTML injection, `&slow=3` slows every stub call, and
    `&axe=1` loads axe-core from cdn.jsdelivr.net (stub mode only, never in
-   `qollab_project/`) and prints its report under the page and to the console.
+   `reference/chsh/`) and prints its report under the page and to the console.
 
 In stub mode the canned run ignores the shots and mode you enter (the console says so).
 

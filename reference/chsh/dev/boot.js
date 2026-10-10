@@ -21,9 +21,9 @@ for (const a of document.querySelectorAll("[data-scenario]")) {
 }
 
 // main.js never settles (it ends with `await new Promise(() => {})`), so do not await it.
-import("../qollab_project/main.js").catch((err) => console.error("main.js failed: " + err));
+import("../main.js").catch((err) => console.error("main.js failed: " + err));
 
-const html = await (await fetch("../qollab_project/index.html", { cache: "no-store" })).text();
+const html = await (await fetch("../index.html", { cache: "no-store" })).text();
 setTimeout(() => {
   document.getElementById("qollab-root").innerHTML = html;
 }, mountDelay);

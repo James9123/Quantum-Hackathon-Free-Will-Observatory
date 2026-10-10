@@ -18,14 +18,14 @@ import sys
 import numpy as np
 from qiskit.providers.basic_provider import BasicSimulator
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROJECT = os.path.join(ROOT, "qollab_project")
+PROJECT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(PROJECT))
 if PROJECT not in sys.path:
     sys.path.insert(0, PROJECT)
 
 import ui_api  # noqa: E402
 
-OUT = os.path.join(ROOT, "dev", "stub_data.js")
+OUT = os.path.join(PROJECT, "dev", "stub_data.js")
 SEED = 7
 SHOTS = 1000
 P2_GRID = [round(0.025 * i, 3) for i in range(15)]            # 0 .. 0.35

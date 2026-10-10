@@ -1,4 +1,4 @@
-"""P3: the JSON bridge (qollab_project/ui_api.py) and static checks on the JS UI shell."""
+"""P3: the JSON bridge (reference/chsh/ui_api.py) and static checks on the JS UI shell."""
 import json
 import math
 import os
@@ -17,7 +17,7 @@ import qk_runtime
 import ui_api
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROJECT = os.path.join(ROOT, "qollab_project")
+PROJECT = os.path.join(ROOT, "reference/chsh")
 SQRT8 = 2 * math.sqrt(2)
 ATTRIBUTION = "This effort is supported by Qollab & IonQ"
 
@@ -335,7 +335,7 @@ def test_curve_json_falls_back_when_data_missing(monkeypatch):
 
 
 def test_data_files_are_named_by_literal_paths():
-    src = _read("qollab_project/ui_api.py")
+    src = _read("reference/chsh/ui_api.py")
     for name in ("chsh_noise", "chsh_ionq_like", "chsh_coverage", "chsh_aer_check"):
         assert re.search(r'open\("data/%s\.json"' % name, src), name
         assert os.path.exists(os.path.join(PROJECT, "data", name + ".json"))
@@ -355,8 +355,8 @@ def test_card_text_json():
 
 # ------------------------------------------------------------------ static checks: JS shell
 
-JS_FILES = ["qollab_project/main.js"] + sorted(
-    "qollab_project/ui/" + f for f in os.listdir(os.path.join(PROJECT, "ui")) if f.endswith(".js"))
+JS_FILES = ["reference/chsh/main.js"] + sorted(
+    "reference/chsh/ui/" + f for f in os.listdir(os.path.join(PROJECT, "ui")) if f.endswith(".js"))
 
 
 def _strip_js_comments(src):
@@ -383,7 +383,7 @@ def test_ui_modules_import_nothing():
 
 
 def test_main_js_imports_and_ending():
-    src = _read("qollab_project/main.js")
+    src = _read("reference/chsh/main.js")
     code = _strip_js_comments(src)
     assert re.search(r'(?m)^import \* as api from "ui_api";$', code)
     assert not re.search(r'import\s+\w+\s+from\s+"ui_api"', code)          # default import is undefined
@@ -421,7 +421,7 @@ console.log("ok");
     assert out.returncode == 0 and out.stdout.strip() == "ok", out.stderr
 
 
-@pytest.mark.parametrize("path", JS_FILES + ["dev/stub_api.js", "dev/boot.js"])
+@pytest.mark.parametrize("path", JS_FILES + ["reference/chsh/dev/stub_api.js", "reference/chsh/dev/boot.js"])
 def test_js_syntax_with_node(path):
     node = shutil.which("node")
     if not node:
@@ -461,12 +461,12 @@ class _Fragment(HTMLParser):
 
 def _fragment():
     p = _Fragment()
-    p.feed(_read("qollab_project/index.html"))
+    p.feed(_read("reference/chsh/index.html"))
     return p
 
 
 def test_index_html_is_a_safe_body_fragment():
-    src = _read("qollab_project/index.html")
+    src = _read("reference/chsh/index.html")
     p = _fragment()
     for tag in ("script", "html", "head", "body", "link", "style", "iframe", "form"):
         assert tag not in p.tags, "<%s> in index.html" % tag
@@ -477,7 +477,7 @@ def test_index_html_is_a_safe_body_fragment():
 
 
 def test_index_html_has_attribution_verbatim():
-    assert ATTRIBUTION in _read("qollab_project/index.html")
+    assert ATTRIBUTION in _read("reference/chsh/index.html")
 
 
 def test_every_control_has_a_label():
@@ -493,12 +493,12 @@ def test_ids_used_by_js_exist_in_index_html():
     for path in JS_FILES:
         used |= set(re.findall(r'byId\("([\w-]+)"\)', _read(path)))
         used |= set(re.findall(r'whenMounted\("([\w-]+)"', _read(path)))
-    used |= set(re.findall(r'"(qh-[\w-]+-field)"', _read("qollab_project/ui/experiment.js")))
+    used |= set(re.findall(r'"(qh-[\w-]+-field)"', _read("reference/chsh/ui/experiment.js")))
     assert used and not (used - ids), "missing ids: %s" % sorted(used - ids)
 
 
 def test_status_and_reading_are_live_regions():
-    src = _read("qollab_project/index.html")
+    src = _read("reference/chsh/index.html")
     assert re.search(r'id="qh-status"[^>]*role="status"[^>]*aria-live="polite"', src)
     assert re.search(r'id="qh-dial-reading"[^>]*aria-live="polite"', src)
     # Only those two: <output> is an implicit role="status" live region, so slider
@@ -512,7 +512,7 @@ def test_status_and_reading_are_live_regions():
 
 
 def test_main_js_starts_a_new_run_and_guards_double_clicks():
-    code = _strip_js_comments(_read("qollab_project/main.js"))
+    code = _strip_js_comments(_read("reference/chsh/main.js"))
     assert 'callPy(api.profile_json, "profile_json", BACKEND, true)' in code
     assert code.count("BACKEND, true") == 1                  # nothing else resets the count
     handler = code[code.index('runBtn.addEventListener("click"'):]
@@ -635,7 +635,7 @@ console.log(JSON.stringify(out));
 
 
 def test_css_is_scoped_and_respects_reduced_motion():
-    css = _read("qollab_project/main.css")
+    css = _read("reference/chsh/main.css")
     assert "@import" not in css and "url(" not in css
     assert "@media (prefers-reduced-motion: reduce)" in css
     assert ":focus-visible" in css
@@ -656,7 +656,7 @@ def _contrast(a, b):
 
 
 def test_text_color_contrast_at_least_4_5():
-    tok = dict(re.findall(r"--qh-([a-z-]+):\s*(#[0-9a-fA-F]{6})", _read("qollab_project/main.css")))
+    tok = dict(re.findall(r"--qh-([a-z-]+):\s*(#[0-9a-fA-F]{6})", _read("reference/chsh/main.css")))
     pairs = [("text", "bg"), ("text", "surface"), ("text", "info-bg"), ("muted", "bg"),
              ("muted", "surface"), ("muted", "info-bg"), ("on-accent", "accent"),
              ("on-accent", "accent-hover"), ("pass-fg", "pass-bg"), ("fail-fg", "fail-bg"),
@@ -670,9 +670,9 @@ def test_text_color_contrast_at_least_4_5():
 # ------------------------------------------------------------------ public-repo hygiene
 
 @pytest.mark.parametrize("path", JS_FILES + [
-    "qollab_project/index.html", "qollab_project/main.css", "qollab_project/ui_api.py",
-    "dev/index.html", "dev/boot.js", "dev/stub_api.js", "dev/stub_data.js",
-    "tools/make_ui_stubs.py", "docs/ui.md"])
+    "reference/chsh/index.html", "reference/chsh/main.css", "reference/chsh/ui_api.py",
+    "reference/chsh/dev/index.html", "reference/chsh/dev/boot.js", "reference/chsh/dev/stub_api.js", "reference/chsh/dev/stub_data.js",
+    "reference/chsh/make_ui_stubs.py", "reference/chsh/UI.md"])
 def test_no_machine_details_in_ui_files(path):
     src = _read(path)
     for home in ("Users", "home"):                       # no home-directory paths
