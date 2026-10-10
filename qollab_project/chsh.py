@@ -155,9 +155,10 @@ def card(analysis, *, backend_name, shots, simulator=True, noise=None, provenanc
     )
 
 
-def run(backend, shots=1000, mode="tile", mitigate=True, profile=None, run_kwargs=None):
+def run(backend, shots=1000, mode="auto", mitigate=True, profile=None, run_kwargs=None):
     """ONE job: canary + the 4 CHSH settings. Returns (card, details)."""
     profile = profile or qk_runtime.backend_profile(backend)
+    mode = qk_runtime.preferred_mode(profile, mode)
     packed = qk_packer.pack(blocks(), max_qubits=profile["max_qubits"], mode=mode, canary=True)
     circs = qk_runtime.prepare(packed.circuits, backend, profile)
     counts = qk_runtime.run_once(backend, circs, shots, profile, **(run_kwargs or {}))
@@ -183,11 +184,14 @@ def zne_exact(noise, folds=(1, 3, 5), method="linear"):
     return {"S_by_fold": pts, "S_zne": est}
 
 
-def run_zne(backend, shots=1000, folds=(1, 3, 5), mode="tiles", method="linear", profile=None,
+def run_zne(backend, shots=1000, folds=(1, 3, 5), mode="auto", method="linear", profile=None,
             run_kwargs=None):
     """ONE job with every fold factor packed in. Only meaningful on simulators that
-    execute the folded gates as written (local ones); IonQ's compiler likely undoes folding."""
+    execute the folded gates as written (local ones); IonQ's compiler likely undoes folding.
+    mode "auto": first-fit tiles on one-job backends, one circuit per block elsewhere."""
     profile = profile or qk_runtime.backend_profile(backend)
+    if mode == "auto":
+        mode = "tiles" if profile.get("one_job") else "list"
     blks = []
     for f in folds:
         blks += blocks(fold=f, suffix="_f%d" % f)

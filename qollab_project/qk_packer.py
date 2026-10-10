@@ -17,7 +17,8 @@ Canary blocks (canary=True) go first:
   [2, 0, 1]. The expected key "110" is not a palindrome, and it differs
   from what a provider would report if it reversed keys or ignored the
   qubit->clbit map, so `diagnose_orientation` can tell those apart.
-- "_canary_cal0" / "_canary_cal1": 3 qubits left in |0> / flipped to |1>.
+- "_canary_cal0" / "_canary_cal1": 3 qubits left in |0> (an rz(0) no-op keeps the
+  circuit non-empty for providers that drop measurements when serializing) / flipped to |1>.
   They give per-bit readout flip rates P(1|0) and P(0|1).
 """
 
@@ -94,6 +95,7 @@ def canary_blocks():
         if v:
             orient.x(q)
     cal0 = QuantumCircuit(3, name=CANARY_CAL0)
+    cal0.rz(0.0, [0, 1, 2])     # no-op; keeps a list-mode cal0 circuit from serializing gateless
     cal1 = QuantumCircuit(3, name=CANARY_CAL1)
     cal1.x([0, 1, 2])
     return [
@@ -212,10 +214,14 @@ def unpack(packed, counts_list, *, assume="clbit"):
     assume="clbit" is the correct reading. "reversed" and "qubit" re-read the same
     data as if the provider had reversed the key, or keyed bits by qubit index
     instead of clbit; they exist for `diagnose_orientation`.
+    A None entry in counts_list (a failed circuit of a multi-circuit job) is
+    skipped: its blocks are simply absent from the result.
     """
     counts_list = _as_list(counts_list, len(packed.circuits))
     out = {}
     for ci, circ in enumerate(packed.circuits):
+        if counts_list[ci] is None:
+            continue
         width = int(circ.num_qubits) if assume == "qubit" else int(circ.num_clbits)
         norm = qk_runtime.normalize_counts(counts_list[ci], width)
         if assume == "reversed":

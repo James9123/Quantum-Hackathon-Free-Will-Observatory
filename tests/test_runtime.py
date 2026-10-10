@@ -164,3 +164,45 @@ def test_ionq_run_kwargs_default_and_missing_provider():
     except ImportError:
         assert rt.ionq_run_kwargs(False) == {}
         assert "unavailable" in rt.LAST_RUN["debias_note"]
+
+
+def test_preferred_mode():
+    ionq = rt.backend_profile(_fake_backend("qiskit_ionq.ionq_backend", "ionq_simulator", 29))
+    ibm = rt.backend_profile(_fake_backend("qiskit_ibm_runtime.fake_provider.x", "fake_fez", 156))
+    basic = rt.backend_profile(BasicSimulator())
+    assert rt.preferred_mode(ionq) == "tile"
+    assert rt.preferred_mode(ibm) == "list"
+    assert rt.preferred_mode(basic) == "tile"
+    assert rt.preferred_mode(ibm, "tile") == "tile" and rt.preferred_mode(ionq, " LIST ") == "list"
+
+
+def test_run_once_allow_partial_keeps_successful_circuits():
+    class _Res:
+        results = []
+
+        def get_counts(self, i=None):
+            if i == 1:
+                raise RuntimeError("child failed")
+            return {"11": 5}
+
+    class _Job:
+        def result(self):
+            return _Res()
+
+        def job_id(self):
+            return "j"
+
+    class _Be:
+        name = "x"
+
+        def run(self, *a, **k):
+            return _Job()
+
+    prof = {"one_job": True, "name": "x"}
+    rt.begin_run()
+    with pytest.raises(RuntimeError):
+        rt.run_once(_Be(), [_bell(), _bell()], 5, prof)
+    assert rt.LAST_RUN["job_id"] == "j" and rt.LAST_RUN["job_returned"] is True
+    rt.begin_run()
+    out = rt.run_once(_Be(), [_bell(), _bell()], 5, prof, allow_partial=True)
+    assert out[0] == {"11": 5} and out[1] is None and "child failed" in rt.LAST_RUN["failed_circuits"][1]

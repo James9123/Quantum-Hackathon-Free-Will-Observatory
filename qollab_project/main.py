@@ -12,7 +12,11 @@ import qk_cards
 import qk_data
 import qk_runtime
 
-DATASET = "data/chsh_noise.json"      # literal path: Qollab loads only files named literally
+# Literal paths: Qollab loads only data files named by a string literal in the code.
+DATASET = "data/chsh_noise.json"
+COVERAGE = "data/chsh_coverage.json"
+AER_CHECK = "data/chsh_aer_check.json"
+IONQ_LIKE = "data/chsh_ionq_like.json"
 ATTRIBUTION = "This effort is supported by Qollab & IonQ"
 
 
@@ -34,15 +38,26 @@ def _noise_curve_text(ds, width=40):
     return "\n".join(lines)
 
 
-def main(shots: int = 1000, mode: str = "tile", mitigate: bool = True):
+def _validation_text(cov, aer):
+    lines = ["How far to trust the numbers above (precomputed checks):"]
+    for r in cov["results"]["rows"]:
+        lines.append("  error bars at p2=%.2f: %.1f%% of %d seeded %d-shot runs land within 1 se "
+                     "of the exact S (68.3%% expected), %.1f%% within 2 se (95.4%%)"
+                     % (r["params"]["p2"], 100 * r["coverage_1sigma"], r["repeats"], r["shots"],
+                        100 * r["coverage_2sigma"]))
+    worst = max(abs(r["S_aer"] - r["S_exact"]) for r in aer["results"]["rows"])
+    lines.append("  noise dial vs qiskit-aer density-matrix simulator: max |S difference| = %.1e "
+                 "over %d noise settings" % (worst, len(aer["results"]["rows"])))
+    return "\n".join(lines)
+
+
+def main(shots: int = 1000, mode: str = "auto", mitigate: bool = True):
     qk_runtime.begin_run()
     profile = qk_runtime.backend_profile(backend)
     print("Backend: %s (%s, %s, up to %d qubits)" % (
         profile["name"], profile["family"], "noisy" if profile["noisy"] else "ideal",
         profile["max_qubits"]))
-    mode = str(mode).strip().lower()
-    if mode not in ("tile", "list"):
-        mode = "tile"
+    mode = qk_runtime.preferred_mode(profile, mode)
     card, details = chsh.run(backend, shots=int(shots), mode=mode, mitigate=bool(mitigate),
                              profile=profile)
     if not details["analysis"]["canary"]["orientation_ok"]:
@@ -56,5 +71,21 @@ def main(shots: int = 1000, mode: str = "tile", mitigate: bool = True):
         print(_noise_curve_text(ds))
     except (OSError, ValueError) as exc:
         print("(precomputed noise curve unavailable: %s)" % type(exc).__name__)
+    print()
+    try:
+        with open(COVERAGE) as fh:
+            cov = qk_data.parse_dataset(fh.read())
+        with open(AER_CHECK) as fh:
+            aer = qk_data.parse_dataset(fh.read())
+        print(_validation_text(cov, aer))
+        with open(IONQ_LIKE) as fh:
+            rows = qk_data.parse_dataset(fh.read())["results"]["rows"]
+        at1 = next(r["S"] for r in rows if r["params"]["scale"] == 1.0)
+        cross = next((r["params"]["scale"] for r in rows if r["S"] <= 2.0), None)
+        print("  IonQ-like noise preset (IonQ's published Forte-1 simulator rates on our gates): "
+              "S = %.3f; S stays above 2 until the rates are about %sx larger"
+              % (at1, "%g" % cross if cross else ">80"))
+    except (OSError, ValueError, KeyError) as exc:
+        print("(validation data unavailable: %s)" % type(exc).__name__)
     print()
     print(ATTRIBUTION)

@@ -238,3 +238,14 @@ def test_unpack_accepts_single_dict_and_checks_length():
     assert pk.unpack(packed, counts[0]) == pk.unpack(packed, counts)
     with pytest.raises(ValueError):
         pk.unpack(packed, counts * 2)
+
+
+def test_cal0_list_circuit_has_a_gate_and_unpack_skips_failed_circuits():
+    packed = pk.pack(chsh_blocks(), max_qubits=24, mode="list")
+    cal0 = packed.circuits[1]
+    assert any(i.operation.name not in ("measure", "barrier") for i in cal0.data)
+    counts = run_packed(packed, 100, 4)
+    counts[3] = None                                   # first CHSH circuit "failed"
+    un = pk.unpack(packed, counts)
+    assert "a0b0" not in un and "a0b1" in un
+    assert pk.canary_report(un)["orientation_ok"]

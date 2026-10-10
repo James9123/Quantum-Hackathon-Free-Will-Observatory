@@ -16,7 +16,7 @@ import time
 
 __all__ = [
     "backend_profile", "prepare", "run_once", "normalize_counts",
-    "begin_run", "jobs_submitted", "ionq_run_kwargs", "LAST_RUN",
+    "begin_run", "jobs_submitted", "ionq_run_kwargs", "preferred_mode", "LAST_RUN",
 ]
 
 # Qollab's published ceilings (qollab.xyz compute-backends). "Ceilings, not guarantees".
@@ -143,6 +143,24 @@ def _option(backend, key):
         return getattr(opts, key, None)
 
 
+def preferred_mode(profile, requested="auto"):
+    """Packing mode for this backend when the caller asks for "auto".
+
+    One-job backends (IonQ) need everything in one circuit: "tile". Local noisy
+    simulators (IBM noise models on Aer) simulate a wide tile shot by shot on a
+    statevector (minutes in the browser) but run small circuits as density
+    matrices in well under a second, and they have no job limit: "list".
+    """
+    requested = str(requested or "auto").strip().lower()
+    if requested in ("tile", "list", "tiles"):
+        return requested
+    if profile.get("one_job"):
+        return "tile"
+    if profile.get("noisy") and not profile.get("remote"):
+        return "list"
+    return "tile"
+
+
 def prepare(circuits, backend, profile, optimization_level=1):
     """Make circuits runnable on `backend`.
 
@@ -205,11 +223,15 @@ def _counts_for(result, i, n_experiments):
         raise
 
 
-def run_once(backend, circuits, shots, profile, **run_kwargs):
+def run_once(backend, circuits, shots, profile, allow_partial=False, **run_kwargs):
     """Submit exactly ONE job and return normalized counts, one dict per circuit.
 
     `circuits` may be one circuit or a list. A list of one is submitted as a bare
-    circuit. Metadata about the job lands in LAST_RUN.
+    circuit. LAST_RUN is filled in stage by stage (request, job id, raw counts,
+    timings), so the evidence survives if a later stage raises. A failed
+    `job.result()` is polled once more (same job, not a new submission).
+    allow_partial=True returns None for circuits whose counts cannot be read
+    (e.g. one failed child of a multi-circuit job) instead of raising.
     """
     if profile.get("one_job") and _STATE["jobs"] >= 1:
         raise RuntimeError(
@@ -220,34 +242,59 @@ def run_once(backend, circuits, shots, profile, **run_kwargs):
     if not circs:
         raise ValueError("run_once: no circuits")
     payload = circs[0] if len(circs) == 1 else circs
+    LAST_RUN.update({
+        "n_circuits": len(circs),
+        "submitted_as": "circuit" if len(circs) == 1 else "list",
+        "shots_requested": int(shots),
+        "run_kwargs": {k: repr(v) for k, v in run_kwargs.items()},
+        "job_returned": False,
+    })
     _STATE["jobs"] += 1
     t0 = time.perf_counter()
     job = backend.run(payload, shots=int(shots), **run_kwargs)
     t_submit = time.perf_counter()
-    result = job.result()
-    t_done = time.perf_counter()
-    raw = [_counts_for(result, i, len(circs)) for i in range(len(circs))]
-    counts = [normalize_counts(r, _num_clbits(c), shots=shots) for r, c in zip(raw, circs)]
     job_id = None
     try:
         job_id = job.job_id()
     except Exception:
         pass
     LAST_RUN.update({
-        "n_circuits": len(circs),
-        "submitted_as": "circuit" if len(circs) == 1 else "list",
-        "shots_requested": int(shots),
-        "run_kwargs": {k: repr(v) for k, v in run_kwargs.items()},
-        "job_id": job_id,
+        "job_returned": True,
+        "job_id": None if job_id is None else str(job_id),
         "job_class": type(job).__module__ + "." + type(job).__name__,
         "submit_s": round(t_submit - t0, 3),
+    })
+    try:
+        result = job.result()
+    except Exception as exc:
+        LAST_RUN["result_retry"] = "%s: %s" % (type(exc).__name__, str(exc)[:200])
+        result = job.result()
+    t_done = time.perf_counter()
+    LAST_RUN.update({
         "result_s": round(t_done - t_submit, 3),
         "wall_s": round(t_done - t0, 3),
-        "raw_key_sample": [list(r)[:3] for r in raw],
-        "raw_value_types": sorted({type(v).__name__ for r in raw for v in r.values()}),
         "result": _result_meta(result),
     })
-    return counts
+    raw, failed = [], {}
+    for i in range(len(circs)):
+        try:
+            raw.append(_counts_for(result, i, len(circs)))
+        except Exception as exc:
+            if not allow_partial:
+                raise
+            failed[i] = "%s: %s" % (type(exc).__name__, str(exc)[:160])
+            raw.append(None)
+    ok = [r for r in raw if r is not None]
+    LAST_RUN.update({
+        "raw_key_sample": [None if r is None else list(r)[:3] for r in raw],
+        "raw_key_lengths": [None if r is None else sorted({len(str(k)) for k in r}) for r in raw],
+        "raw_value_types": sorted({type(v).__name__ for r in ok for v in r.values()}),
+        "raw_head": [None if r is None else dict(list(r.items())[:10]) for r in raw],
+    })
+    if failed:
+        LAST_RUN["failed_circuits"] = failed
+    return [None if r is None else normalize_counts(r, _num_clbits(c), shots=shots)
+            for r, c in zip(raw, circs)]
 
 
 def _result_meta(result):
@@ -265,12 +312,18 @@ def _result_meta(result):
         pass
     try:
         exps = []
-        for r in result.results[:4]:
-            exps.append({
+        for r in result.results[:8]:
+            exp = {
                 "shots": str(getattr(r, "shots", None)),
                 "success": str(getattr(r, "success", None)),
-                "header": str(getattr(r, "header", ""))[:160],
-            })
+                "status": str(getattr(r, "status", ""))[:80],
+            }
+            md = getattr(r, "metadata", None) or {}
+            for k in ("method", "noise", "measure_sampling", "active_input_qubits",
+                      "time_taken", "num_qubits", "device"):
+                if k in md:
+                    exp[k] = str(md[k])[:80]
+            exps.append(exp)
         meta["experiments"] = exps
     except Exception:
         pass

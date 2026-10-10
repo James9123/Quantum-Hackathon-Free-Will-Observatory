@@ -10,6 +10,7 @@ Paste the whole console output back, especially the SMOKE SUMMARY block.
 """
 
 import json
+import math
 import os
 import sys
 import time
@@ -40,7 +41,7 @@ except Exception as _exc:
     matplotlib = None
     _IMPORT_ERRORS["matplotlib"] = _exc
 
-SMOKE_VERSION = "smoke-2"
+SMOKE_VERSION = "smoke-3"
 _RUN_COUNTER = [0]          # survives only if the interpreter is reused between runs
 _MARKER = "/tmp/qollab_smoke_marker.txt"
 SUMMARY = []
@@ -202,8 +203,12 @@ def _density_bench():
             "max_abs_diff": float(np.max(np.abs(a - b))) if a is not None else -1.0,
             "trace": round(float(np.real(np.trace(b))), 9),
         }
-        print("  DM n=%d gates=%d qiskit+Kraus %.3fs  numpy %.3fs  max|diff| %.2e"
-              % (n, results[n]["gates"], t1 - t0, t2 - t1, results[n]["max_abs_diff"]))
+        if a is None:
+            print("  DM n=%d gates=%d qiskit+Kraus skipped  numpy %.3fs  max|diff| n/a"
+                  % (n, results[n]["gates"], t2 - t1))
+        else:
+            print("  DM n=%d gates=%d qiskit+Kraus %.3fs  numpy %.3fs  max|diff| %.2e"
+                  % (n, results[n]["gates"], t1 - t0, t2 - t1, results[n]["max_abs_diff"]))
     return results
 
 
@@ -242,7 +247,130 @@ def _parity(counts):
 
 # ---------------------------------------------------------------- main
 
-def main(shots: int = 1000, mode: str = "tile", debias: bool = True):
+def _bench_note(bench):
+    parts = []
+    for n, r in bench.items():
+        qk = "skip" if r["qiskit_kraus_s"] < 0 else "%.3fs" % r["qiskit_kraus_s"]
+        diff = "skip" if r["max_abs_diff"] < 0 else "%.1e" % r["max_abs_diff"]
+        parts.append("n%d:qk=%s/np=%.3fs/diff=%s" % (n, qk, r["numpy_s"], diff))
+    return ";".join(parts)
+
+
+def _print_layout(packed, circs):
+    """After transpiling (IBM), show which physical qubits each canary block landed on:
+    per-bit flip rates are then per physical qubit, and cal0/cal1 use different ones."""
+    try:
+        if not getattr(circs[0], "layout", None):
+            return
+        phys = {}
+        for s in packed.slots:
+            if not s.name.startswith("_canary"):
+                continue
+            idx = circs[s.circuit_index].layout.final_index_layout()
+            phys[s.name] = [idx[q] for q in s.qubits]
+        print("  physical qubits of canary blocks: %s" % phys)
+        _note("canary_physical_qubits", phys)
+    except Exception as exc:
+        print("  physical layout: n/a (%s)" % type(exc).__name__)
+
+
+def _section_imports():
+    _section("2. Imports and data files")
+    try:
+        if "flat" in _IMPORT_ERRORS:
+            exc = _IMPORT_ERRORS["flat"]
+            print("  flat import of qk_runtime/qk_packer: FAILED %s: %s" % (type(exc).__name__, exc))
+            _note("flat_import", "FAILED %s" % type(exc).__name__)
+        else:
+            print("  flat imports (qk_runtime, qk_packer): OK")
+            _note("flat_import", "ok")
+        if pkgtest is None:
+            exc = _IMPORT_ERRORS.get("package")
+            print("  import pkgtest: FAILED %s: %s" % (type(exc).__name__, exc))
+            _note("package_import", "FAILED %s" % type(exc).__name__)
+        else:
+            value, sub = getattr(pkgtest, "VALUE", None), getattr(pkgtest, "SUB", None)
+            kind = "ok" if value and sub else "namespace-or-partial(file=%s)" % getattr(
+                pkgtest, "__file__", None)
+            print("  import pkgtest: %s value=%r sub=%r" % (kind, value, sub))
+            _note("package_import", kind)
+    except Exception as exc:
+        _fail("import probes", exc)
+        _note("package_import", "FAILED %s" % type(exc).__name__)
+    try:
+        with open("data/probe.json") as fh:
+            probe = json.load(fh)
+        print("  open('data/probe.json'): OK %r" % (probe,))
+        _note("data_literal_path", "ok")
+    except Exception as exc:
+        _fail("open('data/probe.json')", exc)
+        _note("data_literal_path", "FAILED %s" % type(exc).__name__)
+    try:
+        print("  cwd=%s" % os.getcwd())
+        print("  listdir('.')=%s" % sorted(os.listdir("."))[:30])
+        if os.path.isdir("data"):
+            print("  listdir('data')=%s" % sorted(os.listdir("data"))[:30])
+        print("  __file__=%s  __name__=%s" % (globals().get("__file__", "<undefined>"), __name__))
+        print("  sys.path[:6]=%s" % sys.path[:6])
+        _note("__name__", __name__)
+    except Exception as exc:
+        _fail("filesystem listing", exc)
+
+
+def _section_backend():
+    """Backend identity (printed directly, so it survives a failed flat import) and
+    the qk_runtime profile. Returns (backend, profile) or (backend_or_None, None)."""
+    _section("3. Backend")
+    be, where = _find_backend()
+    print("  backend found in: %s" % where)
+    _note("backend_found_in", where)
+    if be is None:
+        return None, None
+    try:
+        name = getattr(be, "name", None)
+        if callable(name):
+            name = name()
+        print("  type=%s.%s  name=%r" % (type(be).__module__, type(be).__name__, name))
+        _note("backend_module", type(be).__module__)
+        _note("backend_class", type(be).__name__)
+        _note("backend_name", name)
+    except Exception as exc:
+        _fail("backend identity", exc)
+    try:
+        ops = sorted(be.target.operation_names)
+        print("  target ops (%d): %s" % (len(ops), ops[:40]))
+    except Exception as exc:
+        print("  target ops: n/a (%s)" % type(exc).__name__)
+    try:
+        opts = getattr(be, "options", None)
+        if opts is None:
+            items = {}
+        elif hasattr(opts, "items"):
+            items = dict(opts.items())
+        else:
+            items = dict(getattr(opts, "_fields", {}) or {})
+        safe = {k: repr(v)[:60] for k, v in items.items()
+                if not any(w in k.lower() for w in ("token", "key", "secret", "auth", "password"))}
+        print("  options: %s" % json.dumps(safe)[:600])
+    except Exception as exc:
+        print("  options: n/a (%s)" % type(exc).__name__)
+    if qk_runtime is None:
+        return be, None
+    try:
+        profile = qk_runtime.backend_profile(be)
+    except Exception as exc:
+        _fail("backend_profile", exc)
+        profile = {"family": "unknown", "name": str(type(be).__name__), "module": "",
+                   "class": type(be).__name__, "reported_qubits": None, "noise_model": None,
+                   "max_qubits": 20, "remote": False, "noisy": False, "one_job": True,
+                   "transpile": False}
+    print("  profile: %s" % json.dumps(profile))
+    for key in ("family", "reported_qubits", "max_qubits", "noise_model", "one_job"):
+        _note(key, profile.get(key))
+    return be, profile
+
+
+def main(shots: int = 1000, mode: str = "auto", debias: bool = True):
     SUMMARY.clear()
     _RUN_COUNTER[0] += 1
     t_start = time.perf_counter()
@@ -252,17 +380,17 @@ def main(shots: int = 1000, mode: str = "tile", debias: bool = True):
     _section("0. Run-settings form and persistence")
     print("  shots=%r (%s)  mode=%r (%s)  debias=%r (%s)"
           % (shots, type(shots).__name__, mode, type(mode).__name__, debias, type(debias).__name__))
-    _note("form_types", "shots:%s mode:%s debias:%s"
-          % (type(shots).__name__, type(mode).__name__, type(debias).__name__))
+    _note("form_received", "shots=%r:%s mode=%r:%s debias=%r:%s" % (
+        shots, type(shots).__name__, mode, type(mode).__name__, debias, type(debias).__name__))
     try:
         shots = int(shots)
     except Exception:
         print("  shots not int-like; using 1000")
         shots = 1000
     mode = str(mode).strip().lower()
-    if mode not in ("tile", "list"):
-        print("  mode %r unknown; using 'tile'" % mode)
-        mode = "tile"
+    if mode not in ("auto", "tile", "list"):
+        print("  mode %r unknown; using 'auto'" % mode)
+        mode = "auto"
     debias = _as_bool(debias)
     _note("runs_in_this_interpreter", _RUN_COUNTER[0])
     marker_seen = os.path.exists(_MARKER)
@@ -289,104 +417,44 @@ def main(shots: int = 1000, mode: str = "tile", debias: bool = True):
         print("  %-24s %s" % (m, v))
     _note("python", sys.version.split()[0])
     _note("platform", sys.platform)
-    for m in ("qiskit", "numpy", "scipy", "matplotlib", "qiskit_aer", "qiskit_ionq"):
-        _note(m, vers[m])
+    for m, v in vers.items():
+        _note(m, v)
     try:
         from qiskit_ionq import ErrorMitigation
         members = [m for m in dir(ErrorMitigation) if not m.startswith("_")]
         print("  from qiskit_ionq import ErrorMitigation: OK members=%s" % members)
         _note("ionq_ErrorMitigation_import", "ok")
     except Exception as exc:
-        print("  from qiskit_ionq import ErrorMitigation: FAILED %s: %s" % (type(exc).__name__, exc))
-        _note("ionq_ErrorMitigation_import", "FAILED %s" % type(exc).__name__)
+        print("  from qiskit_ionq import ErrorMitigation: unavailable (%s)" % type(exc).__name__)
+        _note("ionq_ErrorMitigation_import", "unavailable %s" % type(exc).__name__)
     try:
-        bench = _density_bench()
-        _note("dm_bench", ";".join("n%d:qk%.3fs/np%.3fs/diff%.1e" % (
-            n, r["qiskit_kraus_s"], r["numpy_s"], r["max_abs_diff"]) for n, r in bench.items()))
+        _note("dm_bench", _bench_note(_density_bench()))
     except Exception as exc:
         _fail("density-matrix bench", exc)
         _note("dm_bench", "FAILED %s" % type(exc).__name__)
 
-    # ------------------------------------------------ 2. backend
-    _section("2. Backend")
-    be, where = _find_backend()
-    print("  backend found in: %s" % where)
-    _note("backend_found_in", where)
-    if be is None:
-        print("  No injected backend. Stopping before any job.")
-        _print_summary(t_start)
-        return
-    if "flat" in _IMPORT_ERRORS:
-        exc = _IMPORT_ERRORS["flat"]
-        print("  flat import of qk_runtime/qk_packer: FAILED %s: %s" % (type(exc).__name__, exc))
-        _note("flat_import", "FAILED %s" % type(exc).__name__)
-        _print_summary(t_start)
-        return
-    _note("flat_import", "ok")
-    qk_runtime.begin_run()
-    print("  type=%s.%s" % (type(be).__module__, type(be).__name__))
-    print("  name=%r" % (qk_runtime._backend_name(be),))
-    print("  reported qubits=%r" % (qk_runtime._reported_qubits(be),))
-    try:
-        ops = sorted(be.target.operation_names)
-        print("  target ops (%d): %s" % (len(ops), ops[:40]))
-    except Exception as exc:
-        print("  target ops: n/a (%s)" % type(exc).__name__)
-    try:
-        opts = getattr(be, "options", None)
-        if opts is None:
-            items = {}
-        elif hasattr(opts, "items"):
-            items = dict(opts.items())
-        else:
-            items = dict(getattr(opts, "_fields", {}) or {})
-        safe = {k: repr(v)[:60] for k, v in items.items()
-                if not any(w in k.lower() for w in ("token", "key", "secret", "auth", "password"))}
-        print("  options: %s" % json.dumps(safe)[:600])
-    except Exception as exc:
-        print("  options: n/a (%s)" % type(exc).__name__)
-    profile = qk_runtime.backend_profile(be)
-    print("  profile: %s" % json.dumps(profile))
-    _note("backend_module", profile["module"])
-    _note("backend_class", profile["class"])
-    _note("backend_name", profile["name"])
-    _note("reported_qubits", profile["reported_qubits"])
-    _note("family", profile["family"])
-    _note("one_job", profile["one_job"])
+    # ------------------------------------------------ 2. imports + data files
+    _section_imports()
 
-    # ------------------------------------------------ 3. imports + data files
-    _section("3. Imports and data files")
-    if pkgtest is not None:
-        print("  import pkgtest: OK value=%r sub=%r" % (pkgtest.VALUE, pkgtest.SUB))
-        _note("package_import", "ok")
-    else:
-        exc = _IMPORT_ERRORS.get("package")
-        print("  import pkgtest (package directory): FAILED %s: %s" % (type(exc).__name__, exc))
-        _note("package_import", "FAILED %s" % type(exc).__name__)
-    print("  flat imports (qk_runtime, qk_packer): OK")
-    try:
-        with open("data/probe.json") as fh:
-            probe = json.load(fh)
-        print("  open('data/probe.json'): OK %r" % (probe,))
-        _note("data_literal_path", "ok")
-    except Exception as exc:
-        _fail("open('data/probe.json')", exc)
-        _note("data_literal_path", "FAILED %s" % type(exc).__name__)
-    try:
-        print("  cwd=%s" % os.getcwd())
-        print("  listdir('.')=%s" % sorted(os.listdir("."))[:30])
-        if os.path.isdir("data"):
-            print("  listdir('data')=%s" % sorted(os.listdir("data"))[:30])
-        print("  __file__=%s" % globals().get("__file__", "<undefined>"))
-        print("  __name__=%s" % __name__)
-        print("  sys.path[:6]=%s" % sys.path[:6])
-    except Exception as exc:
-        _fail("filesystem listing", exc)
+    # ------------------------------------------------ 3. backend
+    be, profile = _section_backend()
+    if be is None or profile is None:
+        print("  No usable backend/profile (backend=%s, qk_runtime=%s). Stopping before any job."
+              % (be is not None, qk_runtime is not None))
+        _print_summary(t_start)
+        return
+    qk_runtime.begin_run()
+    requested = mode
+    mode = qk_runtime.preferred_mode(profile, mode)
+    if requested == "auto":
+        print("  mode auto -> %s (tile for one-job backends, list for local noisy simulators)" % mode)
+    _note("mode", "%s (requested %s)" % (mode, requested))
 
     # ------------------------------------------------ 4. one job
     _section("4. One job: canary + 4 CHSH tiles (mode=%s, shots=%d)" % (mode, shots))
     counts = None
     packed = None
+    run_kwargs = {}
     try:
         blocks = _chsh_blocks(qk_packer.Block)
         packed = qk_packer.pack(blocks, max_qubits=profile["max_qubits"], mode=mode, canary=True)
@@ -398,33 +466,37 @@ def main(shots: int = 1000, mode: str = "tile", debias: bool = True):
         circs = qk_runtime.prepare(packed.circuits, be, profile)
         print("  prepare: %s (%.2fs)" % (qk_runtime.LAST_RUN.get("prepare"), time.perf_counter() - t0))
         _note("prepare", qk_runtime.LAST_RUN.get("prepare"))
-        run_kwargs = {}
         if profile["family"].startswith("ionq"):
             run_kwargs = qk_runtime.ionq_run_kwargs(debias)
             if debias and shots < 500:
-                print("  note: debiasing needs >= 500 shots; provider decides what happens here")
+                print("  note: debiasing needs >= 500 shots (and never runs on IonQ simulators)")
         else:
             print("  debias=%r ignored (not an IonQ backend)" % debias)
+        _note("run_kwargs_sent", {k: repr(v) for k, v in run_kwargs.items()})
         print("  submitting ONE job: run kwargs %s" % {k: repr(v) for k, v in run_kwargs.items()})
-        counts = qk_runtime.run_once(be, circs, shots, profile, **run_kwargs)
-        print("  jobs submitted this run: %d" % qk_runtime.jobs_submitted())
-        _note("jobs_submitted", qk_runtime.jobs_submitted())
+        _print_layout(packed, circs)
+        counts = qk_runtime.run_once(be, circs, shots, profile, allow_partial=True, **run_kwargs)
     except Exception as exc:
         _fail("one-job run", exc)
-        _note("job", "FAILED %s: %s" % (type(exc).__name__, str(exc)[:200]))
-        _note("jobs_submitted", qk_runtime.jobs_submitted())
+        _note("job", "FAILED %s: %s" % (type(exc).__name__, str(exc)[:300]))
+    lr = qk_runtime.LAST_RUN
+    _note("backend_run_calls", qk_runtime.jobs_submitted())
+    for key in ("job_returned", "job_id", "submitted_as", "result_retry", "debias_note",
+                "failed_circuits",
+                "raw_key_lengths", "raw_value_types", "wall_s", "job_class"):
+        if key in lr:
+            _note(key, lr.get(key))
+    print("  backend.run calls this run: %d" % qk_runtime.jobs_submitted())
 
     # ------------------------------------------------ 5. results
     _section("5. Results")
-    lr = qk_runtime.LAST_RUN
+    if "raw_head" in lr:
+        print("  raw counts (first 10 per circuit): %s" % json.dumps(lr["raw_head"], default=str)[:1500])
+        _note("raw_keys", lr.get("raw_key_sample"))
     if counts is not None and packed is not None:
         try:
-            print("  raw key sample per circuit: %s" % lr.get("raw_key_sample"))
-            print("  raw value types: %s" % lr.get("raw_value_types"))
             print("  normalized key sample: %s" % [list(c)[:3] for c in counts])
             print("  shots seen per circuit: %s" % [sum(c.values()) for c in counts])
-            _note("raw_keys", lr.get("raw_key_sample"))
-            _note("raw_value_types", lr.get("raw_value_types"))
             _note("norm_keys", [list(c)[:2] for c in counts])
             _note("shots_seen", [sum(c.values()) for c in counts])
             un = qk_packer.unpack(packed, counts)
@@ -445,30 +517,34 @@ def main(shots: int = 1000, mode: str = "tile", debias: bool = True):
                 e, se, n = _parity(un[name])
                 s_val += sign * e
                 s_var += se * se
-                print("  %s: E=%+.4f +/- %.4f (n=%d, ideal %+.4f)"
-                      % (name, e, se, n, __import__("math").cos(ta - tb)))
+                print("  %s: E=%+.4f +/- %.4f (n=%d, ideal %+.4f)" % (name, e, se, n, math.cos(ta - tb)))
             s_se = s_var ** 0.5
-            z = (s_val - 2.0) / s_se if s_se > 0 else float("inf")
-            print("  CHSH S = %.4f +/- %.4f   (classical bound 2, ideal 2.8284)  z vs 2 = %+.2f"
-                  % (s_val, s_se, z))
-            _note("S", "%.4f+/-%.4f z=%+.2f" % (s_val, s_se, z))
+            if s_se > 0 and s_se == s_se:
+                z_txt = "%+.2f" % ((s_val - 2.0) / s_se)
+            else:
+                z_txt = "n/a"
+            print("  CHSH S = %.4f +/- %.4f   (classical bound 2, ideal 2.8284)  z vs 2 = %s"
+                  % (s_val, s_se, z_txt))
+            _note("S", "%.4f+/-%.4f z=%s" % (s_val, s_se, z_txt))
         except Exception as exc:
             _fail("result analysis", exc)
+            _note("analysis", "FAILED %s: %s" % (type(exc).__name__, str(exc)[:200]))
     meta = {k: lr.get(k) for k in ("n_circuits", "submitted_as", "shots_requested", "run_kwargs",
                                    "job_id", "job_class", "submit_s", "result_s", "wall_s",
-                                   "debias_note")}
+                                   "debias_note", "result_retry")}
     print("  job: %s" % json.dumps(meta, default=str))
     print("  result metadata: %s" % json.dumps(lr.get("result"), default=str)[:1500])
-    _note("job_wall_s", lr.get("wall_s"))
-    _note("job_class", lr.get("job_class"))
-    _note("debias_requested", debias)
-    _note("run_kwargs", lr.get("run_kwargs"))
     _print_summary(t_start)
+
+
+def _one_line(v, limit=400):
+    text = str(v).replace("\r", " ").replace("\n", " | ")
+    return text if len(text) <= limit else text[:limit] + "...(cut)"
 
 
 def _print_summary(t_start):
     _note("total_s", round(time.perf_counter() - t_start, 2))
     print("\n=== SMOKE SUMMARY %s ===" % SMOKE_VERSION)
     for k, v in SUMMARY:
-        print("%s=%s" % (k, v))
+        print("%s=%s" % (k, _one_line(v)))
     print("=== END SMOKE SUMMARY ===")

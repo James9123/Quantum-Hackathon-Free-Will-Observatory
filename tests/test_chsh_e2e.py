@@ -132,7 +132,7 @@ def test_packed_zne_run_on_local_simulator_one_job():
     be = BasicSimulator()
     be.set_options(seed_simulator=3)
     qk_runtime.begin_run()
-    card, det = chsh.run_zne(be, shots=2000, folds=(1, 3, 5), mode="tiles")
+    card, det = chsh.run_zne(be, shots=2000, folds=(1, 3, 5))
     assert qk_runtime.jobs_submitted() == 1
     by = det["analysis"]["by_fold"]
     for f in (1, 3, 5):                       # ideal simulator: folding changes nothing
