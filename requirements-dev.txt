@@ -1,0 +1,7 @@
+# Local development (macOS, CPython 3.14). Not uploaded to Qollab.
+qiskit==2.5.2
+numpy
+scipy
+pytest
+# cross-checks only (density-matrix reference for the noise dial)
+qiskit-aer==0.17.2

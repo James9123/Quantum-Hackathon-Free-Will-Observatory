@@ -1,0 +1,1 @@
+SUB = "pkgtest.sub-ok"
