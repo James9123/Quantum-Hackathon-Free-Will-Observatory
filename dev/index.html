@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UI stub mode</title>
+  <!-- "ui_api" is the Python module on Qollab; here it is a JS stub with the same names. -->
+  <script type="importmap">
+    { "imports": { "ui_api": "./stub_api.js" } }
+  </script>
+  <link rel="stylesheet" href="../qollab_project/main.css">
+  <style>
+    body { margin: 0; background: #ffffff; color: #16181d; font-family: system-ui, sans-serif; }
+    .stub-bar { background: #fff3e0; color: #7a3e00; border-bottom: 1px solid #7a3e00; padding: 8px 16px; font-size: 14px; }
+    .stub-bar a { color: #1e3a8a; margin-right: 10px; }
+    .stub-bar a[aria-current] { font-weight: 700; }
+    .stub-bar a:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+    #axe-out { white-space: pre-wrap; margin: 16px; padding: 8px; border: 1px solid #c5cad3; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <nav class="stub-bar" aria-label="Stub scenarios">
+    <strong>STUB MODE</strong> (local testing only; canned answers from tools/make_ui_stubs.py). Backend:
+    <a href="?backend=basic" data-scenario="basic">ideal local</a>
+    <a href="?backend=readout" data-scenario="readout">readout flips</a>
+    <a href="?backend=ionq" data-scenario="ionq">IonQ-shaped (one job)</a>
+    <a href="?backend=error" data-scenario="error">failing</a>
+    <a href="?backend=none" data-scenario="none">no backend</a>
+  </nav>
+  <div id="qollab-root"></div>
+  <pre id="axe-out" hidden></pre>
+  <script type="module" src="./boot.js"></script>
+</body>
+</html>

@@ -38,7 +38,7 @@ Read 2026-10-09; items marked *(smoke)* are confirmed or refuted by `smoke/` run
   `print()` inside Python called from JS does not reach the console.
 - Remote (IonQ) requests only route while `main.js` is still running: end it with
   `await new Promise(() => {})` if buttons submit jobs later.
-- Sandbox: `allow-scripts` only (no popups, downloads, modals, storage). External JS only
+- Iframe restrictions: `allow-scripts` only (no popups, downloads, modals, storage). External JS only
   from cdn.jsdelivr.net. No Workers or WebSockets.
 
 ## Backends

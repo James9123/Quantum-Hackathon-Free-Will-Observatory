@@ -1,0 +1,160 @@
+<div id="qh-app" class="qh-app" lang="en">
+  <header class="qh-header">
+    <p class="qh-kicker">Qollab x IonQ hackathon &middot; reference experiment: CHSH</p>
+    <h1 id="qh-title" class="qh-title">Project title (placeholder)</h1>
+    <p class="qh-lede">Two qubits share an entangled state and are read out at four pairs of angles.
+      Quantum theory predicts a combination of their correlations, S, up to 2&radic;2 &asymp; 2.83;
+      every local hidden-variable model gives S &le; 2. Run one job, turn the noise dial, and see
+      how much noise it takes to wash the gap out.</p>
+    <section class="qh-badge" aria-labelledby="qh-badge-h">
+      <h2 id="qh-badge-h" class="qh-badge-h">Backend</h2>
+      <ul id="qh-badge-list" class="qh-chips">
+        <li class="qh-chip">loading&hellip;</li>
+      </ul>
+      <p id="qh-badge-policy" class="qh-small"></p>
+    </section>
+  </header>
+
+  <p id="qh-status" class="qh-status" role="status" aria-live="polite">Starting&hellip;</p>
+
+  <main class="qh-grid">
+    <div class="qh-col">
+      <section class="qh-panel" aria-labelledby="qh-run-h">
+        <h2 id="qh-run-h">Run one job</h2>
+        <p class="qh-small">One job holds a bit-order and readout canary plus the four CHSH settings.
+          The result comes back as a claim card.</p>
+        <fieldset class="qh-fieldset">
+          <legend>Job settings</legend>
+          <div class="qh-field">
+            <label for="qh-shots">Shots per setting</label>
+            <input id="qh-shots" type="number" inputmode="numeric" min="1" max="100000" step="1"
+                   value="1000" aria-describedby="qh-shots-help">
+            <p id="qh-shots-help" class="qh-help">Whole number from 1 to 100,000. Each shot samples every setting once in tile mode.</p>
+          </div>
+          <div class="qh-field">
+            <label for="qh-mode">Packing mode</label>
+            <select id="qh-mode" aria-describedby="qh-mode-help">
+              <option value="auto" selected>auto (chosen for this backend)</option>
+              <option value="tile">tile: all blocks side by side in one circuit</option>
+              <option value="list">list: one circuit per block, one job</option>
+            </select>
+            <p id="qh-mode-help" class="qh-help">Either way it is one job.</p>
+          </div>
+          <div class="qh-field qh-check">
+            <input id="qh-mitigate" type="checkbox" checked aria-describedby="qh-mitigate-help">
+            <label for="qh-mitigate">Readout mitigation</label>
+            <p id="qh-mitigate-help" class="qh-help">Inverts readout flips measured by the canary, when it sees any.</p>
+          </div>
+        </fieldset>
+        <div class="qh-actions">
+          <button id="qh-run" type="button" class="qh-button" aria-describedby="qh-run-policy" disabled>Run one job</button>
+          <p id="qh-run-policy" class="qh-small">Waiting for the backend profile&hellip;</p>
+        </div>
+        <p id="qh-run-lock" class="qh-note qh-note--warn" hidden></p>
+      </section>
+
+      <section id="qh-results" class="qh-panel" aria-labelledby="qh-results-h">
+        <h2 id="qh-results-h">Result</h2>
+        <p id="qh-honesty" class="qh-note">Simulator honesty: a simulator computes what quantum theory
+          predicts, and how the chosen noise model degrades it. It is not a test of nature.</p>
+        <div id="qh-card" class="qh-card-slot">
+          <p class="qh-small">No run yet. Press &ldquo;Run one job&rdquo; to get a claim card.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="qh-col">
+      <section class="qh-panel" aria-labelledby="qh-dial-h">
+        <h2 id="qh-dial-h">Noise dial</h2>
+        <p class="qh-small">Exact: the density matrix is computed in your browser, with no sampling and
+          no job. It shows what quantum theory predicts under the chosen noise model.</p>
+        <div class="qh-field">
+          <label for="qh-preset">Noise model</label>
+          <select id="qh-preset" aria-describedby="qh-preset-help">
+            <option value="custom" selected>Custom: two-qubit depolarizing + readout flips</option>
+            <option value="ionq_forte_like">IonQ-like: published Forte-1 simulator rates</option>
+            <option value="ionq_forte_like_spam">IonQ-like + 0.5% readout error</option>
+          </select>
+          <p id="qh-preset-help" class="qh-help">Custom uses the two sliders below; the IonQ-like presets use the scale slider.</p>
+        </div>
+        <div class="qh-field" id="qh-p2-field">
+          <div class="qh-range-head">
+            <label for="qh-p2">Two-qubit depolarizing strength p2</label>
+            <span id="qh-p2-out" class="qh-out" aria-hidden="true">0.000</span>
+          </div>
+          <input id="qh-p2" type="range" min="0" max="0.35" step="0.005" value="0">
+        </div>
+        <div class="qh-field" id="qh-ro-field">
+          <div class="qh-range-head">
+            <label for="qh-ro">Readout flip probability (each bit, both directions)</label>
+            <span id="qh-ro-out" class="qh-out" aria-hidden="true">0.0%</span>
+          </div>
+          <input id="qh-ro" type="range" min="0" max="0.15" step="0.005" value="0">
+        </div>
+        <div class="qh-field" id="qh-scale-field" hidden>
+          <div class="qh-range-head">
+            <label for="qh-scale">Scale: multiple of the published rates</label>
+            <span id="qh-scale-out" class="qh-out" aria-hidden="true">1&times;</span>
+          </div>
+          <input id="qh-scale" type="range" min="0" max="80" step="1" value="1">
+        </div>
+
+        <div class="qh-dial-out">
+          <p class="qh-svalue"><span class="qh-svalue-label">Predicted S</span>
+            <strong id="qh-dial-s" class="qh-svalue-num">&ndash;</strong>
+            <span id="qh-dial-side" class="qh-side"></span></p>
+          <div class="qh-gauge" aria-hidden="true">
+            <div class="qh-gauge-track">
+              <div id="qh-gauge-fill" class="qh-gauge-fill"></div>
+              <div class="qh-gauge-tick qh-gauge-tick--bound qh-at-bound"></div>
+              <div class="qh-gauge-tick qh-gauge-tick--ideal qh-at-ideal"></div>
+            </div>
+            <div class="qh-gauge-labels">
+              <span class="qh-at-0">0</span>
+              <span class="qh-at-bound">2 (bound)</span>
+              <span class="qh-at-ideal">2&radic;2</span>
+            </div>
+          </div>
+          <p id="qh-dial-reading" class="qh-reading" aria-live="polite" aria-atomic="true"></p>
+          <p id="qh-dial-rates" class="qh-small"></p>
+          <p id="qh-preset-note" class="qh-small" hidden></p>
+          <details class="qh-details">
+            <summary>Per-setting correlations and outcome probabilities</summary>
+            <div id="qh-dial-table"></div>
+          </details>
+        </div>
+      </section>
+
+      <section class="qh-panel" aria-labelledby="qh-chart-h">
+        <h2 id="qh-chart-h">Precomputed noise curve</h2>
+        <fieldset class="qh-fieldset qh-toggle">
+          <legend>Curve to show</legend>
+          <label class="qh-radio"><input type="radio" name="qh-curve" id="qh-curve-p2" value="p2" checked>
+            S vs depolarizing strength p2</label>
+          <label class="qh-radio"><input type="radio" name="qh-curve" id="qh-curve-ionq" value="ionq">
+            S vs IonQ-like scale</label>
+        </fieldset>
+        <figure class="qh-figure">
+          <div id="qh-chart" class="qh-chart"></div>
+          <figcaption id="qh-chart-summary" class="qh-caption">Loading the precomputed curve&hellip;</figcaption>
+        </figure>
+        <ul id="qh-chart-legend" class="qh-legend"></ul>
+        <details class="qh-details">
+          <summary>Data table for this curve</summary>
+          <div id="qh-chart-table"></div>
+        </details>
+        <details class="qh-details">
+          <summary>How far to trust these numbers</summary>
+          <div id="qh-validation"></div>
+        </details>
+        <p id="qh-chart-prov" class="qh-small"></p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="qh-footer">
+    <p class="qh-attribution">This effort is supported by Qollab & IonQ</p>
+    <p class="qh-small">Simulators compute what quantum theory predicts; they do not test nature.
+      Source code: MIT License.</p>
+  </footer>
+</div>
