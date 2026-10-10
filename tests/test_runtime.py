@@ -77,6 +77,21 @@ def test_profile_families(module, name, qubits, family, one_job, maxq):
     assert p["transpile"] is (not family.startswith("ionq"))
 
 
+class _Opts(dict):
+    pass
+
+
+def test_profile_ionq_noise_model_cap_and_implausible_qubit_count():
+    be = _fake_backend("qiskit_ionq.ionq_backend", "ionq_simulator", 4)   # lookup-failure fallback
+    be.options = _Opts(noise_model="forte-1")
+    p = rt.backend_profile(be)
+    assert p["max_qubits"] == 29 and p["reported_qubits"] == 4 and p["noise_model"] == "forte-1"
+    be.options = _Opts(noise_model="aria-1")
+    assert rt.backend_profile(be)["max_qubits"] == 25
+    be2 = _fake_backend("qiskit_ionq.ionq_backend", "ionq_simulator", 20)
+    assert rt.backend_profile(be2)["max_qubits"] == 20
+
+
 def test_profile_basic_simulator():
     p = rt.backend_profile(BasicSimulator())
     assert p["family"] == "basic" and p["max_qubits"] == 24 and p["one_job"] is False

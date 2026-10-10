@@ -38,6 +38,12 @@ _IBM_DEVICE_HINTS = (
     "pittsburgh", "boston", "miami", "heron", "eagle", "osaka", "kyoto",
 )
 
+# IonQ noise-model simulators: qubit ceiling by model family (Qollab compute-backends).
+_IONQ_MODEL_QUBITS = (("aria", 25), ("forte", 29))
+# qiskit-ionq falls back to reporting 4 qubits when its backend lookup fails; treat
+# implausibly small IonQ counts as unknown rather than refusing a 17-qubit job.
+_IONQ_MIN_PLAUSIBLE = 8
+
 _STATE = {"jobs": 0}
 LAST_RUN = {}
 
@@ -102,19 +108,39 @@ def backend_profile(backend):
     family = _classify(module, name, cls)
     cap, remote, noisy, one_job, transpile_ = _FAMILY_DEFAULTS[family]
     reported = _reported_qubits(backend)
-    max_qubits = min(cap, reported) if reported else cap
+    noise_model = _option(backend, "noise_model")
+    usable = reported
+    if family.startswith("ionq"):
+        if family == "ionq_sim" and noise_model:
+            for key, n in _IONQ_MODEL_QUBITS:
+                if key in str(noise_model).lower():
+                    cap = n
+        if reported is not None and reported < _IONQ_MIN_PLAUSIBLE:
+            usable = None
+    max_qubits = min(cap, usable) if usable else cap
     return {
         "family": family,
         "name": name,
         "module": module,
         "class": cls,
         "reported_qubits": reported,
+        "noise_model": None if noise_model is None else str(noise_model),
         "max_qubits": int(max_qubits),
         "remote": remote,
         "noisy": noisy,
         "one_job": one_job,
         "transpile": transpile_,
     }
+
+
+def _option(backend, key):
+    opts = getattr(backend, "options", None)
+    if opts is None:
+        return None
+    try:
+        return opts.get(key)
+    except Exception:
+        return getattr(opts, key, None)
 
 
 def prepare(circuits, backend, profile, optimization_level=1):

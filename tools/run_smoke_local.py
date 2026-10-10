@@ -60,6 +60,31 @@ def load_smoke(project_dir="smoke"):
     return importlib.import_module("main")
 
 
+def run_qollab_style(call_line='main(1000,"tile",True)', fake_ionq=False, seed=11, project="smoke"):
+    """Emulate the Qollab runner: one source string = prologue (creates `backend`)
+    + main.py text + an appended positional main(...) call, executed as __main__
+    in a fresh namespace with cwd = the project folder."""
+    from qiskit.providers.basic_provider import BasicSimulator
+    inner = BasicSimulator()
+    inner.set_options(seed_simulator=seed)
+    be = FakeIonQSimulator(inner) if fake_ionq else CountingBackend(inner)
+    path = os.path.join(ROOT, project)
+    src = open(os.path.join(path, "main.py")).read()
+    cwd = os.getcwd()
+    os.chdir(path)
+    sys.path.insert(0, path)
+    local = [f[:-3] for f in os.listdir(path) if f.endswith(".py")]
+    for mod in local + ["pkgtest", "pkgtest.sub"]:
+        sys.modules.pop(mod, None)
+    try:
+        ns = {"__name__": "__main__", "backend": be}
+        exec(compile(src + "\n" + call_line + "\n", "<exec>", "exec"), ns)
+    finally:
+        os.chdir(cwd)
+        sys.path.remove(path)
+    return be
+
+
 def run(mode="tile", shots=1000, debias=True, fake_ionq=False, seed=11):
     from qiskit.providers.basic_provider import BasicSimulator
     inner = BasicSimulator()
@@ -81,6 +106,12 @@ if __name__ == "__main__":
     ap.add_argument("--shots", type=int, default=1000)
     ap.add_argument("--no-debias", action="store_true")
     ap.add_argument("--fake-ionq", action="store_true")
+    ap.add_argument("--project", default=None,
+                    help="run <project>/main.py the way Qollab does (e.g. qollab_project)")
     a = ap.parse_args()
-    be = run(a.mode, a.shots, not a.no_debias, a.fake_ionq)
+    if a.project:
+        call = 'main(%d,"%s",%s)' % (a.shots, a.mode, "False" if a.no_debias else "True")
+        be = run_qollab_style(call, a.fake_ionq, project=a.project)
+    else:
+        be = run(a.mode, a.shots, not a.no_debias, a.fake_ionq)
     print("\n[local runner] backend.run calls: %d" % be.jobs)

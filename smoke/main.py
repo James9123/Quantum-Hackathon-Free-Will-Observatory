@@ -15,7 +15,32 @@ import sys
 import time
 import traceback
 
-SMOKE_VERSION = "smoke-1"
+# Top-level imports so Qollab's pre-run import scanner fetches our modules and loads
+# the bundled scipy/matplotlib. Failures are recorded and reported, never fatal.
+_IMPORT_ERRORS = {}
+try:
+    import qk_runtime
+    import qk_packer
+except Exception as _exc:          # reported in section 2
+    qk_runtime = qk_packer = None
+    _IMPORT_ERRORS["flat"] = _exc
+try:
+    import pkgtest
+except Exception as _exc:
+    pkgtest = None
+    _IMPORT_ERRORS["package"] = _exc
+try:
+    import scipy
+except Exception as _exc:
+    scipy = None
+    _IMPORT_ERRORS["scipy"] = _exc
+try:
+    import matplotlib
+except Exception as _exc:
+    matplotlib = None
+    _IMPORT_ERRORS["matplotlib"] = _exc
+
+SMOKE_VERSION = "smoke-2"
 _RUN_COUNTER = [0]          # survives only if the interpreter is reused between runs
 _MARKER = "/tmp/qollab_smoke_marker.txt"
 SUMMARY = []
@@ -257,6 +282,9 @@ def main(shots: int = 1000, mode: str = "tile", debias: bool = True):
     vers = {m: _version(m) for m in (
         "pyodide", "qiskit", "numpy", "scipy", "matplotlib", "qiskit_aer",
         "qiskit_ionq", "qiskit_braket_provider", "qiskit_ibm_runtime")}
+    for m in ("scipy", "matplotlib"):
+        if m in _IMPORT_ERRORS:
+            vers[m] = "MISSING(%s)" % type(_IMPORT_ERRORS[m]).__name__
     for m, v in vers.items():
         print("  %-24s %s" % (m, v))
     _note("python", sys.version.split()[0])
@@ -288,15 +316,13 @@ def main(shots: int = 1000, mode: str = "tile", debias: bool = True):
         print("  No injected backend. Stopping before any job.")
         _print_summary(t_start)
         return
-    try:
-        import qk_runtime
-        import qk_packer
-        _note("flat_import", "ok")
-    except Exception as exc:
-        _fail("flat import of qk_runtime/qk_packer", exc)
+    if "flat" in _IMPORT_ERRORS:
+        exc = _IMPORT_ERRORS["flat"]
+        print("  flat import of qk_runtime/qk_packer: FAILED %s: %s" % (type(exc).__name__, exc))
         _note("flat_import", "FAILED %s" % type(exc).__name__)
         _print_summary(t_start)
         return
+    _note("flat_import", "ok")
     qk_runtime.begin_run()
     print("  type=%s.%s" % (type(be).__module__, type(be).__name__))
     print("  name=%r" % (qk_runtime._backend_name(be),))
@@ -330,12 +356,12 @@ def main(shots: int = 1000, mode: str = "tile", debias: bool = True):
 
     # ------------------------------------------------ 3. imports + data files
     _section("3. Imports and data files")
-    try:
-        import pkgtest
+    if pkgtest is not None:
         print("  import pkgtest: OK value=%r sub=%r" % (pkgtest.VALUE, pkgtest.SUB))
         _note("package_import", "ok")
-    except Exception as exc:
-        _fail("import pkgtest (package directory)", exc)
+    else:
+        exc = _IMPORT_ERRORS.get("package")
+        print("  import pkgtest (package directory): FAILED %s: %s" % (type(exc).__name__, exc))
         _note("package_import", "FAILED %s" % type(exc).__name__)
     print("  flat imports (qk_runtime, qk_packer): OK")
     try:

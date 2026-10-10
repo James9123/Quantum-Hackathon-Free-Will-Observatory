@@ -56,3 +56,29 @@ def test_smoke_main_has_no_main_guard_and_no_backend_construction():
     assert "__main__\":" not in src and "__name__ ==" not in src
     for forbidden in ("BasicSimulator(", "AerSimulator(", "IonQProvider(", "get_backend("):
         assert forbidden not in src
+
+
+@pytest.mark.parametrize("call_line,mode", [('main(1000,"tile",True)', "tile"),
+                                            ('main(400,"list",False)', "list")])
+def test_smoke_qollab_style_exec_runs_exactly_once(call_line, mode, capsys):
+    be = run_smoke_local.run_qollab_style(call_line)
+    out = capsys.readouterr().out
+    assert out.count("=== SMOKE SUMMARY") == 1     # main() ran once, despite __name__ == "__main__"
+    assert be.jobs == 1
+    s = summary(out)
+    assert s["orientation_ok"] == "True" and s["flat_import"] == "ok" and s["package_import"] == "ok"
+    assert ("mode=%s" % mode) in s["packed"]
+    assert s["scipy"] != "None" and not s["scipy"].startswith("MISSING")
+
+
+def test_smoke_signature_is_qollab_form_compatible():
+    import re
+    src = open(os.path.join(ROOT, "smoke", "main.py")).read()
+    sigs = re.findall(r"^def\s+main\s*\(.*$", src, flags=re.M)
+    assert len(sigs) == 1
+    params = re.search(r"\((.*)\)", sigs[0]).group(1).split(",")
+    for p in params:
+        name, rest = p.split(":")
+        ann, default = [x.strip() for x in rest.split("=")]
+        assert ann in ("int", "float", "str", "bool"), p
+        assert not default.startswith("-") and default not in ("None",), p
