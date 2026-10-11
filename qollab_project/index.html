@@ -1,0 +1,191 @@
+<div id="fwo-app" class="fwo-app" lang="en">
+  <header class="fwo-header">
+    <p class="fwo-kicker">Qollab x IonQ hackathon &middot; a fictional instrument, run on a live simulator</p>
+    <h1 class="fwo-title">The Free Will Observatory</h1>
+    <p class="fwo-lede">We define free will here as <strong>the capacity to reshape possible futures</strong>. A two-qubit
+      Self meets a World: an intention becomes a quantum phase, the World becomes a coupled system, and a
+      perspective becomes a measurement choice. Each run submits one fresh simulator job of four probes and
+      shows how the controls move a distribution of outcomes. The measurements are real outputs of the simulator;
+      the Self and its philosophical meaning are our artistic construction.</p>
+    <section class="fwo-badge" aria-labelledby="fwo-badge-h">
+      <h2 id="fwo-badge-h" class="fwo-badge-h">Backend</h2>
+      <ul id="fwo-badge-list" class="fwo-chips">
+        <li class="fwo-chip">loading&hellip;</li>
+      </ul>
+      <p id="fwo-badge-policy" class="fwo-small"></p>
+    </section>
+  </header>
+
+  <p id="fwo-status" class="fwo-status" role="status" aria-live="polite">Starting&hellip;</p>
+
+  <section class="fwo-personas" aria-labelledby="fwo-personas-h">
+    <h2 id="fwo-personas-h" class="fwo-visually-hidden">Persona</h2>
+    <div id="fwo-tabs" class="fwo-tabs" role="tablist" aria-label="Persona">
+      <button type="button" role="tab" id="fwo-tab-self" aria-selected="true" aria-controls="fwo-panel-self" tabindex="0" class="fwo-tab">The Self</button>
+      <button type="button" role="tab" id="fwo-tab-demon" aria-selected="false" aria-controls="fwo-panel-demon" tabindex="-1" class="fwo-tab">Laplace's Demon</button>
+      <button type="button" role="tab" id="fwo-tab-observer" aria-selected="false" aria-controls="fwo-panel-observer" tabindex="-1" class="fwo-tab">The Observer</button>
+    </div>
+    <div id="fwo-panel-self" role="tabpanel" aria-labelledby="fwo-tab-self" tabindex="0" class="fwo-panel-persona">
+      <p class="fwo-persona-intro">The Self changes its Intention and presses Run experiment: the current distribution of
+        futures, plus the capacity measured under opposite intentions in the same job.</p>
+      <p id="fwo-persona-self" class="fwo-persona-text"></p>
+    </div>
+    <div id="fwo-panel-demon" role="tabpanel" aria-labelledby="fwo-tab-demon" tabindex="0" class="fwo-panel-persona" hidden>
+      <p class="fwo-persona-intro">Laplace's Demon knows the probability law. Before a run it writes down the exact
+        prediction for the selected settings; afterwards it compares that forecast with the fresh sampled result
+        and with the two classical references below.</p>
+      <div id="fwo-demon-forecast" class="fwo-demon-block"><p class="fwo-small">Computing the forecast&hellip;</p></div>
+      <div id="fwo-demon-compare" class="fwo-demon-block"></div>
+    </div>
+    <div id="fwo-panel-observer" role="tabpanel" aria-labelledby="fwo-tab-observer" tabindex="0" class="fwo-panel-persona" hidden>
+      <p class="fwo-persona-intro">The Observer changes the Perspective and reruns. Perspective changes the measured
+        observable (the readout direction), not the prepared state, so the display probability moves; the two
+        capacity probes keep that same readout and only move the intention, so Capacity stays comparable across
+        perspectives.</p>
+      <p id="fwo-observer-text" class="fwo-persona-text"></p>
+    </div>
+  </section>
+
+  <main class="fwo-stage">
+    <section class="fwo-controls fwo-panel" aria-labelledby="fwo-controls-h">
+      <h2 id="fwo-controls-h">Controls</h2>
+      <p class="fwo-small">The sliders edit a draft. Run experiment submits the whole draft as one job of four probes.</p>
+      <div class="fwo-field">
+        <div class="fwo-range-head">
+          <label for="fwo-intention">Intention (phase phi on the Self)</label>
+          <span id="fwo-intention-out" class="fwo-out" aria-hidden="true">1.571 rad (90&deg;)</span>
+        </div>
+        <input id="fwo-intention" type="range" min="0" max="360" step="1" value="90" aria-describedby="fwo-intention-help">
+        <p id="fwo-intention-help" class="fwo-help">0 to 2&pi;. Varying it changes how the Self's alternatives interfere.</p>
+      </div>
+      <div class="fwo-field">
+        <div class="fwo-range-head">
+          <label for="fwo-coupling">World coupling (w; gamma = w &middot; &pi;/2)</label>
+          <span id="fwo-coupling-out" class="fwo-out" aria-hidden="true">0.00</span>
+        </div>
+        <input id="fwo-coupling" type="range" min="0" max="1" step="0.01" value="0" aria-describedby="fwo-coupling-help">
+        <p id="fwo-coupling-help" class="fwo-help">0 to 1. Writes which-alternative information into the World (coherent coupling, not noise).</p>
+      </div>
+      <div class="fwo-field">
+        <div class="fwo-range-head">
+          <label for="fwo-perspective">Perspective (readout angle beta)</label>
+          <span id="fwo-perspective-out" class="fwo-out" aria-hidden="true">0.000 rad (0&deg;)</span>
+        </div>
+        <input id="fwo-perspective" type="range" min="0" max="180" step="1" value="0" aria-describedby="fwo-perspective-help">
+        <p id="fwo-perspective-help" class="fwo-help">0 to &pi;. Chooses the equatorial direction the Self is measured along.</p>
+      </div>
+      <details class="fwo-details">
+        <summary>Job settings</summary>
+        <div class="fwo-field">
+          <label for="fwo-shots">Shots per probe</label>
+          <input id="fwo-shots" type="number" inputmode="numeric" min="1" max="4096" step="1" value="1024" aria-describedby="fwo-shots-help">
+          <p id="fwo-shots-help" class="fwo-help">Whole number from 1 to 4,096 (four probes, so four times as many sampled circuit executions).</p>
+        </div>
+        <div class="fwo-field">
+          <label for="fwo-mode">Packing mode</label>
+          <select id="fwo-mode" aria-describedby="fwo-mode-help">
+            <option value="auto" selected>auto (chosen for this backend)</option>
+            <option value="tile">tile: all probes side by side in one circuit</option>
+            <option value="list">list: one circuit per probe, one job</option>
+          </select>
+          <p id="fwo-mode-help" class="fwo-help">Either way it is one job.</p>
+        </div>
+        <div class="fwo-field fwo-check">
+          <input id="fwo-canary" type="checkbox" checked aria-describedby="fwo-canary-help">
+          <label for="fwo-canary">Bit-order and readout canary</label>
+          <p id="fwo-canary-help" class="fwo-help">Adds small check circuits to the same job (recommended).</p>
+        </div>
+      </details>
+      <p id="fwo-draft" class="fwo-small fwo-draft"></p>
+      <div class="fwo-actions">
+        <button id="fwo-run" type="button" class="fwo-button" aria-describedby="fwo-run-policy" disabled>Run experiment</button>
+        <p id="fwo-run-policy" class="fwo-small">Waiting for the backend profile&hellip;</p>
+      </div>
+      <p id="fwo-progress" class="fwo-progress" hidden></p>
+      <p id="fwo-run-lock" class="fwo-note fwo-note--warn" hidden></p>
+      <div id="fwo-run-error"></div>
+    </section>
+
+    <section class="fwo-scene fwo-panel" aria-labelledby="fwo-scene-h">
+      <h2 id="fwo-scene-h" class="fwo-visually-hidden">Scene</h2>
+      <div id="fwo-scene-host" class="fwo-scene-host"></div>
+      <p id="fwo-scene-caption" class="fwo-small fwo-scene-caption">Decorative nodes suggest a brain; they are not qubits
+        or neurons. Outcome sizes and flows use the completed display run; the World bridge uses the separate
+        connection probe.</p>
+      <div class="fwo-field fwo-check fwo-motion">
+        <input id="fwo-motion" type="checkbox" checked aria-describedby="fwo-motion-help">
+        <label for="fwo-motion">Motion (particle flow and the one-second transition)</label>
+        <p id="fwo-motion-help" class="fwo-help">Decoration only; the numbers never move with it.</p>
+      </div>
+    </section>
+
+    <section class="fwo-futures fwo-panel" aria-labelledby="fwo-futures-h">
+      <h2 id="fwo-futures-h">Possible futures</h2>
+      <article class="fwo-future" aria-labelledby="fwo-future-1-h">
+        <h3 id="fwo-future-1-h" class="fwo-future-h">Future 1</h3>
+        <div id="fwo-future-1"><p class="fwo-small">No run yet.</p></div>
+      </article>
+      <article class="fwo-future" aria-labelledby="fwo-future-0-h">
+        <h3 id="fwo-future-0-h" class="fwo-future-h">Future 0</h3>
+        <div id="fwo-future-0"><p class="fwo-small">No run yet.</p></div>
+      </article>
+      <p class="fwo-small">P(Self = 1) from the display probe; sphere volume and branch thickness in the scene follow these.</p>
+    </section>
+  </main>
+
+  <section class="fwo-panel" aria-labelledby="fwo-readings-h">
+    <h2 id="fwo-readings-h">Three readings</h2>
+    <div id="fwo-readings" class="fwo-readings"></div>
+  </section>
+
+  <section class="fwo-panel" aria-labelledby="fwo-chart-h">
+    <h2 id="fwo-chart-h">Before and after</h2>
+    <figure class="fwo-figure">
+      <div id="fwo-chart" class="fwo-chart"></div>
+      <figcaption id="fwo-chart-summary" class="fwo-caption">No run yet.</figcaption>
+    </figure>
+    <ul id="fwo-chart-legend" class="fwo-legend"></ul>
+    <details class="fwo-details">
+      <summary>Data table for this chart</summary>
+      <div id="fwo-chart-table"></div>
+    </details>
+  </section>
+
+  <section class="fwo-panel" aria-labelledby="fwo-explain-h">
+    <h2 id="fwo-explain-h">Explanation</h2>
+    <p id="fwo-factual" class="fwo-factual">No run yet. The factual sentence appears here, built only from the submitted settings and the measured statistics.</p>
+    <p id="fwo-poetic" class="fwo-poetic" aria-live="polite" aria-atomic="true"></p>
+    <p id="fwo-persona-note" class="fwo-small">Persona lines are artistic interpretation of a designed model; the factual sentence and the counts are the record. Switching persona changes the interpretation only, never the data.</p>
+  </section>
+
+  <section class="fwo-panel" aria-labelledby="fwo-baselines-h">
+    <h2 id="fwo-baselines-h">Theoretical classical references</h2>
+    <div id="fwo-baselines" class="fwo-baselines"></div>
+  </section>
+
+  <details id="fwo-how" class="fwo-details fwo-panel">
+    <summary>How this works: circuit, counts, job details, honesty</summary>
+    <div id="fwo-how-body"></div>
+    <h3>Theory: what the readings look like across the coupling</h3>
+    <figure class="fwo-figure">
+      <div id="fwo-curve" class="fwo-chart"></div>
+      <figcaption id="fwo-curve-summary" class="fwo-caption">Loading the theoretical curves&hellip;</figcaption>
+    </figure>
+    <ul id="fwo-curve-legend" class="fwo-legend"></ul>
+    <details class="fwo-details">
+      <summary>Data table for the theory curves</summary>
+      <div id="fwo-curve-table"></div>
+    </details>
+    <details class="fwo-details">
+      <summary>How far to trust the interval and the noise model</summary>
+      <div id="fwo-coverage"></div>
+    </details>
+    <p id="fwo-curve-prov" class="fwo-small"></p>
+  </details>
+
+  <footer class="fwo-footer">
+    <p class="fwo-attribution">This effort is supported by Qollab & IonQ</p>
+    <p class="fwo-small">Simulators compute what quantum theory predicts; they do not test nature. The readings are a
+      designed, fictional model of agency, not a measurement of free will. Source code: MIT License.</p>
+  </footer>
+</div>

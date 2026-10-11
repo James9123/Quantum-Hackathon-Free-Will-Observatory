@@ -748,11 +748,11 @@ def test_pack_real_project_python_entry(tmp_path, monkeypatch, capsys):
     names = zip_names(tmp_path / "build" / "upload-python.zip")
     rel = {n.split("/", 1)[1] for n in names}
     assert {n.split("/")[0] for n in names} == {"upload-python"}
-    assert {"main.py", "chsh.py", "qk_runtime.py", "data/chsh_noise.json",
-            "data/chsh_coverage.json", "data/chsh_aer_check.json",
-            "data/chsh_ionq_like.json"} <= rel
+    assert {"main.py", "observatory.py", "observatory_api.py", "qk_runtime.py", "qk_packer.py",
+            "data/fwo_theory.json", "data/fwo_noise.json", "data/fwo_coverage.json"} <= rel
+    assert "chsh.py" not in rel and not any(r.startswith("data/chsh_") for r in rel)
     assert not rel & {"index.html", "main.js", "main.css"}
     assert not any(r.startswith("ui/") and r.endswith(".js") for r in rel)
     assert not any("__pycache__" in r or r.endswith(".pyc") for r in rel)
     assert len(rel) <= pack.MAX_FILES
-    assert "def main(shots: int = 1000" in cap.out
+    assert "def main(intention_deg: float = 90.0" in cap.out

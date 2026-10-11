@@ -83,6 +83,12 @@ _REQ_RE = re.compile(r"^%s(?:\[\s*%s(?:\s*,\s*%s)*\s*\])?(?:\s*%s(?:\s*,\s*%s)*)
                      % (_REQ_NAME, _REQ_NAME, _REQ_NAME, _REQ_SPEC, _REQ_SPEC))
 # A string literal that is nothing but a relative file path under data/ (normalized).
 _DATA_PATH_RE = re.compile(r"^data/[^\s*?<>{}|\"'%]+\.[A-Za-z0-9]+$")
+# Bare specifiers that Qollab's JS runtime resolves through its own import map
+# (three.js 0.186.1, postprocessing 6.39.5, tween.js, meshline); everything else bare
+# must be an uploaded Python module.
+QOLLAB_IMPORT_MAP = frozenset(("three", "postprocessing", "@tweenjs/tween.js", "meshline"))
+QOLLAB_IMPORT_MAP_PREFIXES = ("three/addons/",)
+
 _JS_IMPORT_RE = re.compile(
     r"""(?:\bimport\s+[^'";]*?\bfrom\s*|\bimport\s*|\bexport\s+[^'";]*?\bfrom\s*)(["'])([^"']+)\1""")
 
@@ -416,6 +422,8 @@ def check_js_imports(folder, files):
                 if target is None or not ({target, target + ".js"} & present):
                     problems.append("%s:%d: import %r does not resolve to an uploaded file"
                                     % (rel, line, spec))
+                continue
+            if spec in QOLLAB_IMPORT_MAP or any(spec.startswith(pfx) for pfx in QOLLAB_IMPORT_MAP_PREFIXES):
                 continue
             mod = spec.replace(".", "/")
             if not ({mod + ".py", mod + "/__init__.py"} & present):

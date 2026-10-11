@@ -289,7 +289,6 @@ def _theory_curve():
         out.update({"source": "precomputed", "provenance": _provenance(ds, DATA_FILES["theory"]),
                     "fixed": ds["params"].get("fixed", {}),
                     "derived": ds["results"].get("derived", {})})
-        return out
     except Exception as exc:
         ws = [i / (_FALLBACK_W - 1) for i in range(_FALLBACK_W)]
         out = {"w": [_r(w) for w in ws]}

@@ -10,30 +10,31 @@ This effort is supported by Qollab & IonQ
 
 | ✓ | Requirement | Where it is satisfied | How to check |
 |---|---|---|---|
-| [ ] | Uses **Qiskit** | every probe is a Qiskit `QuantumCircuit` (standard gates only) | `grep -l "from qiskit" qollab_project/*.py` |
+| [ ] | Uses **Qiskit** | every probe is a Qiskit `QuantumCircuit` (standard gates only); `BasicSimulator` is Qiskit's | `grep -l "from qiskit" qollab_project/*.py` |
 | [ ] | Runs on **Qollab's free simulators, including IonQ's** | built-in simulator (free, local: what judges run, [§5](#5-the-judge-run-built-in-simulator)) + one IonQ run ([§6](#6-ionq-verification-run)) | both runs recorded with the same settings |
 | [ ] | **MIT license**, also for any outside repo it relies on | [LICENSE](LICENSE); libraries in [CREDITS.md](CREDITS.md) | No outside code is vendored; three.js (MIT) comes from Qollab's import map. Qiskit (which the rules require) is Apache-2.0, so we read this rule as covering code we pull into the project. TODO(captain): ask the organizers if unsure. |
-| [ ] | **Project page**: what it does, the problem, how to run, how to replicate/extend | [README.md](README.md) sections of those names, also pasted into the Qollab project description | No `TODO` left in README.md |
+| [ ] | **Project page**: what it does, the problem, how to run, how to replicate/extend | [README.md](README.md) sections of those names, also pasted into the Qollab project description | No placeholder left in README.md ([§3](#3-pre-share-checks-run-from-the-repo-root-all-must-pass), check 4) |
 | [ ] | **Built during the event window** (Fri 17:00 to Sun 17:00 MDT), with pre-existing work disclosed and credited | [BUILDLOG.md](BUILDLOG.md); "Pre-existing work" in [CREDITS.md](CREDITS.md) (design note and build guide dated 10 Oct, inside the window) | BUILDLOG has a row for every major piece, including the Observatory engine, page, data and docs |
 | [ ] | **Demo video, 2–3 minutes, at a public no-sign-in link** | [VIDEO.md](VIDEO.md) | Length between 2:00 and 3:00; the link plays in a private browser window |
-| [ ] | **Attribution line, verbatim**: "This effort is supported by Qollab & IonQ" | README (top and bottom), the page footer, `main.py` output, CREDITS, the video | `tools/pack_for_qollab.py` checks the upload; read it once on screen |
-| [ ] | **UI accessibility best practice** | README → Accessibility | Keyboard-only run-through of the three acts; a screen reader announces the readings and the "No resolved influence" sentence; 200% zoom works; text contrast ≥ 4.5:1; nothing conveyed by colour alone (teal/amber always labelled); reduced motion honoured |
+| [ ] | **Attribution line, verbatim**: "This effort is supported by Qollab & IonQ" | README (top and bottom), the page footer, `main.py` output, `observatory.py`, CREDITS, docs, the video | `tools/pack_for_qollab.py` checks the upload; read it once on screen |
+| [ ] | **UI accessibility best practice** | README → Accessibility | Keyboard-only run-through of the three acts; a screen reader announces the readings and the "No resolved influence" sentence; 200% zoom works; text contrast ≥ 4.5:1; nothing conveyed by colour alone (teal/amber always labelled); reduced motion honoured; axe-core 0 violations |
 | [ ] | **Stays on Qollab for 12 months** | the Qollab project | Do not delete, unpublish or rename it after submitting |
-| [ ] | **AI assistance and prior work disclosed** (non-disclosure can disqualify) | [CREDITS.md](CREDITS.md) → AI disclosure; README → Credits & AI disclosure | Team names filled in; "what the humans did" confirmed by the team |
-| [ ] | **Beyond the tutorial**: a novel application, a technical extension, or an original analytical/educational contribution | README → "Beyond the tutorial" (all three, novelty first) | The one-sentence novelty ("the same 50/50 outcome is high-capacity in one setting and zero-capacity in another") appears in the first paragraph of the project page |
+| [ ] | **AI assistance and prior work disclosed** (non-disclosure can disqualify) | [CREDITS.md](CREDITS.md) → AI disclosure and Pre-existing work; README → Credits & AI disclosure | Team names filled in; "what the humans did" confirmed by the team |
+| [ ] | **Beyond the tutorial**: a novel application, a technical extension, or an original analytical/educational contribution | README → "Beyond the tutorial" (all three, novelty first) | The one-sentence novelty ("the same 50/50 outcome is high-capacity in one setting and zero-capacity in another") is in the first paragraph of the project page |
 
 ## 2. Judging traits (no published weights; the team's priority is novelty & creativity)
 
 | ✓ | Trait | Evidence a judge will look for |
 |---|---|---|
 | [ ] | **Novelty & creativity** | The question nobody's tutorial asks (is uncertainty freedom?), the three personas, the brain-shaped scene, the central contrast; stated in README's first screen and shown in the video's three acts |
-| [ ] | **Technical execution** | Runs first time on the built-in simulator; one job with four probes and canaries on IonQ; the test suite passes; the closed form matches the statevector; the Hoeffding interval behaves (coverage sweep); the results reproduce (README → Replicate & extend) |
+| [ ] | **Technical execution** | Runs first time on the built-in simulator; one job with four probes and canaries (17 qubits) on IonQ; the test suite passes; the closed form matches the statevector (819 settings, 3.3×10⁻¹⁶); the Hoeffding interval behaves (coverage sweep: 100% coverage, 0 false influences in 2,000 runs at w = 1); the results reproduce (README → Replicate & extend) |
 | [ ] | **Impact potential** | Who would use it (educators teaching interference versus decoherence; philosophy-of-mind classes; science communicators; other Qollab projects reusing the one-job toolkit) and how they would extend it (joint control, CHSH on the bridge, a learned intention policy): README → Beyond the tutorial, Replicate & extend |
-| [ ] | **Documentation quality** | README scannable in 2 minutes; [docs/model.md](docs/model.md) and [docs/claims.md](docs/claims.md) complete; every claim says what it does NOT show; no TODOs left |
+| [ ] | **Documentation quality** | README scannable in 2 minutes; [docs/model.md](docs/model.md) and [docs/claims.md](docs/claims.md) complete; every claim says what it does NOT show; every number measured with its seed; no placeholders left |
 
 Judges press **Run on a free local simulator**. The page's defaults (intention π/2,
 coupling 0, perspective 0, 1,024 shots per probe, mode auto, canary on) must produce a
-clean, self-explanatory first run there. IonQ results neither add nor subtract points.
+clean, self-explanatory first run there. The IonQ run is verification evidence, recorded in
+the docs; the judged run is the local one.
 
 ## 3. Pre-share checks (run from the repo root; all must pass)
 
@@ -48,13 +49,22 @@ clean, self-explanatory first run there. IonQ results neither add nor subtract p
 .venv/bin/python tools/scrub_check.py
 .venv/bin/python tools/scrub_check.py --git-log     # if the repo is shared WITH its history
 
-# 3. Build and check the upload (the platform rules + the scrub on the upload folder)
+# 3. The shipped data files exist (qollab_project/data/fwo_theory.json, fwo_noise.json,
+#    fwo_coverage.json; regenerate with the three lab/sweep.py lines in README →
+#    Replicate & extend), then build and check the upload (the platform rules + the scrub
+#    on the upload folder)
+ls qollab_project/data/
+.venv/bin/python -m pytest -o addopts= -q tests/test_project_data.py
 .venv/bin/python tools/pack_for_qollab.py --entry js        # the submission
 #    -> build/upload-js/ and build/upload-js.zip
 .venv/bin/python tools/pack_for_qollab.py --entry python    # the console fallback, if submitted
 
-# 4. No placeholders left (TODO(measure), TODO(team), TODO(captain) and bare TODO)
-grep -rn "TODO" README.md CREDITS.md VIDEO.md docs/claims.md docs/model.md qollab_project/ || echo "no TODOs"
+# 4. No placeholders left, in any form: the measure / team / captain markers, a bare
+#    marker, and the usual cousins, case-insensitive, in everything a judge can read.
+#    The first line must print nothing but "no placeholders"; the second checks this file.
+grep -rn -i -E "\b(TODO|FIXME|TBD|XXX)\b" README.md CREDITS.md VIDEO.md BUILDLOG.md LICENSE docs/ qollab_project/ \
+  || echo "no placeholders"
+grep -n -E "TODO\(" SUBMIT.md || echo "SUBMIT.md clean"
 ```
 
 - [ ] `pytest`: all tests pass
@@ -65,11 +75,19 @@ grep -rn "TODO" README.md CREDITS.md VIDEO.md docs/claims.md docs/model.md qolla
       the history, share a fresh repository without the history instead of rewriting it
       under time pressure (BUILDLOG.md stays the record of what was built when).
 - [ ] `pack_for_qollab.py --entry js`: `RESULT: OK`; the file list shows `index.html`,
-      `main.js`, `main.css`, `ui/`, `observatory_api.py`, the `qk_*.py` modules and the three
-      `data/fwo_*.json` files; no script import from a host other than cdn.jsdelivr.net
-- [ ] No `TODO` left anywhere a judge will read
-- [ ] The numbers in README / docs/claims.md match what the program prints (the
-      `TODO(measure)` placeholders are filled from real runs, never typed from memory)
+      `main.js`, `main.css`, `ui/`, `observatory.py`, `observatory_api.py`, `main.py`
+      (inert in the JS build), the `qk_*.py` modules and the three `data/fwo_*.json` files;
+      no script import from a host other than cdn.jsdelivr.net
+- [ ] No placeholder left anywhere a judge will read (check 4 prints only "no placeholders"
+      and "SUBMIT.md clean")
+- [ ] The numbers in README / docs/claims.md / docs/model.md / VIDEO.md match what the
+      program prints: every number is measured with its seed stated, never typed from memory
+- [ ] The honesty wording is present wherever a reading is shown: fictional model, designed
+      correspondence, simulators compute predictions, no proof of agency, a responsive
+      classical model scores the same, not neuroscience; "No resolved influence at this shot
+      count" whenever the interval includes zero
+- [ ] Nothing private anywhere (names, paths, hosts, emails, machine details beyond "a
+      48-thread x86 workstation"): the scrub is the tripwire, a read-through is the check
 - [ ] Bit-order test (flip q0 only → app outcome `10`) and the orientation canary both pass
       on the backend used for the judge run
 
@@ -89,7 +107,7 @@ TODO(captain): match these steps to the exact labels in Qollab's interface.
        the data was computed in the session, the data files did not ship: fix the literal
        paths in `observatory_api.py` and re-upload).
 5. [ ] Run on **one IBM noise model** (optional): it should finish in seconds with
-       `mode=auto` (list mode).
+       `mode=auto` (one list job of 7 small circuits).
 6. [ ] Fill in the project page: title, the summary, the README sections (what it does,
        the question, how to run, how to replicate/extend), the video link, the source link,
        the AI and prior-work disclosure, and the attribution line.
@@ -102,41 +120,47 @@ What a judge does, done once by us first, with the result recorded.
 
 1. [ ] Open the project, keep the **built-in simulator**, press Run, wait for the page.
 2. [ ] Act 1 (defaults: w = 0, φ = π/2, β = 0): press *Run experiment*. Expect P(Self = 1)
-       near 0.5, Capacity near 1.00 and **resolved**, Openness near 1 bit, Connection near 0.
-3. [ ] Act 2 (φ = π): rerun. Expect P(Self = 1) near 1, Openness near 0, Capacity near 1.
+       near 0.5, Capacity 1.00 with interval 0.9075–1.0000 and **resolved**, Openness near
+       1 bit, Connection near 0 (local seeded example: 0.485 / 1.0000 / 0.999 / 0.000).
+3. [ ] Act 2 (φ = π): rerun. Expect P(Self = 1) near 1, Openness near 0, Capacity 1.00.
 4. [ ] Act 3 (w = 1, φ = π/2): rerun. Expect P(Self = 1) near 0.5, Connection near 1 bit,
-       and the Capacity interval including zero with the sentence *No resolved influence
-       at this shot count*.
+       and a Capacity of a few hundredths whose interval includes zero, with the sentence
+       *No resolved influence at this shot count* (local seeded examples: 0.0303, 0.0020,
+       0.0088, 0.0127; upper limits 0.09–0.12).
 5. [ ] Demon tab: the forecast matches the ideal values in [docs/model.md](docs/model.md)
        §5; the two baselines are labelled as theoretical classical references. Observer tab:
-       change β, rerun, Capacity stays comparable.
-6. [ ] Drawer: four count tables that each total the shots requested, the job record, the
-       circuit, and the attribution line in the footer.
-7. [ ] Record the three acts' readings and intervals into [README.md](README.md)
-       (Validation) and [docs/claims.md](docs/claims.md) (Result tables), replacing the
-       `TODO(measure)` placeholders.
-8. [ ] Console fallback (if submitted): `tools/run_smoke_local.py --project qollab_project
-       --mode auto` runs `main.py` the way Qollab does; its positional call must match
-       `main()`'s signature.
+       change β, rerun, Capacity stays comparable (ideal cos γ for every β).
+6. [ ] Drawer: four count tables that each total the shots requested, the job record (one
+       circuit, 17 qubits, mode tile, orientation canary passed), the circuit, and the
+       attribution line in the footer.
+7. [ ] Record the three acts' readings, intervals and the `wall_s` field into
+       [docs/claims.md](docs/claims.md) (the "Qollab built-in simulator (judge run)" rows)
+       and the README's Validation section ("Platform runs"), replacing the captain
+       markers there and in [VIDEO.md](VIDEO.md).
+8. [ ] Console fallback (if submitted): run `main.py` locally the way Qollab does (the
+       one-liner in README → Replicate & extend: a `backend` global, then
+       `main(90.0, 0.0, 0.0, 1024, "self")`); it prints the forecast, four count tables,
+       the readings and the attribution line.
 
 ## 6. IonQ verification run
 
 One run, recorded once. Do it early (Saturday if possible) so a failure leaves time.
 
 1. [ ] In the Run dialog, choose **IonQ Forte 1 (simulator)** (or Forte Enterprise 1).
-       Keep the defaults (1,024 shots per probe, `mode=auto` → one tiled circuit, canary on).
+       Keep the defaults (1,024 shots per probe, `mode=auto` → one tiled 17-qubit circuit,
+       canary on).
 2. [ ] Press *Run experiment* **once** for Act 1. Do not press it again while the job is
        pending; on a one-job backend the page refuses a second submission for that run
-       anyway.
-3. [ ] Record: date and time, backend name, job id, `submitted_as`, wall time, shots
+       anyway (and so does the Python guard).
+3. [ ] Record: date and time, backend name, job id, `submitted_as`, `wall_s`, shots
        requested and seen per probe, `orientation_ok`, the flip rates, P(Self = 1),
        Capacity with its interval and `resolved`, Openness, Connection. Take a screenshot
        showing no personal information.
-4. [ ] Paste the numbers into [docs/claims.md](docs/claims.md) (the IonQ rows) and the
-       README Validation table; note the provider's rounded counts if totals differ from
-       the request.
+4. [ ] Paste the numbers into [docs/claims.md](docs/claims.md) (the IonQ rows of all three
+       cards) and the README Validation section; note the provider's rounded counts if
+       totals differ from the request.
 5. [ ] If it fails, record the error message and the `job_returned` flag, say so in the
-       README, and move on: IonQ results neither add nor subtract points.
+       README, and move on: the judged run is the local one.
 
 ## 7. Video
 

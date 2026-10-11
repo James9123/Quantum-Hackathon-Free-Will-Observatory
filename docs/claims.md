@@ -9,7 +9,7 @@ The format comes from the toolkit's claim cards (`qollab_project/qk_cards.py`), 
 on the CHSH reference in [reference/chsh/](../reference/chsh/). The Observatory's three
 cards are below. The run record (`run_json`) carries the same readings, interval and
 explanation text that these cards describe; if a card changes, the explanation copy in
-`observatory_api.py` changes with it, so the document and the program never disagree.
+`observatory.py` changes with it, so the document and the program never disagree.
 
 **Simulator rule.** A card's "result" on a simulator is what quantum theory predicts under
 the stated noise model. It is not a measurement of nature, and nothing here is evidence
@@ -21,7 +21,7 @@ about the physical world. Every simulator card carries this note:
 **Resolution rule** (fixed in advance, applied by the code, never chosen after the fact).
 Capacity's uncertainty is the conservative 95% Hoeffding interval of
 [docs/model.md §7](model.md#7-the-hoeffding-interval): e = √(ln 80/(2N_low)) + √(ln 80/(2N_high)),
-about 0.0925 at 1,024 shots per probe.
+which is 0.0925 at 1,024 shots per probe.
 
 | Interval for C | Reading |
 |---|---|
@@ -30,12 +30,24 @@ about 0.0925 at 1,024 shots per probe.
 
 There is no classical bound to exceed here: these claims are about a *designed* model's
 predictions, and the two classical references (fixed output, fair coin) are baselines, not
-bounds. Standard errors for single probabilities are binomial, se = √(p̂(1 − p̂)/N).
+bounds. Standard errors for single probabilities are binomial, se = √(p̂(1 − p̂)/N), which is
+0 at p̂ = 0 or 1 (one reason the Capacity interval is Hoeffding's, not a normal one).
 
 **Common assumptions** (every card): the control family is fixed (phase on the Self, fixed
 coupling, the specified equatorial readout); shots are independent and identically
 distributed within a probe; the simulator implements the circuit as written (ideal, or its
 stated noise model); the orientation canary passed, so the SelfWorld bit order is right.
+
+**How the numbers were measured.** "Built-in simulator" rows are Qiskit `BasicSimulator`
+runs under CPython 3.14.4 (qiskit 2.5.2, numpy 2.5.3) with `set_options(seed_simulator=11)`
+unless another seed is named, 1,024 shots per probe, `mode=auto` (one 17-qubit tiled
+circuit holding the four probes and the canaries), one `backend.run` per row. "Exact" rows
+come from `qiskit.quantum_info` (ideal) or the project's density-matrix noise model with
+IonQ's published Forte-1 depolarizing rates on our gates ("IonQ-like preset", an
+approximation of IonQ's model, not a measurement). The seeds make the rows reproducible;
+on Qollab the samples are fresh each run. Platform rows (the judge run on Qollab's built-in
+simulator and one IonQ Forte 1 simulator job) are recorded by the captain per
+[SUBMIT.md](../SUBMIT.md) §5–6.
 
 ---
 
@@ -67,14 +79,15 @@ capacity; 1 is the maximum.
 
 | Run | p_low / p_high (± se) | C [95% interval] | Resolved? | Notes |
 |---|---|---|---|---|
-| Exact, no noise | 0 / 1 (exact) | 1.0000 (exact) | n/a | closed form; statevector check in the tests |
-| Exact, IonQ-like preset | TODO(measure) | TODO(measure) | n/a | `data/fwo_noise.json`: IonQ's published Forte-1 rates on our gates, an approximation |
-| Built-in simulator, 1,024 shots per probe, one job | TODO(measure) | TODO(measure) | TODO(measure) | seed, the orientation canary, flip rates |
-| IonQ Forte 1 simulator, one job | TODO(measure) | TODO(measure) | TODO(measure) | job id, date, shots seen |
+| Exact, no noise | 0 / 1 (exact) | 1.0000 (exact) | n/a | closed form; agrees with the statevector to 1.1×10⁻¹⁶ over the 819-point grid (README → Validation) |
+| Exact, IonQ-like preset | 0.0056 / 0.9944 | 0.9888 | n/a | the published Forte-1 rates on our gates (the scale-1 row of `data/fwo_noise.json` at w = 0); an approximation of IonQ's model |
+| Built-in simulator, seed 11, 1,024 shots per probe, one job (Act 1: φ = π/2, β = 0) | 0.0000 ± 0 (0/1024) / 1.0000 ± 0 (1024/1024) | **1.0000 [0.9075, 1.0000]** | **yes** | display P(Self = 1) = 0.485 (497/1024, ideal 0.5), O = 0.999 bits, I = 0.000 bits; orientation canary passed; flip rates 0.0 / 0.0; 0.03 s |
+| Built-in simulator, seed 11, one job (Act 2: φ = π, β = 0) | 0.0000 / 1.0000 | 1.0000 [0.9075, 1.0000] | yes | display P(Self = 1) = 1.000 (1024/1024), O = 0.000 bits: predictability and capacity coexist |
+| Qollab built-in simulator (judge run) | TODO(captain) | TODO(captain) | TODO(captain) | record per SUBMIT.md §5 |
+| IonQ Forte 1 simulator, one job | TODO(captain) | TODO(captain) | TODO(captain) | job id, date, shots seen per probe (SUBMIT.md §6) |
 
-Expected at 1,024/1,024 shots on an ideal simulator: every low shot 0, every high shot 1,
-C = 1.0000 with interval [0.9075, 1.0000] (the team's design note's seeded local example gave
-exactly that; it is not this project's run).
+The interval's lower limit 0.9075 = 1 − e is the conservative bound's price: at 1,024 shots
+per probe nothing can be resolved more finely than e = 0.0925 even when every shot agrees.
 
 ### What this does NOT show
 
@@ -99,7 +112,9 @@ exactly that; it is not this project's run).
   outcome can carry C = 1 here and C = 0 at full coupling (Card B).
 - **"The readout decides the answer."** Changing β changes the observable, but both intent
   probes use the same readout, so Capacity is comparable across perspectives and the ideal
-  value does not depend on β.
+  value does not depend on β. Measured: at w = 0.5, β = 0 and β = 1.0 rad give display
+  P(Self = 1) = 0.516 and 0.229 (ideal 0.500 and 0.202) with the same Capacity 0.7158
+  [0.6233, 0.8083] (ideal 0.7071).
 
 ---
 
@@ -133,15 +148,20 @@ and (Card C) Connection I = **1 bit**.
 | Run | p_low / p_high (± se) | C [95% interval] | Resolved? | O (bits) | Notes |
 |---|---|---|---|---|---|
 | Exact, no noise | 0.5 / 0.5 (exact) | 0.0000 (exact) | n/a | 1.000 | closed form |
-| Exact, IonQ-like preset | TODO(measure) | TODO(measure) | n/a | TODO(measure) | `data/fwo_noise.json` |
-| Built-in simulator, 1,024 shots per probe, one job | TODO(measure) | TODO(measure) | expected: no | TODO(measure) | at 1,024 shots the interval is at least [0, 0.0925] wide |
-| IonQ Forte 1 simulator, one job | TODO(measure) | TODO(measure) | TODO(measure) | TODO(measure) | job id, date, shots seen |
+| Exact, IonQ-like preset | 0.5 / 0.5 | 0.0000 | n/a | 1.000 | depolarizing noise cannot move a marginal that is already 1/2; it shows up in Connection instead (Card C: 0.953 bits) |
+| Built-in simulator, seed 11, 1,024 shots per probe, one job (Act 3: φ = π/2, β = 0) | 0.5156 ± 0.0156 / 0.4854 ± 0.0156 | **0.0303 [0.0000, 0.1228]** | **no** | 0.998 | display P(Self = 1) = 0.525; I = 0.999 bits; the page says *No resolved influence at this shot count* |
+| Built-in simulator, seeds 1 / 2 / 3, same settings | 0.4854 / 0.4873; 0.5215 / 0.5303; 0.5000 / 0.5127 | 0.0020 [0, 0.0945]; 0.0088 [0, 0.1013]; 0.0127 [0, 0.1052] | no / no / no | 1.000 / 0.998 / 1.000 | three more samples: the estimate wanders by a few hundredths and is never forced to zero |
+| Qollab built-in simulator (judge run) | TODO(captain) | TODO(captain) | TODO(captain) | TODO(captain) | record per SUBMIT.md §5 |
+| IonQ Forte 1 simulator, one job | TODO(captain) | TODO(captain) | TODO(captain) | TODO(captain) | job id, date, shots seen per probe (SUBMIT.md §6) |
 
-Expected: an estimate of a few hundredths with an interval such as [0.00, 0.10], read as
-*"No resolved influence at this shot count."* (The team's design note's seeded local example:
-C = 0.0088, interval 0.0000–0.1013; not this project's run.) The coverage sweep
-(`data/fwo_coverage.json`) measures how often such intervals contain the true difference:
-TODO(measure).
+At 1,024 shots per probe the interval's upper limit is |d̂| + e, so it is at least 0.0925
+wide whatever the sample. **Calibration** (`lab/experiments.fwo_coverage`, 2,000 seeded
+runs per point at 1,024 shots per probe, `--seed 1`, shipped as `data/fwo_coverage.json`):
+the interval contained the exact Capacity in 100.0% of runs at w = 0, 0.25, 0.5, 0.75
+and 1; at w = 1 it reported "resolved" in **0 of 2,000** runs (no false influence; the bound
+allows up to 5%); mean widths 0.093 / 0.169 / 0.185 / 0.185 / 0.111. An extra in-session
+point at w = 0.9 (exact C = 0.156, just above e), same experiment and seed rule, not in the
+shipped file: coverage 100.0%, resolved in 1,998 of 2,000 runs.
 
 ### What this does NOT show
 
@@ -152,7 +172,7 @@ TODO(measure).
   dial, a disentangling step before readout, or conditioning on a World measurement) could
   undo the coupling; the result is specific to the chosen controls.
 - That C = 0. An interval including zero is absence of evidence at this shot count: an
-  effect smaller than about e ≈ 0.09 is invisible at 1,024 shots per probe.
+  effect smaller than about e = 0.09 is invisible at 1,024 shots per probe.
 - Anything a classical system could not do: the intention-independent fair-coin baseline
   also has C = 0 and O = 1. "Uncertainty alone is not freedom" is a statement about this
   model's definitions, not about classical or quantum systems in general.
@@ -169,7 +189,7 @@ TODO(measure).
   standard and reproducible.
 - **"Finite shots prove nothing."** Correct, and the card never claims C = 0 from a sample.
   The resolution rule exists so that a small estimate is reported with its interval and
-  nothing more.
+  nothing more; the calibration above shows the rule keeping its promise.
 
 ---
 
@@ -202,10 +222,11 @@ w = 0 / 0.5 / 1. Direction: higher means more shared information in this basis.
 
 | Run | I (bits) at w = 0 / 0.5 / 1 | Notes |
 |---|---|---|
-| Exact, no noise | 0.0000 / 0.3113 / 1.0000 (exact) | closed form; `data/fwo_theory.json` carries the curve |
-| Exact, IonQ-like preset | TODO(measure) | `data/fwo_noise.json` |
-| Built-in simulator, 1,024 shots, one job | TODO(measure) | three runs (one per w), each one job |
-| IonQ Forte 1 simulator, one job | TODO(measure) | one setting; job id, date, shots seen |
+| Exact, no noise | 0.0000 / 0.3113 / 1.0000 (exact) | closed form; agrees with the statevector to 3.3×10⁻¹⁶ over the 819-point grid; `data/fwo_theory.json` carries the curve |
+| Exact, IonQ-like preset | 0.0000 / 0.2919 / 0.9531 | w = 0 and 0.5 from the scale-1 rows of `data/fwo_noise.json`, w = 1 from `predict_json`'s live IonQ-like forecast; depolarizing noise erodes the correlation at full coupling even though it cannot move a marginal that is already 1/2 (Card B) |
+| Built-in simulator, seed 11, 1,024 shots, one job per w | 0.0000 / 0.2895 / 0.9989 | w = 0: counts 00/10 = 532/492, World never 1; w = 0.5: 00/10/11 = 532/262/230; w = 1: 00/11 = 532/492, matching pairs only (Acts 1 and 3 and the w = 0.5 run of the README) |
+| Qollab built-in simulator (judge run) | TODO(captain) | w = 0 and w = 1 from Acts 1 and 3 (SUBMIT.md §5) |
+| IonQ Forte 1 simulator, one job | TODO(captain) | one setting; job id, date, shots seen (SUBMIT.md §6) |
 
 ### What this does NOT show
 
@@ -217,8 +238,9 @@ w = 0 / 0.5 / 1. Direction: higher means more shared information in this basis.
   with the Self's.
 - Not visible in the display basis, which is why Connection has its own probe.
 - At finite shots the plug-in estimate is biased upward by at most roughly
-  (K − 1)/(2N ln 2) ≈ 0.002 bits for K = 4 outcomes and N = 1,024 (the Miller–Madow
-  correction, not applied): a sampled I of 0.002 at w = 0 is noise, not information.
+  (K − 1)/(2N ln 2) = 0.0021 bits for K = 4 outcomes and N = 1,024 (the Miller–Madow
+  correction, not applied): a sampled I of 0.002 at w = 0 is noise, not information. (The
+  seed-11 run at w = 0 read exactly 0.0000 because the World outcome never varied.)
 - Anything about nature, neuroscience, or agency. One simulator.
 
 ### Counterarguments
@@ -232,3 +254,5 @@ w = 0 / 0.5 / 1. Direction: higher means more shared information in this basis.
 - **"Why this basis?"** Any fixed basis is a choice. Z on both is the basis in which the
   coupling's which-alternative record is written, and it is declared in the drawer as the
   probe's basis rather than hidden.
+
+This effort is supported by Qollab & IonQ

@@ -456,13 +456,21 @@ def _future(p):
     return "Future 1" if p >= 0.5 else "Future 0"
 
 
-def _self_line(m, resolved, strong_world):
+_LAW_ZERO = 0.05        # below this ideal capacity the model itself says the dial moves nothing
+
+
+def _self_line(m, resolved, strong_world, law_capacity=0.0):
+    """law_capacity is the Demon's ideal C: an unresolved sample only licenses the
+    strong "no longer reshape" line when the model itself puts C at zero."""
     p, o, c = m["p_self_1"], m["openness_bits"], m["capacity"]
     if not resolved:
-        if o >= 0.9:
+        if o >= 0.9 and law_capacity < _LAW_ZERO:
             line = ("My future is wide open, yet whichever way I lean the odds stay where "
                     "they are: these intention controls no longer reshape them. In our "
                     "model, uncertainty alone is not freedom.")
+        elif o >= 0.9:
+            line = ("My future is wide open, and this run is too small to show whether my "
+                    "intention reshapes the odds: nothing I intend here is resolved yet.")
         else:
             line = ("The odds already tilt toward %s, and nothing I intend here is shown "
                     "to move them." % _future(p))
@@ -496,8 +504,11 @@ def _demon_line(m, pred, resolved, n_display):
             % (p, p_hat, fit, int(n_display)))
     if resolved:
         line += ", and here that dial moves them by %.2f." % m["capacity"]
-    else:
+    elif float(pred["capacity"]) < _LAW_ZERO:
         line += ", and at this coupling the law says the dial moves nothing. " + NO_RESOLVED
+    else:
+        line += (", and the law says the dial moves them by %.2f; this sample did not "
+                 "resolve it. " % float(pred["capacity"])) + NO_RESOLVED
     return line
 
 
@@ -533,7 +544,7 @@ def explanation(settings, m, pred):
     return {
         "factual": factual,
         "poetic": {
-            "self": _self_line(m, resolved, strong_world),
+            "self": _self_line(m, resolved, strong_world, float(pred["capacity"])),
             "demon": _demon_line(m, pred, resolved, n_display),
             "observer": _observer_line(s, m, resolved),
         },
