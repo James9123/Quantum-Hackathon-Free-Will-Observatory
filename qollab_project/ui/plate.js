@@ -192,7 +192,7 @@ const STYLES = {
       c.add("circle", { cx: STARS[i], cy: STARS[i + 1], r: STARS[i + 2], opacity: STARS[i + 3] }, i % 12 === 0 ? twinkle : stars);
     }
     c.bridge({ stroke: "#8fd8cb" }, "#f0fffb");
-    c.brain({ body: ["#0c1636", 0.8], glow: { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("brainhalo") },
+    c.brain({ body: ["#0c1636", 0.4], glow: { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("brainhalo") },
       shell: { fill: "#e5b45a", "fill-opacity": 0.07 }, link: { stroke: "#e5b45a", "stroke-opacity": 0.5, "stroke-width": 0.9 },
       ball: [[0, "#fdf0cc"], [0.5, "#e8bd6a"], [1, "#8a6424"]] });
     c.selfLabel(72, 12.5, { fill: "#c8d2ec", "font-weight": 500 });
@@ -221,7 +221,7 @@ const STYLES = {
     c.add("rect", Object.assign({ fill: c.ref("grid") }, BG));
     c.add("rect", Object.assign({ fill: c.ref("major") }, BG));
     c.bridge({ stroke: "#f0a44a", "stroke-dasharray": "3 4" }, "#ffe6c2");
-    c.brain({ body: ["#16191e", 0.82], shell: { fill: "#45c8e0", "fill-opacity": 0.06 }, link: { stroke: "#45c8e0", "stroke-opacity": 0.5, "stroke-width": 0.9 },
+    c.brain({ body: ["#16191e", 0.41], shell: { fill: "#45c8e0", "fill-opacity": 0.06 }, link: { stroke: "#45c8e0", "stroke-opacity": 0.5, "stroke-width": 0.9 },
       ball: [[0, "#d2f6fc"], [0.5, "#5fd0e6"], [1, "#17606e"]] });
     c.selfLabel(72, 11, { fill: "#b9c0c7", "font-weight": 500 });
     const bridgeTag = c.text("fwo-s-tag", 204, 314, 10, 9, { fill: "#8b96a1" });
@@ -272,7 +272,7 @@ const STYLES = {
     c.gradient("world", [[0, "#d9fff4"], [0.4, "#63e6c4"], [1, "#144d40"]], { cx: "42%", cy: "38%", r: "70%" });
     c.add("rect", Object.assign({ fill: c.ref("bg") }, BG));
     c.bridge({ stroke: "#63e6c4" }, "#eafff9");
-    c.brain({ body: ["#110f1b", 0.8], glow: { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("tissue") },
+    c.brain({ body: ["#110f1b", 0.4], glow: { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("tissue") },
       shell: { fill: "#b79cff", "fill-opacity": 0.08 }, link: { stroke: "#b79cff", "stroke-opacity": 0.5, "stroke-width": 0.9 },
       ball: [[0, "#f5f0ff"], [0.5, "#c9b4ff"], [1, "#6d4fc2"]] });
     c.selfLabel(70, 12.5, { fill: "#c6c3ce", "font-weight": 500 });
@@ -299,7 +299,7 @@ const STYLES = {
     c.add("rect", Object.assign({ fill: "#f8fafc" }, BG));
     c.add("rect", Object.assign({ fill: c.ref("grid") }, BG));
     c.bridge({ stroke: "#0e6e8c", "stroke-dasharray": "4 3" }, "#7fe3ff");
-    c.brain({ body: ["#f8fafc", 0.85], shell: { fill: "#b23a1f", "fill-opacity": 0.08 }, link: { stroke: "#17355e", "stroke-opacity": 0.5, "stroke-width": 0.8 },
+    c.brain({ body: ["#f8fafc", 0.43], shell: { fill: "#b23a1f", "fill-opacity": 0.08 }, link: { stroke: "#17355e", "stroke-opacity": 0.5, "stroke-width": 0.8 },
       ball: [[0, "#f0a08a"], [0.5, "#bf4a2c"], [1, "#6b1f0f"]] });
     c.selfLabel(64, 11, { fill: "#17355e", "font-weight": 600 });
     c.add("line", { x1: SELF_X, y1: 70, x2: SELF_X, y2: 88, stroke: "#17355e", "stroke-width": 1 });
