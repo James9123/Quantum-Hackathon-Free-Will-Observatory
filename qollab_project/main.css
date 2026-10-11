@@ -4,8 +4,8 @@
    contrast on their backgrounds (tests/test_ui_static.py computes the ratios).
    The page reads as three steps, then plain-word results, then detail panels.
    It also carries the four design directions as page styles, A to D, each scoped by
-   data-theme on #fwo-app: D is the default (index.html), and the Style menu on the kicker
-   line changes it. The one external resource is the Google Fonts stylesheet for the
+   data-theme on #fwo-app: D is the default (index.html), and the Style menu inside the
+   kicker line changes it. The one external resource is the Google Fonts stylesheet for the
    four styles' typefaces (team decision, 2026-10-11); without it each style falls back to
    system fonts. */
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=Space+Grotesk:wght@400;500;700&family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;1,500&display=swap");
@@ -169,20 +169,21 @@
 #fwo-app .fwo-dialogue-head .fwo-scene-skip { margin-left: auto; }
 @keyframes fwo-cue { to { transform: translateY(2px); opacity: 0.4; } }
 
-/* ------------------------------------------------------------ the Style menu (A to D), on the kicker line */
-#fwo-app .fwo-hero-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
-#fwo-app .fwo-style { display: inline-flex; align-items: baseline; gap: 6px; font-size: 0.8125rem; color: var(--fwo-muted); }
-#fwo-app .fwo-style label { font-weight: 600; }
-#fwo-app .fwo-style select {
-  font: inherit; font-size: 0.8125rem; color: var(--fwo-text); background: var(--fwo-surface-2); cursor: pointer;
-  border: 1px solid var(--fwo-border); border-radius: 8px; padding: 4px 8px; min-height: 32px;
+/* ------------------------------------------------------------ the Style menu (A to D), inline in the kicker */
+/* It sits right after the kicker's text and flows with it (centred with it in A and C): the label
+   takes the kicker's own type, the select the kicker's size. */
+/* the last word and the menu wrap together, so the menu never sits on a line by itself */
+#fwo-app .fwo-kicker-end { white-space: nowrap; }
+#fwo-app .fwo-style { display: inline-flex; align-items: baseline; gap: 4px; margin-left: 0.8em; white-space: nowrap; }
+#fwo-app .fwo-style label { letter-spacing: 0.06em; }
+/* a very small select: the style's own colours, its own size (more specific than the general
+   select rules and each style's form-control rule, which make selects full width and 40 px tall) */
+#fwo-app .fwo-hero .fwo-style select {
+  width: auto; height: 24px; min-height: 0; margin: 0; padding: 0 2px; cursor: pointer; vertical-align: baseline;
+  font: 500 1em/1 var(--fwo-font-text); text-transform: none; letter-spacing: normal;
+  color: var(--fwo-text); background: var(--fwo-surface-2); border: 1px solid var(--fwo-border); border-radius: 4px;
 }
-#fwo-app .fwo-style select:focus-visible { outline: 3px solid var(--fwo-focus); outline-offset: 2px; }
-/* the centred heroes (A, C) keep the line centred, until they left-align on small screens */
-#fwo-app[data-theme="a"] .fwo-hero-top, #fwo-app[data-theme="c"] .fwo-hero-top { justify-content: center; }
-@media (max-width: 760px) {
-  #fwo-app[data-theme="a"] .fwo-hero-top, #fwo-app[data-theme="c"] .fwo-hero-top { justify-content: space-between; }
-}
+#fwo-app .fwo-hero .fwo-style select:focus-visible { outline: 2px solid var(--fwo-focus); outline-offset: 1px; }
 
 /* ------------------------------------------------------------ dials + run */
 #fwo-app .fwo-field { margin: 12px 0; }

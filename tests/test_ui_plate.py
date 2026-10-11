@@ -128,8 +128,9 @@ def test_four_styles_ship_with_d_as_the_default_and_a_menu():
         assert '<option value="%s"' % t in html, t
     assert '<div id="fwo-app" class="fwo-app" lang="en" data-theme="d">' in html
     assert '<option value="d" selected>' in html and '<label for="fwo-style">Style</label>' in html
-    top = html[html.index('<div class="fwo-hero-top">'):html.index('<h1 class="fwo-title">')]
-    assert 'class="fwo-kicker"' in top and '<select id="fwo-style">' in top          # one line: kicker + menu
+    kicker = html[html.index('<p class="fwo-kicker">'):html.index('<h1 class="fwo-title">')]
+    assert kicker.index("live quantum") < kicker.index('<span class="fwo-kicker-end">simulator<span class="fwo-style">') \
+        < kicker.index('<select id="fwo-style">') < kicker.index("</p>")      # inline after the text, tied to its last word
     assert "function setStyle(key)" in main and "scene = makeScene();" in main
     assert 'el.styleMenu.addEventListener("change", () => setStyle(el.styleMenu.value));' in main
     assert 'if (current) scene.setResult(current, previous, futureLabels(current, previous));' in main
