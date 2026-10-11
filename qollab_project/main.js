@@ -24,9 +24,10 @@ import * as dom from "./ui/dom.js";
 import * as txt from "./ui/text.js";
 import { renderBadge } from "./ui/badge.js";
 import { createTabs } from "./ui/tabs.js";
-import { createScene, mulberry32 } from "./ui/scene.js";
+import { createScene } from "./ui/scene.js";
 import { createPlate } from "./ui/plate.js";
 import { EGGS } from "./ui/eggs.js";
+import { createEggStage } from "./ui/egg.js";
 import { createDialogue } from "./ui/dialogue.js";
 import { SPRITES } from "./ui/sprites.js";
 import { renderBars, renderBarLegend, renderLines, renderLineLegend } from "./ui/chart.js";
@@ -149,7 +150,7 @@ async function start() {
     dialogue: byId("fwo-dialogue"), dialoguePortrait: byId("fwo-dialogue-portrait"), portraitWho: byId("fwo-portrait-who"),
     dialogueName: byId("fwo-dialogue-name"), dialogueText: byId("fwo-dialogue-text"), dialogueSkip: byId("fwo-dialogue-skip"),
     sceneSkip: byId("fwo-scene-skip"), sceneHint: byId("fwo-scene-hint"),
-    styleButton: byId("fwo-style-btn"), stylePanel: byId("fwo-style-panel"), styleClose: byId("fwo-style-close"), egg: byId("fwo-egg"),
+    styleButton: byId("fwo-style-btn"), stylePanel: byId("fwo-style-panel"), styleClose: byId("fwo-style-close"), egg: byId("fwo-egg"), eggBucket: byId("fwo-egg-bucket"), eggSelf: byId("fwo-egg-self"),
     sound: byId("fwo-sound"), soundHelp: byId("fwo-sound-help"),
     howBody: byId("fwo-how-body"), sureBody: byId("fwo-sure-body"), honesty: byId("fwo-honesty"),
     curve: byId("fwo-curve"), curveSummary: byId("fwo-curve-summary"), curveLegend: byId("fwo-curve-legend"),
@@ -379,6 +380,11 @@ async function start() {
   // The Style button opens a side panel with the four style buttons; the pressed one is the
   // page's style. Escape, the close button or the Style button again closes it, and focus
   // returns to the Style button.
+  // The easter egg at the foot of the panel: the Self idles under a bucket of water; press the
+  // bucket and it pours on him (ui/egg.js). It runs only while the panel is open.
+  const egg = createEggStage({ button: el.egg, bucket: el.eggBucket, self: el.eggSelf },
+    { idle: SPRITES.self.idle, angry: EGGS.angry, bucket: EGGS.bucket },
+    { reducedMotion: reduced, setTimeoutFn: setTimeout, clearTimeoutFn: clearTimeout });
   const styleOptions = Array.from(el.stylePanel.querySelectorAll("[data-style]"));
   function markStyle() {
     for (const b of styleOptions) b.setAttribute("aria-pressed", b.dataset.style === el.app.dataset.theme ? "true" : "false");
@@ -386,6 +392,7 @@ async function start() {
   function showStyles(open) {
     el.stylePanel.hidden = !open;
     el.styleButton.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) egg.start(); else egg.stop();
     if (open) (styleOptions.find((b) => b.getAttribute("aria-pressed") === "true") || el.styleClose).focus();
     else el.styleButton.focus();
   }
@@ -399,19 +406,6 @@ async function start() {
   for (const b of styleOptions) b.addEventListener("click", () => { setStyle(b.dataset.style); markStyle(); });
   markStyle();
 
-  // The easter egg at the foot of the panel: a bucket of water wakes the Self. One of its two
-  // splash animations plays, 50/50 (decoration only, from a generator seeded at load); the
-  // Self's own line comes back on the next tab switch or run.
-  const eggPick = mulberry32((Date.now() >>> 0) ^ 0x9e3779b9);
-  el.egg.addEventListener("click", () => {
-    showStyles(false);
-    if (!dialogue) return;
-    dialogue.unlock();
-    if (dialogue.inScene) dialogue.skipScene();
-    if (persona !== "self") { tabs.select("self", false, true); persona = "self"; moveDialogue("self"); }
-    dialogue.show("self", personaName("self"), "Splash! Brr... thanks, I'm unfrozen.", { action: say.self.action });
-    dialogue.playOnce("self", EGGS.self[eggPick() < 0.5 ? 0 : 1], { freezeMs: 600, endMs: 700 });
-  });
 
   function futureLabels(run, prev) {
     const p1 = run.metrics.p_self_1;

@@ -203,13 +203,16 @@
 #fwo-app .fwo-style-panel .fwo-style-opt:hover { color: var(--fwo-text); border-color: var(--fwo-muted); }
 #fwo-app .fwo-style-panel .fwo-style-opt[aria-pressed="true"] { color: var(--fwo-text); border-color: var(--fwo-self); background: var(--fwo-surface-2); font-weight: 600; }
 #fwo-app .fwo-style-panel .fwo-style-opt:focus-visible, #fwo-app .fwo-style-panel .fwo-style-close:focus-visible { outline: 3px solid var(--fwo-focus); outline-offset: 2px; }
-/* the easter egg: a small, faint bucket at the foot of the panel */
+/* the easter egg: the Self stands at the foot of the panel under a bucket of water; press the
+   bucket and it pours on him (ui/egg.js) */
+#fwo-app .fwo-egg-stage { position: relative; margin-top: auto; height: 210px; flex: none; }
+#fwo-app .fwo-egg-sprite { display: block; background-repeat: no-repeat; image-rendering: pixelated; image-rendering: crisp-edges; }
+#fwo-app .fwo-egg-self { position: absolute; left: 120px; bottom: 0; pointer-events: none; }
 #fwo-app .fwo-style-panel .fwo-egg {
-  margin-top: auto; align-self: flex-start; width: 40px; height: 40px; min-height: 0; padding: 0; cursor: pointer;
-  font-size: 1.25rem; line-height: 1; background: transparent; border: 1px dashed var(--fwo-border); border-radius: 8px;
-  opacity: 0.6; box-shadow: none;
+  position: absolute; left: 110px; top: 0; z-index: 1; width: 96px; height: 96px; min-height: 0; padding: 0; margin: 0;
+  background: transparent; border: 1px dashed transparent; border-radius: 8px; box-shadow: none; cursor: pointer;
 }
-#fwo-app .fwo-style-panel .fwo-egg:hover, #fwo-app .fwo-style-panel .fwo-egg:focus-visible { opacity: 1; }
+#fwo-app .fwo-style-panel .fwo-egg:hover { border-color: var(--fwo-border); }
 #fwo-app .fwo-style-panel .fwo-egg:focus-visible { outline: 3px solid var(--fwo-focus); outline-offset: 2px; }
 
 /* ------------------------------------------------------------ dials + run */

@@ -237,37 +237,6 @@ export function createDialogue(lib, els, opts) {
     }
   }
 
-  /** An extra strip (the easter egg) on the shown guide's portrait: hold frame 1 for
-   *  o.freezeMs, play to the last frame at the strip's fps, hold it o.endMs, then go back to
-   *  the guide's own action. Reduced motion: the last frame as a still, then back. */
-  function playOnce(persona, sheet, o) {
-    if (!sheet || !spriteEl || anim.persona !== persona) return false;
-    const opt = Object.assign({ freezeMs: 600, endMs: 700 }, o || {});
-    stopAnim();
-    anim.action = "extra";
-    anim.size = pickSize(sheet);
-    const back = () => {
-      anim.timer = null;
-      anim.action = null;
-      playAction(persona, actionFor(persona), true);
-    };
-    if (reduced) {
-      drawFrame(sheet, sheet.frames - 1);
-      anim.timer = setTimeoutFn(back, 1500);
-      return true;
-    }
-    let i = 0;
-    drawFrame(sheet, 0);
-    const tick = () => {
-      i += 1;
-      if (i >= sheet.frames) { anim.timer = setTimeoutFn(back, opt.endMs); return; }
-      drawFrame(sheet, i);
-      anim.timer = setTimeoutFn(tick, Math.max(MIN_FRAME_MS, Math.round(1000 / (sheet.fps || 5))));
-    };
-    anim.timer = setTimeoutFn(tick, opt.freezeMs);
-    return true;
-  }
-
   /** Change the shown guide's animation without retyping its line. */
   function setAction(action) {
     want = action || "idle";
@@ -441,7 +410,7 @@ export function createDialogue(lib, els, opts) {
   if (els.sceneSkip) els.sceneSkip.addEventListener("click", (ev) => { ev.stopPropagation(); endScene(true); });
 
   return {
-    unlock, show, clear, finish, setAction, refresh, play, playOnce,
+    unlock, show, clear, finish, setAction, refresh, play,
     skipScene() { endScene(true); },
     get inScene() { return scene !== null; },
     get soundEnabled() { return soundOn && unlocked; },
