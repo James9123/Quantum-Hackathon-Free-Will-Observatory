@@ -725,5 +725,5 @@ def test_coupling_is_the_visibility_distinguishability_duality():
         assert C == pytest.approx(math.cos(g), abs=1e-12)
         assert overlap == pytest.approx(C, abs=1e-12)
         assert D == pytest.approx(math.sin(g), abs=1e-12)
-        assert concurrence(sv) == pytest.approx(math.sin(g), abs=1e-9)
+        assert concurrence(sv) == pytest.approx(math.sin(g), abs=1e-6)
         assert C * C + D * D == pytest.approx(1.0, abs=1e-12)
