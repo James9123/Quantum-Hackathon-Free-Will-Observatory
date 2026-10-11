@@ -22,9 +22,9 @@ const LINKS_PER_NODE = 3;
 const N_PARTICLES = 520;
 const RMAX = 0.62;                 // sphere radius at p = 1 (world units)
 const FOV = 38;
-const COLORS = {
+const BASE_COLORS = {   // defaults; main.js may override any key from CSS variables (themes)
   bg: 0x0b1326, self: 0x2dd4bf, selfLight: 0x99f6e4, selfDeep: 0x0f766e,
-  world: 0xf59e0b, worldLight: 0xfcd34d, ghost: 0x9fb3cf, link: 0x2dd4bf,
+  world: 0xf59e0b, worldLight: 0xfcd34d, worldDeep: 0x92400e, ghost: 0x9fb3cf, link: 0x2dd4bf,
 };
 const P = {
   brain: [-1.35, 0.12, 0],
@@ -100,6 +100,7 @@ export function brainGraph(seed, nNodes = N_NODES, perNode = LINKS_PER_NODE) {
 }
 
 export function createScene(THREE, lib, host, opts) {
+  const COLORS = Object.assign({}, BASE_COLORS, (opts && opts.colors) || {});
   const o = Object.assign({ reducedMotion: false, seed: 20261010 }, opts || {});
   const { h, replace } = lib;
   const api = { available: false };
@@ -175,7 +176,7 @@ export function createScene(THREE, lib, host, opts) {
   f1.position.set(...P.f1); g1.position.set(...P.f1);
   f0.position.set(...P.f0); g0.position.set(...P.f0);
   scene.add(f1, f0, g1, g0);
-  const world = new THREE.Mesh(sphereGeom, new THREE.MeshStandardMaterial({ color: COLORS.world, emissive: 0x92400e, emissiveIntensity: 0.4, roughness: 0.45 }));
+  const world = new THREE.Mesh(sphereGeom, new THREE.MeshStandardMaterial({ color: COLORS.world, emissive: COLORS.worldDeep, emissiveIntensity: 0.4, roughness: 0.45 }));
   world.position.set(...P.world);
   world.scale.setScalar(P.worldR);
   scene.add(world);
@@ -189,7 +190,7 @@ export function createScene(THREE, lib, host, opts) {
   };
   const tubeMat = new THREE.MeshStandardMaterial({ color: COLORS.self, emissive: COLORS.selfDeep, emissiveIntensity: 0.4, roughness: 0.5, transparent: true, opacity: 0.92 });
   const ghostTubeMat = new THREE.MeshBasicMaterial({ color: COLORS.ghost, transparent: true, opacity: 0.22, depthWrite: false });
-  const bridgeMat = new THREE.MeshStandardMaterial({ color: COLORS.worldLight, emissive: 0x92400e, emissiveIntensity: 0.5, roughness: 0.5, transparent: true, opacity: 0.5, depthWrite: false });
+  const bridgeMat = new THREE.MeshStandardMaterial({ color: COLORS.worldLight, emissive: COLORS.worldDeep, emissiveIntensity: 0.5, roughness: 0.5, transparent: true, opacity: 0.5, depthWrite: false });
   const tubes = {
     b1: new THREE.Mesh(new THREE.BufferGeometry(), tubeMat),
     b0: new THREE.Mesh(new THREE.BufferGeometry(), tubeMat),

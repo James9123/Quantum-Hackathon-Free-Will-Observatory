@@ -1,5 +1,35 @@
 # The Observatory page (JS UI)
 
+**Layout (friendly version, 2026-10-11).** The page reads top to bottom as three steps, then
+the results in plain words, then optional detail panels:
+
+1. **Hero:** title, a one-sentence hook, and the three steps.
+2. **Pick a guide:** three persona cards (`role="tab"`). Under them, the RPG dialogue box with a
+   portrait to the side. The portrait is a labelled placeholder (`.fwo-portrait`) until the
+   sprite sheets land. The one dialogue box moves into the selected guide's tab panel. Before a
+   run each guide greets the visitor (`txt.INTRO`, placeholder lines for the team to replace);
+   after a run it speaks the engine's persona line. Each guide's panel also carries a one-line
+   tip: the Self's dials in plain words, the Demon's forecast, the Observer's point of view.
+3. **Set the dials:** "Your choice" (intention), "Ties to the world" (World coupling), "Point of
+   view" (perspective), each with one plain sentence; the technical name is small print.
+   Degrees on the surface; radians and gamma live in the aria-valuetext and the panels.
+4. **Run the experiment:** one big button, a plain policy line, the status line. Shots,
+   packing and the self-check circuits sit in "Advanced run settings".
+5. **Two possible futures:** the 3D scene with two big percentage cards (sticky beside the
+   left column on wide screens).
+6. **What happened:** three plain cards with a 0-1 meter each: how much your choice can change
+   the odds (with the 95% range drawn as a band), how open the future is, how much the World
+   knows. The exact sentence "No resolved influence at this shot count." appears when the range
+   includes zero.
+7. **Want more detail?** Closed drop-downs: the full numbers (factual sentence, count tables,
+   job record), the before/after chart, the Demon's prediction, how it works step by step (plain
+   steps, circuit diagram, the four circuits, the math), how sure we can be (the range, theory
+   curves, calibration and noise tables), the classical comparison, where this runs (backend
+   chips), and what this does NOT show.
+
+The sections below describe the components; ids and contracts are unchanged.
+
+
 The browser side of The Free Will Observatory: a Qollab-native JS project (top-level
 `index.html` + `main.js` + `main.css` + `ui/*.js`) that calls the Python engine
 (`observatory_api.py`) in the same browser tab and draws the scene with three.js from

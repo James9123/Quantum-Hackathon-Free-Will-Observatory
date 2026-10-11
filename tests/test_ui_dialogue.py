@@ -44,7 +44,7 @@ def test_audio_only_after_a_gesture():
     assert re.search(r'addEventListener\("change", \(\) => \{\s*soundOn = els.sound.checked;\s*if \(soundOn\) unlock\(\);', DIALOGUE)
     run_handler = MAIN[MAIN.index('el.run.addEventListener("click"'):]
     assert run_handler.splitlines()[1].strip().startswith("if (dialogue) dialogue.unlock();")
-    assert "if (dialogue) dialogue.unlock(); persona = key; schedulePoetic();" in MAIN
+    assert "if (dialogue) dialogue.unlock(); persona = key; moveDialogue(key); schedulePoetic();" in MAIN
 
 
 def test_live_region_written_once_per_show_and_only_there():

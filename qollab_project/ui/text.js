@@ -159,3 +159,118 @@ export function curveSummary(lib, theory, noise) {
   }
   return s;
 }
+
+// ---------------------------------------------------------------- plain words
+// The friendly layer: what the page says on its first screen. Every number still
+// comes from the API replies; only the wording is simpler. Technical sentences above
+// stay in the drop-down panels.
+
+// The guides' greetings before any run. PLACEHOLDERS: the team's own lines replace
+// these (see the persona-lines guide); keep each under about 160 characters.
+export const INTRO = {
+  self: "Hi, I'm the Self. Set the dials and press Run, and I'll show you how far my choice can move the odds between my two possible futures.",
+  demon: "I am Laplace's Demon. I never touch the dials, but I know the rules: I predict the odds before you run, then we check me against the sample.",
+  observer: "I'm the Observer. I don't change the Self; I choose the question we ask it. Turn the point of view and run again to see the answer change.",
+};
+
+export function plainDeg(lib, rad) {
+  return lib.fmtDeg(rad);
+}
+
+export function couplingWord(w) {
+  if (w === null || w === undefined || !Number.isFinite(w)) return "unknown";
+  if (w < 0.005) return "none";
+  if (w < 0.25) return "light";
+  if (w < 0.6) return "some";
+  if (w < 0.995) return "strong";
+  return "fully tied";
+}
+
+export function opennessWord(o) {
+  if (o === null) return "Not measured.";
+  if (o >= 0.9) return "Wide open: as unpredictable as a coin flip.";
+  if (o >= 0.5) return "Leaning one way, but still open.";
+  if (o >= 0.05) return "Mostly settled: one future is very likely.";
+  return "Settled: the outcome is close to certain.";
+}
+
+export function connectionWord(i) {
+  if (i === null) return "Not measured.";
+  if (i < 0.05) return "The World knows almost nothing about which way the Self went.";
+  if (i < 0.35) return "The World keeps a faint record of which way the Self went.";
+  if (i < 0.75) return "The World keeps a clear record of which way the Self went.";
+  return "The World knows almost exactly which way the Self went.";
+}
+
+// What each reading means, shown before the first run.
+export const MEANING = {
+  capacity: "How far opposite choices can push the odds of Future 1. 1 means all the way; 0 means not at all.",
+  openness: "How unpredictable the next outcome is. 1 is a 50/50 coin flip; 0 is certain.",
+  connection: "How much the World's record reveals about the Self. 1 is everything; 0 is nothing.",
+};
+
+export function plainBackend(info) {
+  if (!info || info.error || !info.profile) return "this simulator";
+  const p = info.profile;
+  const family = p.family || "";
+  if (family === "basic") return "the built-in simulator";
+  if (family === "braket_local") return "the AWS Braket local simulator";
+  if (family === "ibm_noise") return "an IBM noise-model simulator (" + (p.name || "IBM") + ")";
+  if (family === "ionq_sim") return "IonQ's simulator" + (p.noise_model ? " (" + p.noise_model + " noise model)" : "");
+  if (family === "ionq_qpu") return "IonQ hardware (" + (p.name || "QPU") + ")";
+  return p.name || "this simulator";
+}
+
+export function runPolicy(info, oneJob) {
+  const where = plainBackend(info);
+  return oneJob
+    ? "Runs on " + where + ": one job per visit, so the button locks after one press. Remote jobs take a few seconds."
+    : "Runs on " + where + ", right in your browser: press Run as often as you like. Each press is one job of four tiny circuits.";
+}
+
+// The Self's tip: what the dials say now, in plain words.
+export function selfTip(lib, d, ideal) {
+  let s = "Your dials: choice " + plainDeg(lib, d.intention_rad) + ", ties to the world " + couplingWord(d.world_coupling) +
+    ", point of view " + plainDeg(lib, d.perspective_rad) + ".";
+  if (ideal) s += " Theory says your choice can swing the odds by up to " + lib.fmt(ideal.capacity, 2) + ".";
+  return s;
+}
+
+// The Demon's line: its forecast for the current dials.
+export function demonLine(lib, ideal) {
+  if (!ideal) return "Working out the forecast\u2026";
+  return "My forecast for your dials: Future 1 " + lib.fmtPct(ideal.p_self_1) + ", Future 0 " + lib.fmtPct(1 - ideal.p_self_1) +
+    ". Opposite choices could swing that by up to " + lib.fmt(ideal.capacity, 2) + ".";
+}
+
+// The Observer's tip.
+export function observerTip(lib, d, ideal) {
+  return "Point of view " + plainDeg(lib, d.perspective_rad) + ". Changing it changes the answer (" +
+    (ideal ? "Future 1 " + lib.fmtPct(ideal.p_self_1) : "Future 1 n/a") +
+    "), but not how much your choice can swing the odds.";
+}
+
+// One status line after a run, in plain words, with the exact unresolved sentence.
+export function doneSentence(lib, m, secs) {
+  const { fmt, fmtPct } = lib;
+  const ci = Array.isArray(m.capacity_ci95) ? m.capacity_ci95 : [null, null];
+  let s = "Done in " + secs + " s. Future 1 " + fmtPct(m.p_self_1) + ", Future 0 " + fmtPct(1 - m.p_self_1) + ". ";
+  if (m.resolved) {
+    s += "Your choice can swing the odds by " + fmt(m.capacity, 2) + " (95% sure: " + fmt(ci[0], 2) + " to " + fmt(ci[1], 2) + ").";
+  } else {
+    s += "The swing is " + fmt(m.capacity, 2) + ", too small to tell apart from zero. " + NO_RESOLVED;
+  }
+  return s;
+}
+
+// Plain scene caption after a run.
+export function sceneCaption(lib, run, prev, available) {
+  const { fmt, fmtPct, fmtInt } = lib;
+  const m = run.metrics || {};
+  const n = totalShots(run.counts && run.counts.display);
+  let s = (available ? "" : "The 3D view is unavailable here. ") + "Future 1 holds " + fmtPct(m.p_self_1) + " and Future 0 " +
+    fmtPct(1 - m.p_self_1) + " of " + fmtInt(n) + " tries; the bigger sphere is the more likely future. The bridge to the World shows what it knows: " +
+    fmt(m.connection_bits, 2) + " bits (" + bridgeWord(num(m, "connection_bits")) + ").";
+  if (prev && prev.metrics) s += " The faint outline is your previous run.";
+  return s + " The brain-like web is decoration, not qubits or neurons.";
+}

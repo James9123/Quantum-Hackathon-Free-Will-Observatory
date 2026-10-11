@@ -1,5 +1,6 @@
-// Text and table views of a run: the two futures, the three readings, the Demon's
-// forecast and comparison, the baselines and the "How this works" drawer. Everything
+// Text and table views of a run: the two futures and the three readings in plain words
+// (first screen), then the detail panels: the Demon's forecast and comparison, the run
+// record, how it works, how sure we are, the baselines and the honesty notes. Everything
 // the canvas shows is also here as text, so the page works without the 3D view.
 // No imports: main.js passes the dom helpers (lib) and the text helpers (txt).
 
@@ -24,21 +25,41 @@ export function personaName(key) {
 
 // ---------------------------------------------------------------- futures
 
-function futureCard(lib, which, p, count, n, prevP, forecastP) {
-  const { h, fmtPct, fmtInt, fmt } = lib;
-  const parts = [
-    h("p", { class: "fwo-future-p" }, p === null ? "no run yet" : fmtPct(p)),
-    h("p", { class: "fwo-small" }, "Self = " + which + (p === null ? "" : ": " + fmtInt(count) + " of " + fmtInt(n) + " display shots")),
-  ];
-  if (p !== null) {
-    parts.push(h("div", { class: "fwo-meter", "aria-hidden": "true" },
-      h("div", { class: "fwo-meter-fill", style: null })));
-    parts[parts.length - 1].firstChild.style.width = (100 * p).toFixed(1) + "%";
+function meter(lib, value, band) {
+  // A 0..1 bar; `band` = [lo, hi] draws the 95% range over it. Decorative: the
+  // same numbers are always printed next to it.
+  const { h } = lib;
+  const bar = h("div", { class: "fwo-meter", "aria-hidden": "true" });
+  if (band && band[0] !== null && band[1] !== null) {
+    const r = h("div", { class: "fwo-meter-band" });
+    r.style.left = (100 * Math.max(0, Math.min(1, band[0]))).toFixed(1) + "%";
+    r.style.width = (100 * Math.max(0, Math.min(1, band[1]) - Math.max(0, Math.min(1, band[0])))).toFixed(1) + "%";
+    bar.appendChild(r);
   }
+  if (value !== null) {
+    const f = h("div", { class: "fwo-meter-fill" });
+    f.style.width = (100 * Math.max(0, Math.min(1, value))).toFixed(1) + "%";
+    bar.appendChild(f);
+  }
+  return bar;
+}
+
+function futureCard(lib, which, p, count, n, prevP, forecastP) {
+  const { h, fmtPct, fmtInt } = lib;
+  if (p === null) {
+    return [h("p", { class: "fwo-future-p fwo-future-p--empty" }, "?"),
+      h("p", { class: "fwo-small" }, forecastP === null ? "Run the experiment to see." :
+        "The Demon expects " + fmtPct(forecastP) + ". Run the experiment to see.")];
+  }
+  const parts = [
+    h("p", { class: "fwo-future-p" }, fmtPct(p)),
+    meter(lib, p, null),
+    h("p", { class: "fwo-small" }, fmtInt(count) + " of " + fmtInt(n) + " tries ended in Future " + which + "."),
+  ];
   const extra = [];
-  if (prevP !== null) extra.push("previous " + fmtPct(prevP));
-  if (forecastP !== null) extra.push("Demon forecast " + fmt(forecastP, 3));
-  if (extra.length) parts.push(h("p", { class: "fwo-small" }, extra.join("; ")));
+  if (forecastP !== null) extra.push("Demon predicted " + fmtPct(forecastP));
+  if (prevP !== null) extra.push("last run " + fmtPct(prevP));
+  if (extra.length) parts.push(h("p", { class: "fwo-small" }, extra.join(" \u00b7 ")));
   return parts;
 }
 
@@ -49,7 +70,7 @@ export function renderFutures(lib, slots, run, prev, forecast) {
   const c = run && run.counts ? run.counts.display : null;
   const n = c ? total(c) : 0;
   const q1 = prev && prev.metrics ? num(prev.metrics, "p_self_1") : null;
-  const f1 = forecast ? num(forecast, "p_self_1") : null;
+  const f1 = run && run.prediction ? num(run.prediction, "p_self_1") : (forecast ? num(forecast, "p_self_1") : null);
   replace(slots.f0, futureCard(lib, 0, p1 === null ? null : 1 - p1, c ? (Number(c["00"]) || 0) + (Number(c["01"]) || 0) : 0, n,
     q1 === null ? null : 1 - q1, f1 === null ? null : 1 - f1));
   replace(slots.f1, futureCard(lib, 1, p1, c ? (Number(c["10"]) || 0) + (Number(c["11"]) || 0) : 0, n, q1, f1));
@@ -57,47 +78,51 @@ export function renderFutures(lib, slots, run, prev, forecast) {
 
 // ---------------------------------------------------------------- readings
 
-const DEFINITIONS = {
-  capacity: "C = |p_high \u2212 p_low|: how far the two opposite intentions (phi = beta and phi = beta + pi, same coupling and readout) move P(Self = 1). 0 to 1; ideal cos(gamma). The primary fictional agency measure.",
-  openness: "Binary entropy of the display P(Self = 1): how uncertain the current Self outcome is. 0 to 1 bit. Uncertainty, not capacity.",
-  connection: "Mutual information between Self and World in the separate connection probe, read in a fixed Z basis. 0 to 1 bit. Classical information in that basis, not an entanglement certification.",
+const TECH = {
+  capacity: "Capacity C = |p_high \u2212 p_low|: the gap between two extra circuits run with opposite choices (phi = beta and phi = beta + pi), same ties and point of view.",
+  openness: "Openness: the binary entropy of Future 1's share, in bits (0 settled, 1 a 50/50 coin flip). Uncertainty, not freedom.",
+  connection: "Connection: the mutual information between Self and World in a separate check circuit read in a fixed basis, in bits. Not an entanglement test.",
 };
 
-function card(lib, id, title, value, unit, lines, definition, cls) {
+function card(lib, id, title, value, band, lines, tech, cls) {
   const { h } = lib;
   return h("article", { class: "fwo-reading " + (cls || ""), "aria-labelledby": id + "-h" },
     h("h3", { id: id + "-h", class: "fwo-reading-h" }, title),
-    h("p", { class: "fwo-reading-value" }, h("span", { class: "fwo-reading-num" }, value), unit ? h("span", { class: "fwo-reading-unit" }, " " + unit) : null),
-    lines.map((s) => h("p", { class: "fwo-reading-line" }, s)),
-    h("p", { class: "fwo-small fwo-definition" }, definition));
+    h("p", { class: "fwo-reading-value" }, h("span", { class: "fwo-reading-num" }, value === null ? "\u2013" : lib.fmt(value, 2)),
+      h("span", { class: "fwo-reading-unit" }, " out of 1")),
+    meter(lib, value, band),
+    lines.map((x) => h("p", { class: "fwo-reading-line" }, x)),
+    h("p", { class: "fwo-tech-line" }, tech));
 }
 
 export function renderReadings(lib, txt, slot, run) {
-  const { h, replace, fmt } = lib;
+  const { replace, fmt, fmtPct } = lib;
   if (!run || run.status !== "completed") {
     replace(slot,
-      card(lib, "fwo-r-cap", "Capacity (in this model)", "\u2013", "", ["No run yet."], DEFINITIONS.capacity),
-      card(lib, "fwo-r-open", "Openness", "\u2013", "bits", ["No run yet."], DEFINITIONS.openness),
-      card(lib, "fwo-r-conn", "Connection", "\u2013", "bits", ["No run yet."], DEFINITIONS.connection));
+      card(lib, "fwo-r-cap", "How much your choice can change the odds", null, null, [txt.MEANING.capacity, "Run the experiment to see."], TECH.capacity),
+      card(lib, "fwo-r-open", "How open the future is", null, null, [txt.MEANING.openness, "Run the experiment to see."], TECH.openness),
+      card(lib, "fwo-r-conn", "How much the World knows", null, null, [txt.MEANING.connection, "Run the experiment to see."], TECH.connection));
     return;
   }
   const m = run.metrics || {};
   const pred = run.prediction || {};
   const ci = Array.isArray(m.capacity_ci95) ? m.capacity_ci95 : [null, null];
   const resolved = !!m.resolved;
+  const capLines = [
+    "With opposite choices, Future 1 came out at " + fmtPct(m.p_low) + " and " + fmtPct(m.p_high) + ".",
+    resolved
+      ? "We are 95% sure the true swing is between " + fmt(ci[0], 2) + " and " + fmt(ci[1], 2) + ", so in this model the choice really mattered."
+      : "Too small to tell apart from zero: the true swing is somewhere between " + fmt(ci[0], 2) + " and " + fmt(ci[1], 2) + ". " + txt.NO_RESOLVED,
+  ];
   replace(slot,
-    card(lib, "fwo-r-cap", "Capacity (in this model)", fmt(m.capacity, 3), "",
-      ["Conservative 95% interval " + fmt(ci[0], 3) + " to " + fmt(ci[1], 3) + " (Hoeffding e = " + fmt(m.hoeffding_e, 4) + ").",
-        resolved ? "Resolved: the interval excludes zero, so in this model opposite intentions measurably reshaped the odds."
-          : txt.NO_RESOLVED + " The interval includes zero.",
-        "p_low = " + fmt(m.p_low, 3) + ", p_high = " + fmt(m.p_high, 3) + "; ideal cos(gamma) = " + fmt(pred.capacity, 3) + "."],
-      DEFINITIONS.capacity, resolved ? "fwo-reading--resolved" : "fwo-reading--unresolved"),
-    card(lib, "fwo-r-open", "Openness", fmt(m.openness_bits, 3), "bits",
-      ["From the display probe's P(Self = 1) = " + fmt(m.p_self_1, 3) + "; ideal " + fmt(pred.openness_bits, 3) + " bits."],
-      DEFINITIONS.openness),
-    card(lib, "fwo-r-conn", "Connection", fmt(m.connection_bits, 3), "bits",
-      ["From the connection probe only; ideal " + fmt(pred.connection_bits, 3) + " bits. Bridge: " + txt.bridgeWord(num(m, "connection_bits")) + "."],
-      DEFINITIONS.connection));
+    card(lib, "fwo-r-cap", "How much your choice can change the odds", num(m, "capacity"), ci, capLines,
+      TECH.capacity + " Theory for these dials: " + fmt(pred.capacity, 2) + ".", resolved ? "fwo-reading--resolved" : "fwo-reading--unresolved"),
+    card(lib, "fwo-r-open", "How open the future is", num(m, "openness_bits"), null,
+      [txt.opennessWord(num(m, "openness_bits")), "Open is not the same as free: a coin flip is open too."],
+      TECH.openness + " Theory: " + fmt(pred.openness_bits, 2) + "."),
+    card(lib, "fwo-r-conn", "How much the World knows", num(m, "connection_bits"), null,
+      [txt.connectionWord(num(m, "connection_bits")), "That record is what shrinks the choice's power."],
+      TECH.connection + " Theory: " + fmt(pred.connection_bits, 2) + "."));
 }
 
 export function renderRunError(lib, slot, run, previousJobId) {
@@ -204,57 +229,93 @@ function countsTable(lib, name, counts, requested) {
   return table("Counts: " + name + " probe (SelfWorld)", ["outcome", "count", "fraction"], rows);
 }
 
-export function renderDrawer(lib, txt, slot, run, profile) {
+export function renderRecord(lib, txt, slot, run, profile) {
   const { h, replace, fmt, fmtInt, fmtPct, table } = lib;
   const parts = [];
-  parts.push(h("h3", {}, "The circuit"));
-  parts.push(h("pre", { class: "fwo-pre", tabindex: "0", role: "region", "aria-label": "Circuit as a text diagram" },
-    circuitText(lib, run && run.settings ? run.settings : null)));
-  parts.push(h("h3", {}, "The four probes of one job"));
-  parts.push(h("ul", {}, PROBE_ORDER.map((p) => h("li", {}, txt.PROBE_TEXT[p]))));
   if (run && run.status === "completed") {
     const s = run.source || {}, m = run.metrics || {};
-    parts.push(h("h3", {}, "Counts (bit order " + (run.bit_order || "SelfWorld") + ")"));
+    parts.push(h("h3", {}, "Counts from the four circuits (bit order " + (run.bit_order || "SelfWorld") + ": '10' means Self 1, World 0)"));
     const requested = (run.settings || {}).shots_per_probe;
     parts.push(h("div", { class: "fwo-count-grid" }, PROBE_ORDER.map((p) => countsTable(lib, p, (run.counts || {})[p], requested))));
-    parts.push(h("p", { class: "fwo-small" }, "P(Self = 1) per probe: display " + fmt(m.p_self_1, 4) + ", intent_low " + fmt(m.p_low, 4) +
-      ", intent_high " + fmt(m.p_high, 4) + ". Capacity uses the actual totals of the two intent probes."));
-    parts.push(h("h3", {}, "Job and backend"));
+    parts.push(h("p", { class: "fwo-small" }, "Share of Future 1 per circuit: display " + fmt(m.p_self_1, 4) + ", intent_low " + fmt(m.p_low, 4) +
+      ", intent_high " + fmt(m.p_high, 4) + ". The swing uses the actual totals of the two intent circuits."));
+    parts.push(h("h3", {}, "The job"));
     const check = s.bit_order_check || {};
     const canaryText = check.orientation_ok === true ? "passed (bit order confirmed in the same job)"
       : check.orientation_ok === false ? "FAILED: the counts above are not trustworthy"
-        : "not checked (canary disabled)";
+        : "not checked (self-check circuits switched off)";
     parts.push(table("Job record", ["item", "value"], [
       ["backend", String(s.backend_name || "n/a") + " (" + (s.provider_family || "?") + ")"],
       ["kind", (s.simulator === false ? "hardware" : "simulator") + ", " + (s.noisy ? "noisy" : "ideal") + ", " + (s.remote ? "remote" : "local")],
-      ["packing mode", String(s.mode || "n/a") + (s.layout && s.layout.n_circuits ? " (" + s.layout.n_circuits + " circuit(s), " + (s.layout.qubits_per_circuit || []).join("/") + " qubits)" : "")],
+      ["packing", String(s.mode || "n/a") + (s.layout && s.layout.n_circuits ? " (" + s.layout.n_circuits + " circuit(s), " + (s.layout.qubits_per_circuit || []).join("/") + " qubits)" : "")],
       ["submitted as", String(s.submitted_as || "n/a")],
       ["job id", String(s.job_id || "n/a")],
       ["wall time", s.wall_s === null || s.wall_s === undefined ? "n/a" : fmt(s.wall_s, 2) + " s"],
-      ["shots requested per probe", fmtInt(s.shots_requested)],
+      ["shots requested per circuit", fmtInt(s.shots_requested)],
       ["shots seen", PROBE_ORDER.map((p) => p + " " + fmtInt((s.shots_seen || {})[p])).join(", ")],
-      ["bit-order / readout canary", canaryText + "; flip rates P(1|0) = " + fmtPct(check.p_flip_0to1_mean, 2) + ", P(0|1) = " + fmtPct(check.p_flip_1to0_mean, 2)],
+      ["self-check (bit order, readout)", canaryText + "; flip rates P(1|0) = " + fmtPct(check.p_flip_0to1_mean, 2) + ", P(0|1) = " + fmtPct(check.p_flip_1to0_mean, 2)],
       ["versions", Object.entries(s.versions || {}).map(([k, v]) => k + " " + v).join(", ")],
       ["model version", String(run.model_version || "n/a")],
     ]));
   } else {
-    parts.push(h("p", { class: "fwo-small" }, "After a run this drawer shows the four count tables, the packing mode, the job id, the backend details, the shots seen and the canary result."));
+    parts.push(h("p", { class: "fwo-small" }, "After a run this shows the four count tables, the packing, the job id, the backend and the self-check result."));
     if (profile && profile.profile) {
       const p = profile.profile;
-      parts.push(h("p", { class: "fwo-small" }, "Backend profile: " + p.name + " (" + p.family + "), " + (p.noisy ? "noisy" : "ideal") + ", " +
-        (p.remote ? "remote" : "local") + ", up to " + p.max_qubits + " qubits, packing mode " + profile.mode + (profile.one_job ? ", one job per run." : ".")));
+      parts.push(h("p", { class: "fwo-small" }, "Backend: " + p.name + " (" + p.family + "), " + (p.noisy ? "noisy" : "ideal") + ", " +
+        (p.remote ? "remote" : "local") + ", up to " + p.max_qubits + " qubits, packing " + profile.mode + (profile.one_job ? ", one job per run." : ".")));
     }
   }
-  parts.push(h("h3", {}, "Honesty"));
-  parts.push(h("p", {}, txt.HONESTY));
-  parts.push(h("p", { class: "fwo-small" }, "The correspondence between the controls and the words intention, World and perspective is designed, not discovered: " +
-    "the phase is called intention because varying it changes interference; the coupling is called World coupling because it wires the Self to a second qubit that records which alternative it took " +
-    "(the World never pushes the Self toward a future; its record only reduces the interference the Self can use); " +
-    "the readout angle is called perspective because it changes the measured observable. A responsive classical system can also score highly on capacity."));
-  parts.push(h("p", { class: "fwo-small" }, "World coupling (w) is a controlled rotation by 2 gamma with gamma = w pi/2: coherent and reversible in principle, not noise. " +
-    "In the ideal state Capacity = cos(gamma) is the Self's interference visibility and the World's which-alternative distinguishability is sin(gamma); " +
-    "they satisfy C^2 + D^2 = 1, the wave-particle duality relation, so the slider trades one for the other. Joint control of Self and World could undo the coupling."));
   replace(slot, parts);
+}
+
+const STEPS = [
+  "The Self is one qubit. A first gate splits it into two possibilities at once: Future 0 and Future 1.",
+  "Your choice turns a phase on the Self. A phase decides how the two possibilities add up later, like waves that reinforce or cancel.",
+  "Ties to the world connect the Self to a second qubit, the World, which keeps a record of which possibility happened. The more it records, the less the two possibilities can interfere.",
+  "Point of view picks the question we ask when we measure the Self.",
+  "We measure many times (shots) and count how often the Self lands in Future 0 or Future 1.",
+  "Two more circuits try opposite choices with the same ties and point of view: the gap between them is how much a choice can change the odds. A fourth circuit reads the World directly to see what it knows. All four run as one job.",
+];
+
+export function renderHow(lib, txt, slot, run) {
+  const { h, replace } = lib;
+  replace(slot,
+    h("ol", { class: "fwo-steps-list" }, STEPS.map((x) => h("li", {}, x))),
+    h("h3", {}, "The circuit, drawn as text"),
+    h("pre", { class: "fwo-pre", tabindex: "0", role: "region", "aria-label": "Circuit as a text diagram" },
+      circuitText(lib, run && run.settings ? run.settings : null)),
+    h("h3", {}, "The four circuits in one job"),
+    h("ul", {}, PROBE_ORDER.map((p) => h("li", {}, txt.PROBE_TEXT[p]))),
+    h("h3", {}, "The math in one paragraph"),
+    h("p", {}, "The chance of Future 1 is P(Self = 1) = [1 \u2212 cos(gamma) cos(phi \u2212 beta)] / 2, where phi is your choice, " +
+      "beta the point of view and gamma = w \u00b7 pi/2 the ties to the world. Opposite choices therefore differ by cos(gamma): " +
+      "that is the most a choice can swing the odds. The World's ability to tell the two possibilities apart is sin(gamma), and " +
+      "cos\u00b2 + sin\u00b2 = 1: what the World learns is exactly what the choice loses (the wave-particle duality relation)."));
+}
+
+export function renderSure(lib, slot) {
+  const { h, replace } = lib;
+  replace(slot,
+    h("p", {}, "Every reading comes from counting shots, so it wobbles a little from run to run. For the swing your choice can make, " +
+      "the page shows a range it is 95% sure contains the true value. The range is deliberately cautious (a Hoeffding bound): " +
+      "with 1,024 shots per circuit it reaches about 0.09 either side."),
+    h("p", {}, "If that range includes zero, the page says \u201cNo resolved influence at this shot count\u201d: the experiment cannot tell the swing apart " +
+      "from nothing. That is not the same as proving it is zero; more shots narrow the range."),
+    h("p", { class: "fwo-small" }, "The range was checked against the exact answer in many simulated repeats; the table below shows how often it was right."));
+}
+
+export function renderHonesty(lib, txt, slot) {
+  const { h, replace } = lib;
+  replace(slot,
+    h("p", {}, txt.HONESTY),
+    h("p", {}, "The words are designed, not discovered: the phase is called a choice (intention) because varying it changes interference; " +
+      "the coupling is called ties to the world because it wires the Self to a second qubit that records which possibility it took " +
+      "(the World never pushes the Self toward a future; its record only reduces the interference the Self can use); " +
+      "the readout angle is called a point of view because it changes the question asked."),
+    h("p", {}, "The ties are coherent and reversible in principle, not noise: someone controlling the Self and the World together could undo them " +
+      "and restore the full swing. The World here is one qubit whose record can be read completely; a real environment has countless parts."),
+    h("p", {}, "This is not a model of brains, and not evidence that quantum systems can be agents. A simple classical switch can also " +
+      "score a high swing; the classical comparison panel shows two such references."));
 }
 
 export function renderCoverage(lib, slot, curves) {

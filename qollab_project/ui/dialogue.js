@@ -1,6 +1,7 @@
-// RPG-style dialogue box for the persona line: a portrait emblem, the speaker's name, a
-// typewriter reveal with a soft synthesized blip per few characters, and click, Enter,
-// Space or Escape to show the whole line at once.
+// RPG-style dialogue box for the guides: a portrait to the side (a labelled placeholder
+// until the sprite sheets land), the speaker's name, a typewriter reveal with a soft
+// synthesized blip per few characters, and click, Enter, Space or Escape (or the Skip
+// button) to show the whole line at once.
 //
 // Contract with the rest of the page:
 // - The polite live region (#fwo-poetic) still receives the FULL line, once per show(),
@@ -22,28 +23,6 @@ const CHAR_MS = 25;                 // typewriter pace
 const BLIP_S = 0.045;               // blip length
 const JITTER = 0.04;                // +-4 % pitch
 
-// Emblems: lantern (the Self carries its own light), eye (the Demon sees the law),
-// lens (the Observer chooses what to look through). Strokes use currentColor.
-const EMBLEMS = {
-  self: [
-    ["path", { d: "M18 14h12l2 6v18a3 3 0 0 1-3 3H19a3 3 0 0 1-3-3V20z" }],
-    ["path", { d: "M21 14v-4h6v4M16 30h16" }],
-    ["path", { d: "M24 24c-2.5 2.2-2.5 5.3 0 7 2.5-1.7 2.5-4.8 0-7z", fill: "currentColor", stroke: "none" }],
-  ],
-  demon: [
-    ["path", { d: "M6 24c5-8 11-12 18-12s13 4 18 12c-5 8-11 12-18 12S11 32 6 24z" }],
-    ["circle", { cx: "24", cy: "24", r: "6" }],
-    ["path", { d: "M24 18v6l4 2" }],
-    ["path", { d: "M12 10l3 3M36 10l-3 3M24 6v4" }],
-  ],
-  observer: [
-    ["circle", { cx: "21", cy: "21", r: "11" }],
-    ["path", { d: "M29 29l11 11" }],
-    ["path", { d: "M21 14v14M14 21h14" }],
-    ["circle", { cx: "21", cy: "21", r: "3", fill: "currentColor", stroke: "none" }],
-  ],
-};
-
 function mulberry32(seed) {
   let a = seed >>> 0;
   return () => {
@@ -56,8 +35,8 @@ function mulberry32(seed) {
 }
 
 /**
- * @param lib   the ./dom.js helpers (svg, clear)
- * @param els   { box, portrait, name, text, skip, live, sound, soundHelp }
+ * @param lib   the ./dom.js helpers
+ * @param els   { box, portrait, portraitWho, name, text, skip, live, sound, soundHelp }
  * @param opts  { reducedMotion, setTimeoutFn, clearTimeoutFn, seed, audioContextClass }
  */
 export function createDialogue(lib, els, opts) {
@@ -135,17 +114,12 @@ export function createDialogue(lib, els, opts) {
     }
   }
 
-  function setPortrait(persona) {
-    lib.clear(els.portrait);
-    const parts = EMBLEMS[persona] || EMBLEMS.self;
-    for (const [tag, attrs] of parts) {
-      els.portrait.appendChild(lib.svg(tag, Object.assign({
-        fill: "none", stroke: "currentColor", "stroke-width": "2.2",
-        "stroke-linecap": "round", "stroke-linejoin": "round",
-      }, attrs)));
-    }
+  function setPortrait(persona, name) {
+    // Placeholder text for now; a sprite sheet will later sit in the same box
+    // (background image per persona class, see docs/ui.md).
+    if (els.portraitWho) els.portraitWho.textContent = name;
     els.box.classList.remove("fwo-dialogue--self", "fwo-dialogue--demon", "fwo-dialogue--observer");
-    els.box.classList.add("fwo-dialogue--" + (EMBLEMS[persona] ? persona : "self"));
+    els.box.classList.add("fwo-dialogue--" + (VOICES[persona] ? persona : "self"));
   }
 
   function stopTimer() {
@@ -188,22 +162,20 @@ export function createDialogue(lib, els, opts) {
     timer = setTimeoutFn(step, pause);
   }
 
-  /** Show `line` as spoken by `persona`; writes the live region once. */
-  function show(persona, name, line) {
+  /** Show `line` as spoken by `persona`. Writes the live region once, unless
+   *  opts.announce is false (the silent greeting on page load); opts.animate false
+   *  shows the whole line at once. */
+  function show(persona, name, line, opts) {
+    const o = Object.assign({ announce: true, animate: true }, opts || {});
     stopTimer();
     pending = null;
     shows += 1;
     const text = String(line || "");
-    els.live.textContent = text ? name + ": " + text : "";
-    if (!text) {
-      els.box.hidden = true;
-      els.text.textContent = "";
-      return;
-    }
+    if (o.announce) els.live.textContent = text ? name + ": " + text : "";
     els.box.hidden = false;
-    setPortrait(persona);
+    setPortrait(persona, name);
     els.name.textContent = name;
-    if (reduced || !text.length) {
+    if (reduced || !o.animate || !text.length) {
       els.text.textContent = text;
       setCue(true);
       return;
