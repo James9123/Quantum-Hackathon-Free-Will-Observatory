@@ -26,11 +26,10 @@ the built-in simulator.
 | 2:15–2:35 | **Honesty, and how to run it** | The explanation drawer's honesty copy; then Qollab's Run dialog with the built-in simulator; the *How this works* drawer with the circuit and counts | "The measurements are real outputs of the simulator; the Self and its philosophical meaning are our artistic construction. A simulator computes what quantum theory predicts; it does not test nature, and a classical switch would score the same Capacity: this is a model, not proof of agency. Open the project on Qollab, keep the built-in simulator, press Run. On IonQ's simulator it is one job per run, and the four probes travel in that one job." |
 | 2:35–2:45 | **Close** | Credits card: team names, "Built with Qiskit", AI-assistance disclosure, the attribution line | "Built during the hackathon with help from an AI coding assistant. This effort is supported by Qollab & IonQ." |
 
-Allow time for real jobs. Under CPython one run on the built-in simulator takes 0.03–0.04 s
-(measured); in the browser and on IonQ's simulator the wall time is unmeasured until the
-judge run and the IonQ run (TODO(captain): note both from the `wall_s` field, SUBMIT.md
-§5–6) and the recording should not promise a duration before then. If a run is
-pre-recorded, say so on screen.
+Allow time for real jobs. Measured on the platform (2026-10-10): one run on the built-in
+simulator in the browser took 0.1 s; one IonQ Forte 1 simulator job took 11.5 s. The IonQ
+wait is long enough to narrate over; do not promise a shorter one. If a run is pre-recorded,
+say so on screen.
 
 ## Expected readings per act
 

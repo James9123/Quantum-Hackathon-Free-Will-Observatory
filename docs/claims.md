@@ -83,8 +83,8 @@ capacity; 1 is the maximum.
 | Exact, IonQ-like preset | 0.0056 / 0.9944 | 0.9888 | n/a | the published Forte-1 rates on our gates (the scale-1 row of `data/fwo_noise.json` at w = 0); an approximation of IonQ's model |
 | Built-in simulator, seed 11, 1,024 shots per probe, one job (Act 1: φ = π/2, β = 0) | 0.0000 ± 0 (0/1024) / 1.0000 ± 0 (1024/1024) | **1.0000 [0.9075, 1.0000]** | **yes** | display P(Self = 1) = 0.485 (497/1024, ideal 0.5), O = 0.999 bits, I = 0.000 bits; orientation canary passed; flip rates 0.0 / 0.0; 0.03 s |
 | Built-in simulator, seed 11, one job (Act 2: φ = π, β = 0) | 0.0000 / 1.0000 | 1.0000 [0.9075, 1.0000] | yes | display P(Self = 1) = 1.000 (1024/1024), O = 0.000 bits: predictability and capacity coexist |
-| Qollab built-in simulator (judge run) | TODO(captain) | TODO(captain) | TODO(captain) | record per SUBMIT.md §5 |
-| IonQ Forte 1 simulator, one job | TODO(captain) | TODO(captain) | TODO(captain) | job id, date, shots seen per probe (SUBMIT.md §6) |
+| Qollab built-in simulator in the browser, one job, 1,024 shots per probe (φ = 140°, w = 0.52, β = 99°; 2026-10-10) | p_low / p_high not shown separately on the page | **0.667 [0.574, 0.760]** (ideal cos γ = 0.685) | **yes** | display P(Self = 1) = 0.234 (240/1024; Demon forecast 0.242), O = 0.786 bits, I = 0.328 bits; 0.1 s; a different setting from Act 1, so the ideal capacity is 0.685, not 1 |
+| IonQ Forte 1 simulator (noise model forte-1), one remote job of 17 qubits, 1,024 shots per probe (φ = 222°, w = 0.20, β = 86°; 2026-10-10) | not shown separately on the page | **0.94 [0.84, 1.00]** (ideal cos γ = 0.951) | **yes** | O = 0.618 bits, I = 0.032 bits; job id `01a1296d-229a-70da-8d9b-2b90d19715e6`, wall time 11.46 s; shots seen 1,024 per probe (no rounding shortfall); canary passed, readout flip rates 0.00% / 0.00% (the published model has no readout term); in-browser versions python 3.14.2, qiskit 2.5.2, numpy 2.4.6, qiskit_ionq 1.0.2 |
 
 The interval's lower limit 0.9075 = 1 − e is the conservative bound's price: at 1,024 shots
 per probe nothing can be resolved more finely than e = 0.0925 even when every shot agrees.
@@ -151,8 +151,7 @@ and (Card C) Connection I = **1 bit**.
 | Exact, IonQ-like preset | 0.5 / 0.5 | 0.0000 | n/a | 1.000 | depolarizing noise cannot move a marginal that is already 1/2; it shows up in Connection instead (Card C: 0.953 bits) |
 | Built-in simulator, seed 11, 1,024 shots per probe, one job (Act 3: φ = π/2, β = 0) | 0.5156 ± 0.0156 / 0.4854 ± 0.0156 | **0.0303 [0.0000, 0.1228]** | **no** | 0.998 | display P(Self = 1) = 0.525; I = 0.999 bits; the page says *No resolved influence at this shot count* |
 | Built-in simulator, seeds 1 / 2 / 3, same settings | 0.4854 / 0.4873; 0.5215 / 0.5303; 0.5000 / 0.5127 | 0.0020 [0, 0.0945]; 0.0088 [0, 0.1013]; 0.0127 [0, 0.1052] | no / no / no | 1.000 / 0.998 / 1.000 | three more samples: the estimate wanders by a few hundredths and is never forced to zero |
-| Qollab built-in simulator (judge run) | TODO(captain) | TODO(captain) | TODO(captain) | TODO(captain) | record per SUBMIT.md §5 |
-| IonQ Forte 1 simulator, one job | TODO(captain) | TODO(captain) | TODO(captain) | TODO(captain) | job id, date, shots seen per probe (SUBMIT.md §6) |
+| Platform runs at w = 1 | not run at w = 1 on the platform yet (optional) | | | | the two platform runs so far used w = 0.52 (built-in) and w = 0.20 (IonQ Forte 1); see Card A |
 
 At 1,024 shots per probe the interval's upper limit is |d̂| + e, so it is at least 0.0925
 wide whatever the sample. **Calibration** (`lab/experiments.fwo_coverage`, 2,000 seeded
@@ -225,8 +224,8 @@ w = 0 / 0.5 / 1. Direction: higher means more shared information in this basis.
 | Exact, no noise | 0.0000 / 0.3113 / 1.0000 (exact) | closed form; agrees with the statevector to 3.3×10⁻¹⁶ over the 819-point grid; `data/fwo_theory.json` carries the curve |
 | Exact, IonQ-like preset | 0.0000 / 0.2919 / 0.9531 | w = 0 and 0.5 from the scale-1 rows of `data/fwo_noise.json`, w = 1 from `predict_json`'s live IonQ-like forecast; depolarizing noise erodes the correlation at full coupling even though it cannot move a marginal that is already 1/2 (Card B) |
 | Built-in simulator, seed 11, 1,024 shots, one job per w | 0.0000 / 0.2895 / 0.9989 | w = 0: counts 00/10 = 532/492, World never 1; w = 0.5: 00/10/11 = 532/262/230; w = 1: 00/11 = 532/492, matching pairs only (Acts 1 and 3 and the w = 0.5 run of the README) |
-| Qollab built-in simulator (judge run) | TODO(captain) | w = 0 and w = 1 from Acts 1 and 3 (SUBMIT.md §5) |
-| IonQ Forte 1 simulator, one job | TODO(captain) | one setting; job id, date, shots seen (SUBMIT.md §6) |
+| Qollab built-in simulator in the browser, one job (w = 0.52) | 0.328 bits at w = 0.52 (ideal 0.33) | 2026-10-10; same run as Card A |
+| IonQ Forte 1 simulator, one remote job (w = 0.20) | 0.032 bits at w = 0.20 (ideal 0.03) | 2026-10-10; job id `01a1296d-229a-70da-8d9b-2b90d19715e6`, 11.46 s, 1,024 shots per probe |
 
 ### What this does NOT show
 

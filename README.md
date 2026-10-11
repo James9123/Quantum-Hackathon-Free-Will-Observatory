@@ -279,8 +279,14 @@ depolarizing rates on our gates: Capacity 0.9888 at w = 0 (p_low/p_high 0.0056/0
 0.6992 at w = 0.5, 0 at w = 1; Connection 0.9531 bits at w = 1. An approximation of IonQ's
 model, shown by the Demon beside the ideal values.
 
-**Platform runs.** Built-in simulator on Qollab (the judge run) and one IonQ Forte 1
-simulator job: TODO(captain), recorded per [SUBMIT.md](SUBMIT.md) §5–6 into
+**Platform runs (2026-10-10).** On Qollab's built-in simulator in the browser, one job
+of four probes plus the canary at 1,024 shots per probe (φ = 140°, w = 0.52, β = 99°) finished
+in 0.1 s: P(Self = 1) = 0.234 against a forecast of 0.242, Capacity 0.667 [0.574, 0.760]
+(ideal 0.685), Openness 0.786 bits, Connection 0.328 bits. On the IonQ Forte 1 noise-model
+simulator, one remote 17-qubit job at 1,024 shots per probe (φ = 222°, w = 0.20, β = 86°)
+finished in 11.46 s (job id `01a1296d-229a-70da-8d9b-2b90d19715e6`): Capacity 0.94 [0.84, 1.00]
+(ideal 0.951), Openness 0.618 bits, Connection 0.032 bits, 1,024 shots seen per probe, canary
+passed with 0.00% readout flips (the published model has no readout term). Details in
 [docs/claims.md](docs/claims.md).
 
 **The toolkit** (`qk_*.py`: one-job packing with canaries, the exact noise model, the
