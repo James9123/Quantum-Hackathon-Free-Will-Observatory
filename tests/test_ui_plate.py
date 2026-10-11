@@ -119,14 +119,17 @@ def test_ports_from_the_design_review():
         assert "italic" in line, t
 
 
-def test_four_styles_ship_with_a_as_the_default_and_a_switch():
+def test_four_styles_ship_with_d_as_the_default_and_a_menu():
     css = _read("qollab_project/main.css")
     html = _read("qollab_project/index.html")
     main = _read("qollab_project/main.js")
     for t in "abcd":
         assert '#fwo-app[data-theme="%s"] {' % t in css, t
-        assert 'name="fwo-style" value="%s"' % t in html, t
-    assert '<div id="fwo-app" class="fwo-app" lang="en" data-theme="a">' in html
-    assert 'name="fwo-style" value="a" checked' in html
+        assert '<option value="%s"' % t in html, t
+    assert '<div id="fwo-app" class="fwo-app" lang="en" data-theme="d">' in html
+    assert '<option value="d" selected>' in html and '<label for="fwo-style">Style</label>' in html
+    top = html[html.index('<div class="fwo-hero-top">'):html.index('<h1 class="fwo-title">')]
+    assert 'class="fwo-kicker"' in top and '<select id="fwo-style">' in top          # one line: kicker + menu
     assert "function setStyle(key)" in main and "scene = makeScene();" in main
+    assert 'el.styleMenu.addEventListener("change", () => setStyle(el.styleMenu.value));' in main
     assert 'if (current) scene.setResult(current, previous, futureLabels(current, previous));' in main

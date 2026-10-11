@@ -147,7 +147,7 @@ async function start() {
     baselines: byId("fwo-baselines"),
     dialogue: byId("fwo-dialogue"), dialoguePortrait: byId("fwo-dialogue-portrait"), portraitWho: byId("fwo-portrait-who"),
     dialogueName: byId("fwo-dialogue-name"), dialogueText: byId("fwo-dialogue-text"), dialogueSkip: byId("fwo-dialogue-skip"),
-    sceneSkip: byId("fwo-scene-skip"), sceneHint: byId("fwo-scene-hint"),
+    sceneSkip: byId("fwo-scene-skip"), sceneHint: byId("fwo-scene-hint"), styleMenu: byId("fwo-style"),
     sound: byId("fwo-sound"), soundHelp: byId("fwo-sound-help"),
     howBody: byId("fwo-how-body"), sureBody: byId("fwo-sure-body"), honesty: byId("fwo-honesty"),
     curve: byId("fwo-curve"), curveSummary: byId("fwo-curve-summary"), curveLegend: byId("fwo-curve-legend"),
@@ -359,8 +359,8 @@ async function start() {
   } catch (err) { /* older browsers: the initial preference still applies */ }
 
   // ---------------------------------------------------------------- page style (A to D)
-  // The four design directions ship in main.css, scoped by data-theme on #fwo-app (A by
-  // default in index.html). The Style switch changes the attribute and redraws the scene in
+  // The four design directions ship in main.css, scoped by data-theme on #fwo-app (D by
+  // default in index.html). The Style menu changes the attribute and redraws the scene in
   // the new style with the current result; nothing else is recomputed.
   function setStyle(key) {
     if (!/^[abcd]$/.test(key) || el.app.dataset.theme === key) return;
@@ -374,10 +374,8 @@ async function start() {
     }
     if (dialogue) dialogue.refresh();
   }
-  for (const radio of el.app.querySelectorAll('input[name="fwo-style"]')) {
-    radio.checked = radio.value === (el.app.dataset.theme || "");
-    radio.addEventListener("change", () => { if (radio.checked) setStyle(radio.value); });
-  }
+  el.styleMenu.value = el.app.dataset.theme || "";
+  el.styleMenu.addEventListener("change", () => setStyle(el.styleMenu.value));
 
   function futureLabels(run, prev) {
     const p1 = run.metrics.p_self_1;

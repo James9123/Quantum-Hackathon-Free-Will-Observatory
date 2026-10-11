@@ -1,13 +1,17 @@
-<div id="fwo-app" class="fwo-app" lang="en" data-theme="a">
+<div id="fwo-app" class="fwo-app" lang="en" data-theme="d">
   <header class="fwo-hero">
-    <fieldset id="fwo-style" class="fwo-style">
-      <legend>Style</legend>
-      <label><input type="radio" name="fwo-style" value="a" checked> A &middot; Night observatory</label>
-      <label><input type="radio" name="fwo-style" value="b"> B &middot; Instrument console</label>
-      <label><input type="radio" name="fwo-style" value="c"> C &middot; Luminous anatomy</label>
-      <label><input type="radio" name="fwo-style" value="d"> D &middot; Blueprint</label>
-    </fieldset>
-    <p class="fwo-kicker">Qollab x IonQ hackathon &middot; a fictional instrument, run on a live quantum simulator</p>
+    <div class="fwo-hero-top">
+      <p class="fwo-kicker">Qollab x IonQ hackathon &middot; a fictional instrument, run on a live quantum simulator</p>
+      <div class="fwo-style">
+        <label for="fwo-style">Style</label>
+        <select id="fwo-style">
+          <option value="a">A &middot; Night observatory</option>
+          <option value="b">B &middot; Instrument console</option>
+          <option value="c">C &middot; Luminous anatomy</option>
+          <option value="d" selected>D &middot; Blueprint</option>
+        </select>
+      </div>
+    </div>
     <h1 class="fwo-title">The Free Will Observatory</h1>
     <p class="fwo-hook">Can a choice change what happens next? Pick a guide, set three dials, and run one tiny
       quantum experiment to watch the odds of two possible futures move.</p>
