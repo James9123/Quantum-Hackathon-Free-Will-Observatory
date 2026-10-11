@@ -380,10 +380,10 @@ async function start() {
   // The Style button opens a side panel with the four style buttons; the pressed one is the
   // page's style. Escape, the close button or the Style button again closes it, and focus
   // returns to the Style button.
-  // The easter egg at the foot of the panel: the Self idles under a bucket of water; press the
-  // bucket and it pours on him (ui/egg.js). It runs only while the panel is open.
+  // The easter egg at the foot of the panel: the Self stands under a bucket of water on the
+  // first frame of its angry strip; press the bucket and it pours on him (ui/egg.js).
   const egg = createEggStage({ button: el.egg, bucket: el.eggBucket, self: el.eggSelf },
-    { idle: SPRITES.self.idle, angry: EGGS.angry, bucket: EGGS.bucket },
+    { angry: EGGS.angry, bucket: EGGS.bucket },
     { reducedMotion: reduced, setTimeoutFn: setTimeout, clearTimeoutFn: clearTimeout });
   const styleOptions = Array.from(el.stylePanel.querySelectorAll("[data-style]"));
   function markStyle() {

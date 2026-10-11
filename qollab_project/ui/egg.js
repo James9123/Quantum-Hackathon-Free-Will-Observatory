@@ -1,10 +1,10 @@
-// The side panel's easter egg: the Self stands at the foot of the Style panel, idling, under a
-// bucket of water. Press the bucket: it tips and pours, and when the water lands the Self plays
-// its angry strip (frame 1, the still pose, held for a beat, then on to frame 8) before going back
-// to idle. Decoration only; it never touches the run, the readings or the dialogue. Timers run
-// only while the panel is open (start/stop). Under prefers-reduced-motion nothing loops: the
-// press shows the pouring bucket and the Self's last angry frame as stills, then resets.
-// No imports: main.js passes in the sprite data (SPRITES.self.idle and EGGS).
+// The side panel's easter egg: the Self stands at the foot of the Style panel under a bucket of
+// water, still on frame 1 of its angry strip (the pose before the splash; the dialogue box's own
+// sheets are not used here). Press the bucket: it tips and pours, and when the water lands the
+// Self holds frame 1 for a beat, plays on to frame 8, then rests on frame 1 again. Decoration
+// only; it never touches the run, the readings or the dialogue. Timers run only during a pour and
+// stop when the panel closes. Under prefers-reduced-motion the press shows the pouring bucket
+// and the last angry frame as stills, then resets. No imports: main.js passes in EGGS.
 
 const MIN_MS = 16;
 
@@ -13,8 +13,8 @@ export function createEggStage(els, data, opts) {
     freezeMs: 500, landAt: 4, endMs: 700 }, opts || {});
   // called unbound: the browser's timer functions throw when called as a method of another object
   const setT = o.setTimeoutFn, clearT = o.clearTimeoutFn;
-  const idle = data.idle, angry = data.angry, bucket = data.bucket;
-  let selfTimer = null, bucketTimer = null, running = false, busy = false;
+  const angry = data.angry, bucket = data.bucket;
+  let selfTimer = null, bucketTimer = null, busy = false;
 
   function cellOf(sheet) {
     return sheet.cell || 128;
@@ -46,11 +46,10 @@ export function createEggStage(els, data, opts) {
     return Math.max(MIN_MS, Math.round((1000 * ticks) / (sheet.fps || 6)));
   }
 
-  function idleLoop(i) {
+  // the resting pose: frame 1 of the angry strip, before the splash
+  function rest() {
     clearSelf();
-    draw(els.self, idle, i);
-    if (!running || o.reducedMotion) return;
-    selfTimer = setT(() => idleLoop((i + 1) % idle.frames), frameMs(idle, i));
+    draw(els.self, angry, 0);
   }
 
   function playAngry() {
@@ -64,7 +63,7 @@ export function createEggStage(els, data, opts) {
     const tick = () => {
       i += 1;
       if (i >= angry.frames) {
-        selfTimer = setT(() => { busy = false; idleLoop(0); }, o.endMs);
+        selfTimer = setT(() => { busy = false; rest(); }, o.endMs);
         return;
       }
       draw(els.self, angry, i);
@@ -81,7 +80,7 @@ export function createEggStage(els, data, opts) {
     if (o.reducedMotion) {
       draw(els.bucket, bucket, o.landAt);
       playAngry();
-      bucketTimer = setT(() => { draw(els.bucket, bucket, 0); draw(els.self, idle, 0); busy = false; }, 1200);
+      bucketTimer = setT(() => { draw(els.bucket, bucket, 0); rest(); busy = false; }, 1200);
       return;
     }
     let i = 0;
@@ -96,23 +95,21 @@ export function createEggStage(els, data, opts) {
     bucketTimer = setT(tick, frameMs(bucket, 0));
   }
 
-  /** The panel opened: the Self idles. */
+  /** The panel opened: the Self waits on its resting pose. */
   function start() {
-    running = true;
-    if (!busy) idleLoop(0);
+    if (!busy) rest();
   }
 
   /** The panel closed: every timer stops, both rest on frame 1. */
   function stop() {
-    running = false;
     busy = false;
     clearSelf();
     clearBucket();
-    draw(els.self, idle, 0);
+    rest();
     draw(els.bucket, bucket, 0);
   }
 
-  draw(els.self, idle, 0);
+  rest();
   draw(els.bucket, bucket, 0);
   els.button.addEventListener("click", pour);
   return { start, stop, pour, get busy() { return busy; } };

@@ -5,7 +5,8 @@
 self-angry.gif: the team's 8-frame, 256 px, hard-alpha animation of the Self frowning after
 the splash (frame 1 is the still pose). bucket.gif: the 8-frame, 384 px bucket that tips and
 pours. Frames are area-averaged with the rules of tools/build_sprites.py (hard alpha, the art's
-own palette): the Self to 128 px cells, the bucket to 96 px. The strips are embedded as data
+own palette): the Self to 128 px cells. The bucket is drawn at 0.65 of 96 px, so its frames are
+box-filtered straight from 384 to 62 px with alpha cut back to hard edges. The strips are embedded as data
 URIs because JavaScript on Qollab cannot fetch project files; no paths are written out.
 """
 import json
@@ -38,10 +39,28 @@ def strip(path, src_px, halvings):
     return {"frames": 8, "cell": cell, "fps": round(1000.0 / durs[0], 3), "src": _data_uri(big)}
 
 
+def strip_scaled(path, src_px, cell):
+    """Box-filter each frame straight to `cell` px (any ratio), alpha back to hard edges."""
+    frames = [f.convert("RGBA").copy() for f in ImageSequence.Iterator(Image.open(path))]
+    durs = [f.info.get("duration") or 100 for f in ImageSequence.Iterator(Image.open(path))]
+    if len(frames) != 8 or any(f.size != (src_px, src_px) for f in frames):
+        raise SystemExit("%s: expected 8 frames of %d px" % (os.path.basename(path), src_px))
+    out = Image.new("RGBA", (cell * 8, cell), (0, 0, 0, 0))
+    for i, f in enumerate(frames):
+        small = f.resize((cell, cell), Image.BOX)
+        a = small.getchannel("A").point(lambda v: 255 if v >= 128 else 0)
+        small.putalpha(a)
+        out.paste(small, (i * cell, 0))
+    return {"frames": 8, "cell": cell, "fps": round(1000.0 / durs[0], 3), "src": _data_uri(out)}
+
+
+BUCKET_PX = 62          # 0.65 x 96
+
+
 def main():
     if len(sys.argv) != 3:
         raise SystemExit(__doc__)
-    data = {"angry": strip(sys.argv[1], 256, 1), "bucket": strip(sys.argv[2], 384, 2)}
+    data = {"angry": strip(sys.argv[1], 256, 1), "bucket": strip_scaled(sys.argv[2], 384, BUCKET_PX)}
     text = "\n".join([
         "// The side panel's easter egg: a bucket of water tips onto the Self, who frowns. GENERATED",
         "// by tools/build_eggs.py from the team's GIFs; do not edit by hand. Each is one strip of 8",
