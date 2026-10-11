@@ -1,0 +1,250 @@
+<div id="fwo-app" class="fwo-app" lang="en" data-theme="a">
+  <header class="fwo-hero">
+    <p class="fwo-kicker">Qollab x IonQ hackathon &middot; a fictional instrument, run on a live quantum <span class="fwo-kicker-end">simulator<button type="button" id="fwo-style-btn" class="fwo-style-btn" aria-expanded="false" aria-controls="fwo-style-panel">Style</button></span></p>
+    <h1 class="fwo-title">The Free Will Observatory</h1>
+    <p class="fwo-hook">Can a choice change what happens next? Pick a guide, set three dials, and run one tiny
+      quantum experiment to watch the odds of two possible futures move.</p>
+    <ol class="fwo-steps" aria-label="How to use this page">
+      <li><span class="fwo-step-n" aria-hidden="true">1</span> Pick a guide</li>
+      <li><span class="fwo-step-n" aria-hidden="true">2</span> Set the dials</li>
+      <li><span class="fwo-step-n" aria-hidden="true">3</span> Press Run</li>
+    </ol>
+  </header>
+  <aside id="fwo-style-panel" class="fwo-style-panel" aria-label="Page style" hidden>
+    <div class="fwo-style-panel-head">
+      <p class="fwo-style-panel-title">Page style</p>
+      <button type="button" id="fwo-style-close" class="fwo-style-close" aria-label="Close the style panel">&times;</button>
+    </div>
+    <div class="fwo-style-options" role="group" aria-label="Choose a page style">
+      <button type="button" class="fwo-style-opt" data-style="a" aria-pressed="true">A &middot; Night observatory</button>
+      <button type="button" class="fwo-style-opt" data-style="b" aria-pressed="false">B &middot; Instrument console</button>
+      <button type="button" class="fwo-style-opt" data-style="c" aria-pressed="false">C &middot; Luminous anatomy</button>
+      <button type="button" class="fwo-style-opt" data-style="d" aria-pressed="false">D &middot; Blueprint</button>
+    </div>
+    <div class="fwo-egg-stage">
+      <button type="button" id="fwo-egg" class="fwo-egg" title="A bucket of water" aria-label="Pour a bucket of water on the Self"><span id="fwo-egg-bucket" class="fwo-egg-sprite"></span></button>
+      <span id="fwo-egg-self" class="fwo-egg-sprite fwo-egg-self" role="img" aria-label="The Self, standing at the foot of the panel"></span>
+    </div>
+  </aside>
+
+  <div class="fwo-layout">
+    <div class="fwo-col fwo-col--act">
+      <section class="fwo-guide fwo-panel" aria-labelledby="fwo-personas-h">
+        <h2 id="fwo-personas-h"><span class="fwo-step-n" aria-hidden="true">1</span> Pick a guide</h2>
+        <div id="fwo-tabs" class="fwo-tabs" role="tablist" aria-label="Guide">
+          <button type="button" role="tab" id="fwo-tab-self" aria-selected="true" aria-controls="fwo-panel-self" tabindex="0" class="fwo-tab">
+            <span class="fwo-tab-name">The Self</span><span class="fwo-tab-role">makes the choice</span></button>
+          <button type="button" role="tab" id="fwo-tab-demon" aria-selected="false" aria-controls="fwo-panel-demon" tabindex="-1" class="fwo-tab">
+            <span class="fwo-tab-name">Laplace's Demon</span><span class="fwo-tab-role">predicts the odds</span></button>
+          <button type="button" role="tab" id="fwo-tab-observer" aria-selected="false" aria-controls="fwo-panel-observer" tabindex="-1" class="fwo-tab">
+            <span class="fwo-tab-name">The Observer</span><span class="fwo-tab-role">picks the question</span></button>
+        </div>
+        <div id="fwo-panel-self" role="tabpanel" aria-labelledby="fwo-tab-self" tabindex="0" class="fwo-panel-persona">
+          <div id="fwo-dialogue" class="fwo-dialogue" role="group" aria-labelledby="fwo-dialogue-name" tabindex="0">
+            <div id="fwo-dialogue-portrait" class="fwo-portrait" aria-hidden="true">
+              <span class="fwo-portrait-ph">Portrait</span>
+              <span id="fwo-portrait-who" class="fwo-portrait-who">The Self</span>
+              <span class="fwo-portrait-size">no sprite loaded</span>
+            </div>
+            <div class="fwo-dialogue-body">
+              <div class="fwo-dialogue-head">
+                <span id="fwo-dialogue-name" class="fwo-dialogue-name">The Self</span>
+                <button id="fwo-dialogue-skip" type="button" class="fwo-dialogue-skip" hidden>Skip</button>
+                <button id="fwo-scene-skip" type="button" class="fwo-dialogue-skip fwo-scene-skip" hidden>Skip intro</button>
+              </div>
+              <p id="fwo-dialogue-text" class="fwo-dialogue-text" aria-hidden="true"></p>
+              <p id="fwo-scene-hint" class="fwo-dialogue-hint" hidden>Click or press Enter for the next line. Esc skips the intro.</p>
+            </div>
+          </div>
+          <p id="fwo-persona-self" class="fwo-tip"></p>
+        </div>
+        <div id="fwo-panel-demon" role="tabpanel" aria-labelledby="fwo-tab-demon" tabindex="0" class="fwo-panel-persona" hidden>
+          <p id="fwo-demon-line" class="fwo-tip"></p>
+        </div>
+        <div id="fwo-panel-observer" role="tabpanel" aria-labelledby="fwo-tab-observer" tabindex="0" class="fwo-panel-persona" hidden>
+          <p id="fwo-observer-text" class="fwo-tip"></p>
+        </div>
+        <p id="fwo-poetic" class="fwo-sr" aria-live="polite" aria-atomic="true"></p>
+        <div class="fwo-guide-foot">
+          <div class="fwo-field fwo-check fwo-sound">
+            <input id="fwo-sound" type="checkbox" checked aria-describedby="fwo-sound-help">
+            <label for="fwo-sound">Talking sound</label>
+            <p id="fwo-sound-help" class="fwo-help">Soft blips while a guide talks; only after you click something.</p>
+          </div>
+          <p id="fwo-persona-note" class="fwo-small">Guides speak in character, so their words are interpretation. The numbers are the record.</p>
+        </div>
+      </section>
+
+      <section class="fwo-dials fwo-panel" aria-labelledby="fwo-controls-h">
+        <h2 id="fwo-controls-h"><span class="fwo-step-n" aria-hidden="true">2</span> Set the dials</h2>
+        <div class="fwo-field">
+          <div class="fwo-range-head">
+            <label for="fwo-intention">Your choice <span class="fwo-tech">(intention)</span></label>
+            <span id="fwo-intention-out" class="fwo-out" aria-hidden="true">90&deg;</span>
+          </div>
+          <input id="fwo-intention" type="range" min="0" max="360" step="1" value="90" aria-describedby="fwo-intention-help">
+          <p id="fwo-intention-help" class="fwo-help">Which way the Self leans. 0&deg; and 180&deg; are opposite choices.</p>
+        </div>
+        <div class="fwo-field">
+          <div class="fwo-range-head">
+            <label for="fwo-coupling">Ties to the world <span class="fwo-tech">(World coupling)</span></label>
+            <span id="fwo-coupling-out" class="fwo-out" aria-hidden="true">0.00 &middot; none</span>
+          </div>
+          <input id="fwo-coupling" type="range" min="0" max="1" step="0.01" value="0" aria-describedby="fwo-coupling-help">
+          <p id="fwo-coupling-help" class="fwo-help">How much a second qubit, the World, keeps a record of the Self. More ties leave the choice less room.</p>
+        </div>
+        <div class="fwo-field">
+          <div class="fwo-range-head">
+            <label for="fwo-perspective">Point of view <span class="fwo-tech">(perspective)</span></label>
+            <span id="fwo-perspective-out" class="fwo-out" aria-hidden="true">0&deg;</span>
+          </div>
+          <input id="fwo-perspective" type="range" min="0" max="180" step="1" value="0" aria-describedby="fwo-perspective-help">
+          <p id="fwo-perspective-help" class="fwo-help">Which question we ask when we look. It changes the answer, not the Self.</p>
+        </div>
+
+        <div class="fwo-actions">
+          <button id="fwo-run" type="button" class="fwo-button" aria-describedby="fwo-run-policy" disabled>
+            <span class="fwo-step-n" aria-hidden="true">3</span> Run the experiment</button>
+        </div>
+        <p id="fwo-run-policy" class="fwo-small">Getting the simulator ready&hellip;</p>
+        <p id="fwo-status" class="fwo-status" role="status" aria-live="polite">Starting&hellip;</p>
+        <p id="fwo-progress" class="fwo-progress" hidden></p>
+        <p id="fwo-run-lock" class="fwo-note fwo-note--warn" hidden></p>
+        <div id="fwo-run-error"></div>
+
+        <details class="fwo-details">
+          <summary>Advanced run settings</summary>
+          <div class="fwo-field">
+            <label for="fwo-shots">Shots per circuit</label>
+            <input id="fwo-shots" type="number" inputmode="numeric" min="1" max="4096" step="1" value="1024" aria-describedby="fwo-shots-help">
+            <p id="fwo-shots-help" class="fwo-help">How many times each of the four tiny circuits is run: a whole number from 1 to 4,096. More shots, sharper numbers.</p>
+          </div>
+          <div class="fwo-field">
+            <label for="fwo-mode">Packing</label>
+            <select id="fwo-mode" aria-describedby="fwo-mode-help">
+              <option value="auto" selected>automatic (best for this simulator)</option>
+              <option value="tile">side by side: all four circuits in one wide circuit</option>
+              <option value="list">as a list: four circuits in one job</option>
+            </select>
+            <p id="fwo-mode-help" class="fwo-help">Either way it is a single job.</p>
+          </div>
+          <div class="fwo-field fwo-check">
+            <input id="fwo-canary" type="checkbox" checked aria-describedby="fwo-canary-help">
+            <label for="fwo-canary">Self-check circuits</label>
+            <p id="fwo-canary-help" class="fwo-help">Adds three tiny circuits to the same job that confirm the bits are read in the right order (recommended).</p>
+          </div>
+          <p id="fwo-draft" class="fwo-small fwo-draft"></p>
+        </details>
+      </section>
+    </div>
+
+    <div class="fwo-col fwo-col--see">
+      <section class="fwo-scene fwo-panel" aria-labelledby="fwo-scene-h">
+        <h2 id="fwo-scene-h">Two possible futures</h2>
+        <div id="fwo-scene-host" class="fwo-scene-host"></div>
+        <div class="fwo-futures">
+          <article class="fwo-future fwo-future--1" aria-labelledby="fwo-future-1-h">
+            <h3 id="fwo-future-1-h" class="fwo-future-h">Future 1</h3>
+            <div id="fwo-future-1"><p class="fwo-small">Run the experiment to see.</p></div>
+          </article>
+          <article class="fwo-future fwo-future--0" aria-labelledby="fwo-future-0-h">
+            <h3 id="fwo-future-0-h" class="fwo-future-h">Future 0</h3>
+            <div id="fwo-future-0"><p class="fwo-small">Run the experiment to see.</p></div>
+          </article>
+        </div>
+        <p id="fwo-scene-caption" class="fwo-small fwo-scene-caption">The two spheres are the two possible futures: the bigger one
+          is the more likely. The brain-like web is decoration, not qubits or neurons.</p>
+        <div class="fwo-field fwo-check fwo-motion">
+          <input id="fwo-motion" type="checkbox" checked aria-describedby="fwo-motion-help">
+          <label for="fwo-motion">Motion</label>
+          <p id="fwo-motion-help" class="fwo-help">Decoration only; the numbers never move with it.</p>
+        </div>
+      </section>
+      <section class="fwo-results fwo-panel" aria-labelledby="fwo-readings-h">
+      <h2 id="fwo-readings-h">What happened</h2>
+      <p class="fwo-small">Three readings from your run, in plain words. The technical name of each is in small print.</p>
+      <div id="fwo-readings" class="fwo-readings"></div>
+      <p class="fwo-honest">Honest note: this is a simulation of a made-up model of free will. It shows what quantum theory
+        predicts for these circuits; it does not test nature or anyone's mind.</p>
+      </section>
+    </div>
+  </div>
+
+  <section class="fwo-more" aria-labelledby="fwo-more-h">
+    <h2 id="fwo-more-h">Want more detail?</h2>
+
+    <details class="fwo-details fwo-panel">
+      <summary>The full numbers from your run</summary>
+      <p id="fwo-factual" class="fwo-factual">Run the experiment first. The factual sentence is built only from your settings and the measured counts.</p>
+      <div id="fwo-record"></div>
+    </details>
+
+    <details class="fwo-details fwo-panel">
+      <summary>Before and after: a chart</summary>
+      <figure class="fwo-figure">
+        <div id="fwo-chart" class="fwo-chart"></div>
+        <figcaption id="fwo-chart-summary" class="fwo-caption">No run yet.</figcaption>
+      </figure>
+      <ul id="fwo-chart-legend" class="fwo-legend"></ul>
+      <details class="fwo-details">
+        <summary>Data table for this chart</summary>
+        <div id="fwo-chart-table"></div>
+      </details>
+    </details>
+
+    <details class="fwo-details fwo-panel">
+      <summary>What the Demon predicted</summary>
+      <div id="fwo-demon-forecast" class="fwo-demon-block"><p class="fwo-small">Computing the forecast&hellip;</p></div>
+      <div id="fwo-demon-compare" class="fwo-demon-block"></div>
+    </details>
+
+    <details id="fwo-how" class="fwo-details fwo-panel">
+      <summary>How it works, step by step</summary>
+      <div id="fwo-how-body"></div>
+    </details>
+
+    <details class="fwo-details fwo-panel">
+      <summary>How sure can we be?</summary>
+      <div id="fwo-sure-body"></div>
+      <h3>The theory across every amount of ties to the world</h3>
+      <figure class="fwo-figure">
+        <div id="fwo-curve" class="fwo-chart"></div>
+        <figcaption id="fwo-curve-summary" class="fwo-caption">Loading the theoretical curves&hellip;</figcaption>
+      </figure>
+      <ul id="fwo-curve-legend" class="fwo-legend"></ul>
+      <details class="fwo-details">
+        <summary>Data table for the theory curves</summary>
+        <div id="fwo-curve-table"></div>
+      </details>
+      <details class="fwo-details">
+        <summary>Checks on the error bars and the IonQ-like noise model</summary>
+        <div id="fwo-coverage"></div>
+      </details>
+      <p id="fwo-curve-prov" class="fwo-small"></p>
+    </details>
+
+    <details class="fwo-details fwo-panel">
+      <summary>Compared with ordinary, non-quantum things</summary>
+      <div id="fwo-baselines" class="fwo-baselines"></div>
+    </details>
+
+    <details class="fwo-details fwo-panel">
+      <summary>Where this runs</summary>
+      <ul id="fwo-badge-list" class="fwo-chips">
+        <li class="fwo-chip">loading&hellip;</li>
+      </ul>
+      <p id="fwo-badge-policy" class="fwo-small"></p>
+    </details>
+
+    <details class="fwo-details fwo-panel">
+      <summary>What this does NOT show</summary>
+      <div id="fwo-honesty"></div>
+    </details>
+  </section>
+
+  <footer class="fwo-footer">
+    <p class="fwo-attribution">This effort is supported by Qollab & IonQ</p>
+    <p class="fwo-small">Simulators compute what quantum theory predicts; they do not test nature. The readings are a
+      designed, fictional model of agency, not a measurement of free will. Source code: MIT License.</p>
+  </footer>
+</div>

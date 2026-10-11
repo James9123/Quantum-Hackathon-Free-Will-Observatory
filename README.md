@@ -102,6 +102,10 @@ leave 50/50. That contrast is the whole show, and it reproduces to floating-poin
 
 ## How to run on Qollab
 
+**Ready to upload:** [`build/upload-js.zip`](build/upload-js.zip) (the same files unpacked:
+[`build/upload-js/`](build/upload-js/)). On Qollab, click **New Project**, choose **Upload your
+own files**, drop the zip on the card (it shows 30 files and a JS project), then **Create**.
+
 Open the project on Qollab, keep the **built-in simulator** in the Run dialog, press
 **Run**, then use the page: choose a persona, move the three sliders, press **Run
 experiment**. The first run on the defaults (Intention π/2, coupling 0, perspective 0,

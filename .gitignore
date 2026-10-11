@@ -3,6 +3,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 upload/
-build/
+build/*
+# the ready-to-upload Qollab build is kept in the repo (tools/pack_for_qollab.py --entry js)
+!build/upload-js/
+!build/upload-js.zip
 *.egg-info/
 .DS_Store
