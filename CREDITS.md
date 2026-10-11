@@ -6,9 +6,9 @@ This effort is supported by Qollab & IonQ
 
 | Name | Role |
 |---|---|
-| TODO(team): name | captain: submission, Qollab upload, judge run and IonQ verification run |
-| TODO(team): name | quantum owner: circuits, live execution, statistics, validation |
-| TODO(team): name | experience owner: scene, personas, interface, video |
+| TODO(team): Sanjay Mistry | captain: submission, Qollab upload, judge run and IonQ verification run |
+| TODO(team): James Wagner | quantum owner: circuits, live execution, statistics, validation, software design |
+| TODO(team): Jack Aldrich | experience owner: scene, personas, interface, video |
 
 ## The design
 
