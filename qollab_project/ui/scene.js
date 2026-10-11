@@ -6,7 +6,7 @@
 //   branch thickness       = 2 + 10 p  pixels            (converted to world units at
 //                                                          the branch depth, so it is
 //                                                          really that many pixels)
-//   World bridge           thickness 2 + 10 I px, opacity 0.15 + 0.85 I  (I in bits,
+//   World bridge           thickness 4 + 12 I px, opacity 0.15 + 0.85 I  (I in bits,
 //                                                          from the separate connection probe)
 //   previous distribution  muted wireframe ghost labelled "previous" until the next
 //                          result arrives; the live geometry then animates over ~1 s
@@ -303,7 +303,7 @@ export function createScene(THREE, lib, host, opts) {
     setTube(tubes.b1, curves.b1, placeholder ? 2 : 2 + 10 * p1);
     setTube(tubes.b0, curves.b0, placeholder ? 2 : 2 + 10 * p0);
     tubeMat.opacity = placeholder ? 0.35 : 0.92;
-    setTube(tubes.bridge, curves.bridge, placeholder ? 2 : 2 + 10 * I);
+    setTube(tubes.bridge, curves.bridge, placeholder ? 4 : 4 + 12 * I);
     bridgeMat.opacity = placeholder ? 0.15 : 0.15 + 0.85 * I;
   }
 

@@ -8,12 +8,11 @@
 // The same visual mappings as the 3D view (build guide p.10), from the completed display run:
 //   future radius        = 52 * cbrt(p) scene units            (volume follows probability)
 //   branch thickness     = 2 + 10 p screen pixels              (non-scaling strokes)
-//   World bridge         = 2 + 10 I px, opacity 0.15 + 0.85 I   (I in bits, connection probe)
+//   World bridge         = 4 + 12 I px, opacity 0.15 + 0.85 I   (I in bits, connection probe)
 //   previous run         = dashed outlines labelled "previous" until the next result
 //   particles            = a FIXED 40 dots routed to the two branches in proportions p1 / p0;
 //                          decoration, never shot chronology
-// The brain (two lobes of nodes, slightly apart, and their links) and the stars are fixed
-// constants, made once from a seeded layout, so a change in the picture always means a change in the numbers.
+// The brain (the 3D view's two-lobe graph, projected) and the stars are fixed constants, so a change in the picture always means a change in the numbers.
 // Annotated values (t = ... px, I = ... bits) always show the run's own numbers, never the
 // in-between frames of the one-second transition. No imports: main.js passes in the dom
 // helpers (lib).
@@ -26,42 +25,57 @@ const GHOST_OFF = [10, -12];
 const WORLD = [150, 322];
 const WORLD_R = 22;
 // Branch curves (cubic): the last point is the sphere's left edge, so it follows the radius.
-const BRANCH = [[[288, 226], [384, 228], [430, 300]], [[285, 150], [380, 148], [430, 112]]];
-const BRIDGE = "M 205,258 C 185,285 172,296 156,300";
+const BRANCH = [[[288, 212], [384, 216], [430, 300]], [[292, 152], [384, 150], [430, 112]]];
+const BRIDGE = "M 184,246 C 180,268 170,288 156,300";
+const SELF_X = 184;                                // centre of the Self (label, glow)
 const N_PART = 40;
 const FLOW = 0.05;                                 // particle speed: branch lengths per second
 const NARROW = 480;                                // px: shorter labels below this width
 const BG = { x: -330, y: -210, width: 1320, height: 840 };   // covers any letterbox margin
 
-// The fixed decorative layout: 60 nodes in two lobes (34 left, 26 right) slightly apart, so the
-// Self reads as two hemispheres with a narrow fissure; 154 links within the lobes, 3 across
-// the gap (the last three pairs); 110 stars.
+// The Self: the 3D view's own brain (ui/scene.js brainGraph, seed 20261010: two ellipsoid lobes
+// with a fissure, 100 nodes, three nearest-neighbour links each), turned by the 3D view's tilt
+// (0.12, -0.42, 0.04 rad) and projected flat. NODES holds x, y and a ball radius per node,
+// far to near (nearer nodes are larger and drawn on top); LOBES holds each lobe shell's
+// projected ellipse (cx, cy, rx, ry, rotation in degrees). Then 110 stars (x, y, r, opacity).
 const NODES = [
-  135.2, 114.7, 168.2, 101.9, 156.6, 150, 108.5, 173.2, 106.5, 161.1, 145.4, 225.6, 115.1, 126.6, 165.8, 245.4,
-  160.8, 155.1, 189.1, 137.5, 133.8, 223.8, 120.9, 185.4, 167, 151.1, 157.8, 100.3, 171.1, 160.1, 134.3, 186,
-  148.3, 139.2, 182.6, 204.6, 127.2, 184.2, 155.5, 233.5, 176.1, 137.2, 144.8, 214.2, 118, 170.2, 106.6, 199.6,
-  179.6, 184, 190.8, 141.5, 172.7, 187.5, 161.1, 164.8, 150.4, 198.9, 108.8, 205, 185.4, 136.7, 141.5, 199.7,
-  105, 165.7, 115.7, 130.6, 229, 231, 203.1, 175.3, 242.1, 232.6, 264.6, 230, 219.6, 170.8, 226.2, 232.7,
-  211, 146.6, 215.8, 180, 245.4, 150.7, 227.1, 190.8, 275.7, 207.1, 239.3, 197.5, 252.6, 123.1, 271.3, 219,
-  269.1, 221.3, 229, 168.7, 205, 199.7, 213.8, 137.4, 224.7, 122.9, 204.9, 164, 247.5, 135.6, 217.4, 161.9,
-  226.7, 132.2, 235.2, 179.9, 224.9, 150.9, 265.4, 137.3,
+  120.6, 161.7, 3.4, 137.1, 198.5, 3.44, 154.1, 175.5, 3.45, 140.7, 169.2, 3.48, 137.5, 171.5, 3.48, 139.6, 170.9, 3.51,
+  138.4, 169.2, 3.51, 132, 218.7, 3.53, 97.7, 193.8, 3.54, 134.7, 132.5, 3.54, 146, 176.7, 3.55, 150.4, 156.1, 3.55,
+  116.4, 194.9, 3.55, 103, 140.5, 3.57, 110.8, 202.9, 3.57, 101.4, 201.8, 3.58, 135.3, 225.4, 3.65, 103.2, 189.8, 3.67,
+  122.1, 143.6, 3.67, 108.3, 158.4, 3.67, 111.2, 193.4, 3.68, 108.6, 135.4, 3.73, 109.2, 219.5, 3.75, 123.5, 228.8, 3.8,
+  106.7, 238.9, 3.81, 84.7, 217.5, 3.83, 136.4, 240.4, 3.85, 79.8, 207.8, 3.88, 135.1, 119.7, 3.88, 95.2, 158.6, 3.89,
+  103.7, 228.3, 3.9, 263.7, 169, 3.93, 69.8, 186, 3.95, 92.3, 180.2, 3.97, 123, 118.3, 3.98, 270.2, 181.7, 3.99,
+  74.3, 181.3, 4.03, 87.1, 184.8, 4.04, 271.8, 178.4, 4.07, 275.8, 198.5, 4.07, 262.5, 207.4, 4.08, 76.2, 145.9, 4.08,
+  266.9, 196.1, 4.09, 262.4, 131, 4.09, 93.5, 138.6, 4.1, 91.8, 142, 4.1, 106.9, 125.1, 4.16, 88.6, 178, 4.2,
+  289, 152, 4.24, 258.2, 234.4, 4.24, 116.7, 115.8, 4.25, 101.1, 198.7, 4.27, 98.2, 132.2, 4.3, 277.5, 209.8, 4.32,
+  83.2, 180.1, 4.32, 249.5, 235.2, 4.33, 101.6, 132.4, 4.34, 94, 163.6, 4.36, 246.8, 231.4, 4.37, 106.3, 208.2, 4.39,
+  111.2, 172.2, 4.4, 113.7, 189.5, 4.41, 267.1, 227.5, 4.42, 253.5, 113.5, 4.44, 268.1, 232, 4.45, 294.8, 166.3, 4.46,
+  292.2, 169.5, 4.5, 248.4, 118.2, 4.51, 238.3, 111.7, 4.53, 271.9, 176.7, 4.54, 270.6, 224.4, 4.55, 288.9, 211.7, 4.57,
+  270.8, 162, 4.57, 277.1, 125.6, 4.58, 270.9, 155.6, 4.59, 284.3, 201.2, 4.6, 224.6, 222.8, 4.68, 256.5, 234.7, 4.69,
+  252, 122, 4.69, 270.5, 147.2, 4.69, 261.2, 197.4, 4.74, 252, 124.2, 4.79, 241.3, 231.2, 4.8, 253.2, 221.8, 4.8,
+  222.4, 126.8, 4.83, 268.9, 151.2, 4.83, 237.4, 225.8, 4.84, 281.3, 205, 4.84, 232.8, 143.9, 4.85, 233, 199.7, 4.85,
+  294.3, 156.3, 4.86, 215.8, 202.3, 4.87, 220.9, 171.6, 4.91, 228, 131.4, 4.92, 260.3, 148.6, 4.96, 246.8, 177.2, 4.97,
+  241.4, 177.5, 4.97, 268.3, 169.7, 4.99, 284.4, 164.5, 4.99, 261.4, 143.2, 5,
 ];
 const LINKS = [
-  0, 2, 0, 13, 0, 16, 0, 33, 1, 9, 1, 13, 2, 8, 2, 12, 2, 14, 3, 15, 3, 29, 3, 32,
-  3, 33, 4, 6, 4, 11, 4, 23, 4, 33, 5, 21, 5, 28, 6, 33, 7, 19, 8, 9, 8, 12, 8, 20,
-  8, 27, 8, 28, 8, 30, 9, 12, 9, 14, 9, 20, 9, 30, 10, 11, 10, 15, 10, 19, 10, 21, 10, 29,
-  10, 31, 11, 21, 11, 23, 11, 28, 11, 31, 12, 20, 12, 25, 12, 26, 12, 30, 13, 16, 13, 20, 14, 16,
-  14, 20, 14, 24, 14, 30, 15, 18, 15, 21, 15, 22, 15, 27, 15, 29, 15, 31, 15, 32, 16, 27, 16, 33,
-  17, 24, 17, 26, 18, 21, 18, 22, 18, 31, 19, 21, 19, 31, 20, 30, 21, 28, 21, 31, 22, 23, 22, 32,
-  22, 33, 23, 32, 24, 26, 24, 27, 25, 30, 26, 28, 26, 31, 27, 28, 27, 30, 27, 31, 32, 33, 34, 36,
-  35, 38, 35, 40, 35, 49, 35, 50, 35, 53, 35, 57, 35, 58, 36, 37, 36, 43, 36, 48, 37, 44, 37, 45,
-  38, 42, 38, 43, 38, 45, 38, 50, 38, 53, 38, 55, 38, 56, 39, 45, 39, 50, 40, 41, 40, 42, 40, 49,
-  40, 52, 40, 56, 40, 57, 41, 45, 41, 49, 41, 50, 41, 53, 41, 57, 41, 58, 42, 49, 42, 52, 42, 56,
-  42, 58, 42, 59, 43, 45, 43, 49, 43, 50, 43, 53, 43, 55, 43, 57, 43, 58, 44, 48, 45, 49, 46, 52,
-  46, 54, 46, 56, 47, 48, 49, 50, 49, 51, 49, 53, 49, 54, 49, 56, 49, 58, 50, 53, 50, 55, 50, 57,
-  51, 52, 52, 55, 52, 58, 53, 56, 54, 55, 54, 56, 54, 59, 55, 56, 55, 57, 55, 58, 25, 40, 17, 50,
-  9, 51,
+  30, 24, 30, 22, 30, 23, 1, 7, 1, 12, 1, 10, 8, 15, 8, 17, 8, 14, 10, 5, 10, 6, 10, 3,
+  45, 44, 45, 41, 45, 52, 29, 33, 29, 19, 29, 45, 13, 21, 13, 19, 13, 18, 50, 46, 50, 56, 50, 52,
+  33, 37, 33, 36, 33, 32, 24, 23, 24, 22, 51, 59, 51, 61, 51, 47, 25, 27, 25, 30, 25, 22, 17, 20,
+  17, 15, 15, 14, 57, 60, 57, 54, 57, 47, 32, 36, 32, 37, 14, 12, 14, 20, 2, 10, 2, 3, 2, 5,
+  52, 56, 52, 46, 52, 44, 11, 3, 11, 6, 11, 5, 28, 34, 28, 21, 28, 18, 26, 23, 26, 16, 26, 24,
+  37, 36, 37, 47, 34, 46, 34, 50, 27, 32, 27, 37, 3, 5, 3, 4, 3, 6, 21, 18, 21, 19, 20, 12,
+  54, 47, 54, 51, 19, 18, 22, 23, 18, 9, 7, 16, 7, 14, 46, 44, 4, 5, 4, 6, 61, 60, 61, 59,
+  16, 23, 5, 6, 41, 44, 41, 29, 12, 15, 59, 60, 9, 11, 9, 21, 56, 46, 0, 4, 0, 6, 0, 3,
+  60, 54, 75, 71, 75, 87, 75, 80, 92, 96, 92, 95, 92, 88, 97, 98, 97, 94, 97, 95, 91, 89, 91, 76,
+  91, 92, 64, 62, 64, 70, 64, 55, 74, 72, 74, 79, 74, 69, 99, 94, 99, 85, 99, 97, 82, 86, 82, 83,
+  82, 77, 76, 86, 76, 82, 66, 65, 66, 69, 66, 72, 69, 72, 42, 39, 42, 40, 42, 35, 87, 80, 87, 71,
+  49, 55, 49, 58, 49, 62, 79, 85, 79, 72, 65, 69, 65, 48, 35, 38, 35, 31, 90, 98, 90, 85, 90, 79,
+  58, 55, 58, 62, 94, 85, 31, 38, 31, 42, 84, 93, 84, 88, 84, 81, 39, 40, 39, 35, 89, 86, 89, 96,
+  88, 93, 88, 81, 38, 42, 43, 48, 43, 63, 43, 31, 96, 95, 78, 81, 78, 67, 78, 68, 68, 67, 68, 63,
+  40, 35, 73, 79, 73, 78, 73, 63, 83, 86, 83, 77, 70, 62, 70, 77, 98, 85, 63, 67, 63, 78, 80, 83,
+  55, 62, 53, 62, 53, 39, 53, 71, 81, 93, 71, 70, 48, 66, 48, 38,
 ];
+const LOBES = [[140.4, 175.6, 89.4, 74.5, -177.7], [227.6, 176.4, 89.4, 74.5, -177.7]];
 const STARS = [
   173.6, 274.3, 0.86, 0.64, 261.1, 72.9, 0.69, 0.4, 594.7, 208.8, 0.76, 0.88, 653.7, 189.4, 0.67, 0.38,
   63.1, 144.9, 0.61, 0.42, 172.4, 238.7, 1.56, 0.77, 273.1, 174.5, 1.13, 0.51, 224.5, 29.6, 0.83, 0.93,
@@ -169,9 +183,9 @@ const STYLES = {
     for (let i = 0; i < STARS.length; i += 4) {
       c.add("circle", { cx: STARS[i], cy: STARS[i + 1], r: STARS[i + 2], opacity: STARS[i + 3] }, i % 12 === 0 ? twinkle : stars);
     }
-    c.add("ellipse", { cx: 196, cy: 180, rx: 130, ry: 110, fill: c.ref("brainhalo") });
-    c.links({ stroke: "#e5b45a", "stroke-opacity": 0.28, "stroke-width": 1 });
-    c.nodes({ fill: "#f7d089" }, 2.3);
+    c.add("ellipse", { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("brainhalo") });
+    c.brain({ shell: { fill: "#e5b45a", "fill-opacity": 0.07 }, link: { stroke: "#e5b45a", "stroke-opacity": 0.5, "stroke-width": 0.9 },
+      ball: [[0, "#fdf0cc"], [0.5, "#e8bd6a"], [1, "#8a6424"]] });
     c.selfLabel(72, 12.5, { fill: "#c8d2ec", "font-weight": 500 });
     c.bridge({ stroke: "#8fd8cb" });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R + 10, fill: c.ref("halo"), opacity: 0.35 });
@@ -198,14 +212,14 @@ const STYLES = {
     c.add("rect", Object.assign({ fill: "#16191e" }, BG));
     c.add("rect", Object.assign({ fill: c.ref("grid") }, BG));
     c.add("rect", Object.assign({ fill: c.ref("major") }, BG));
-    c.links({ stroke: "#45c8e0", "stroke-opacity": 0.3, "stroke-width": 0.9 });
-    c.nodes({ fill: "none", stroke: "#45c8e0", "stroke-width": 1.2 }, 2.4);
+    c.brain({ shell: { fill: "#45c8e0", "fill-opacity": 0.06 }, link: { stroke: "#45c8e0", "stroke-opacity": 0.5, "stroke-width": 0.9 },
+      ball: [[0, "#d2f6fc"], [0.5, "#5fd0e6"], [1, "#17606e"]] });
     c.selfLabel(72, 11, { fill: "#b9c0c7", "font-weight": 500 });
     c.bridge({ stroke: "#f0a44a", "stroke-dasharray": "3 4" });
     const bridgeTag = c.text("fwo-s-tag", 204, 314, 10, 9, { fill: "#8b96a1" });
     c.tag((v, narrow) => {
       bridgeTag.textContent = "I = " + v.I.toFixed(3) + " bits" + (narrow ? "" : " \u2192 " +
-        (v.I < 0.0005 ? "bridge at floor" : "bridge " + (2 + 10 * v.I).toFixed(1) + " px"));
+        (v.I < 0.0005 ? "bridge at floor" : "bridge " + (4 + 12 * v.I).toFixed(1) + " px"));
     }, [bridgeTag]);
     const wg = c.add("g", { stroke: "#f0a44a", fill: "none" });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R, "stroke-width": 1.6 }, wg);
@@ -248,13 +262,10 @@ const STYLES = {
     c.gradient("orb", [[0, "#f0e9ff"], [0.38, "#c4acff"], [0.78, "#6d4fc2"], [1, "#332361"]], { cx: "42%", cy: "38%", r: "70%" });
     c.gradient("orbglow", [[0, "#b79cff", 0.5], [0.7, "#b79cff", 0.12], [1, "#b79cff", 0]], {});
     c.gradient("world", [[0, "#d9fff4"], [0.4, "#63e6c4"], [1, "#144d40"]], { cx: "42%", cy: "38%", r: "70%" });
-    c.gradient("node", [[0, "#d3c2ff", 0.9], [1, "#d3c2ff", 0]], {});
     c.add("rect", Object.assign({ fill: c.ref("bg") }, BG));
-    c.add("ellipse", { cx: 150, cy: 172, rx: 74, ry: 104, fill: c.ref("tissue") });
-    c.add("ellipse", { cx: 238, cy: 182, rx: 60, ry: 86, fill: c.ref("tissue"), opacity: 0.85 });
-    c.links({ stroke: "#b79cff", "stroke-opacity": 0.22, "stroke-width": 1 });
-    c.nodes({ fill: c.ref("node") }, 7);
-    c.nodes({ fill: "#e4d9ff" }, 2.6);
+    c.add("ellipse", { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("tissue") });
+    c.brain({ shell: { fill: "#b79cff", "fill-opacity": 0.08 }, link: { stroke: "#b79cff", "stroke-opacity": 0.5, "stroke-width": 0.9 },
+      ball: [[0, "#f5f0ff"], [0.5, "#c9b4ff"], [1, "#6d4fc2"]] });
     c.selfLabel(70, 12.5, { fill: "#c6c3ce", "font-weight": 500 });
     c.bridge({ stroke: "#63e6c4" });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R + 16, fill: c.ref("orbglow"), opacity: 0.35 });
@@ -279,20 +290,18 @@ const STYLES = {
     c.pattern("grid", 24, "M 24,0 L 0,0 0,24", "#d9e3ef");
     c.add("rect", Object.assign({ fill: "#f8fafc" }, BG));
     c.add("rect", Object.assign({ fill: c.ref("grid") }, BG));
-    c.add("ellipse", { cx: 196, cy: 180, rx: 118, ry: 104, fill: "none", stroke: "#17355e", "stroke-width": 1,
-      "stroke-dasharray": "6 5", opacity: 0.55 });
-    c.links({ stroke: "#17355e", "stroke-opacity": 0.38, "stroke-width": 0.9 });
-    c.nodes({ fill: "#17355e" }, 2.6);
+    c.brain({ shell: { fill: "#b23a1f", "fill-opacity": 0.08 }, link: { stroke: "#17355e", "stroke-opacity": 0.5, "stroke-width": 0.8 },
+      ball: [[0, "#f0a08a"], [0.5, "#bf4a2c"], [1, "#6b1f0f"]] });
     c.selfLabel(64, 11, { fill: "#17355e", "font-weight": 600 });
-    c.add("line", { x1: 196, y1: 70, x2: 196, y2: 80, stroke: "#17355e", "stroke-width": 1 });
+    c.add("line", { x1: SELF_X, y1: 70, x2: SELF_X, y2: 88, stroke: "#17355e", "stroke-width": 1 });
     c.bridge({ stroke: "#0e6e8c", "stroke-dasharray": "4 3" });
-    const bd = dimension(204, 322, 182, 293);
+    const bd = dimension(206, 324, 180, 286);
     const bdim = c.add("g", { class: "fwo-s-dim" });
     c.add("path", { d: bd.line, stroke: "#44597a", "stroke-width": 1, fill: "none" }, bdim);
     c.add("path", { d: bd.heads, fill: "#44597a" }, bdim);
     const bridgeTag = c.text("fwo-s-tag", 210, 334, 9.5, 9, { fill: "#44597a" });
     c.tag((v, narrow) => {
-      bridgeTag.textContent = "bridge " + (2 + 10 * v.I).toFixed(1) + " px" + (narrow ? "" : " \u00b7 op. " +
+      bridgeTag.textContent = "bridge " + (4 + 12 * v.I).toFixed(1) + " px" + (narrow ? "" : " \u00b7 op. " +
         (0.15 + 0.85 * v.I).toFixed(2) + " (I = " + v.I.toFixed(3) + ")");
     }, [bridgeTag, bdim]);
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R, fill: "#0e6e8c", stroke: "#17355e", "stroke-width": 1.6 });
@@ -389,17 +398,26 @@ export function createPlate(lib, host, opts) {
     links(attrs) {
       let d = "";
       for (let k = 0; k < LINKS.length; k += 2) {
-        const a = LINKS[k] * 2, b = LINKS[k + 1] * 2;
+        const a = LINKS[k] * 3, b = LINKS[k + 1] * 3;
         d += "M " + NODES[a] + "," + NODES[a + 1] + " L " + NODES[b] + "," + NODES[b + 1] + " ";
       }
       c.add("path", Object.assign({ d, fill: "none" }, attrs));
     },
-    nodes(attrs, r) {
-      const g = c.add("g", attrs);
-      for (let k = 0; k < NODES.length; k += 2) c.add("circle", { cx: NODES[k], cy: NODES[k + 1], r }, g);
+    // The Self as in the 3D view: two translucent lobe shells (overlapping in the middle), the
+    // links, then the nodes as shaded balls, far to near, so the two lobes read as two graphs
+    // with a narrow fissure between them.
+    brain(o) {
+      c.gradient("ball", o.ball, { cx: "36%", cy: "32%", r: "72%" });
+      for (const L of LOBES) {
+        c.add("ellipse", Object.assign({ cx: L[0], cy: L[1], rx: L[2], ry: L[3],
+          transform: "rotate(" + L[4] + " " + L[0] + " " + L[1] + ")" }, o.shell));
+      }
+      c.links(o.link);
+      const g = c.add("g", { fill: c.ref("ball") });
+      for (let k = 0; k < NODES.length; k += 3) c.add("circle", { cx: NODES[k], cy: NODES[k + 1], r: NODES[k + 2] }, g);
     },
     selfLabel(y, base, attrs) {
-      dyn.self = c.text("fwo-s-lab fwo-s-lab--self", 196, y, base, 10.5, Object.assign({ "text-anchor": "middle" }, attrs));
+      dyn.self = c.text("fwo-s-lab fwo-s-lab--self", SELF_X, y, base, 10.5, Object.assign({ "text-anchor": "middle" }, attrs));
       dyn.self.textContent = TEXT.self;
     },
     worldLabel(gap, base, attrs) {
@@ -519,7 +537,7 @@ export function createPlate(lib, host, opts) {
       }
     }
     const I = state.placeholder ? 0 : state.I;
-    set(dyn.bridge, { "stroke-width": (2 + 10 * I).toFixed(2), opacity: (0.15 + 0.85 * I).toFixed(3) });
+    set(dyn.bridge, { "stroke-width": (4 + 12 * I).toFixed(2), opacity: (0.15 + 0.85 * I).toFixed(3) });
     placeParticles(r);
     // previous run: dashed outlines, labelled once beside Future 0's
     const show = ghost !== null;

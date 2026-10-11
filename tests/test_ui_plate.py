@@ -22,7 +22,8 @@ def test_plate_keeps_the_scene_mappings():
     assert "const RMAX = 52;" in code and "RMAX * Math.cbrt(" in code       # radius ~ cbrt(p)
     assert "2 + 10 * p[i]" in code                                          # branch 2 + 10 p ...
     assert '"vector-effect": "non-scaling-stroke"' in code                  # ... in screen pixels
-    assert "2 + 10 * I" in code and "0.15 + 0.85 * I" in code               # bridge follows connection
+    assert "4 + 12 * I" in code and "0.15 + 0.85 * I" in code               # bridge follows connection
+    assert "placeholder ? 4 : 4 + 12 * I" in _read("qollab_project/ui/scene.js")   # both views agree
     assert "const N_PART = 40;" in code and "Math.round(to.p1 * N_PART)" in code
 
 
