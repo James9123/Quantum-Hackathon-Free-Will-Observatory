@@ -9,8 +9,9 @@
 //   future radius        = 52 * cbrt(p) scene units            (volume follows probability)
 //   branch thickness     = 2 + 10 p screen pixels              (non-scaling strokes)
 //   World bridge         = 4 + 6 I px (at most 10), opacity 0.15 + 0.85 I   (I in bits,
-//                          connection probe); it rises from the World into the fissure
-//   shimmer              = 1 to 4 pulses climbing the bridge from the World into the fissure,
+//                          connection probe); it rises from the World into the Self, under
+//                          the Self's body, as if entering the mind
+//   shimmer              = 1 to 4 pulses climbing the bridge from the World into the Self,
 //                          more and brighter with more connection; none at zero, none when still
 //   previous run         = dashed outlines labelled "previous" until the next result
 //   particles            = a FIXED 40 dots routed to the two branches in proportions p1 / p0;
@@ -28,10 +29,11 @@ const GHOST_OFF = [10, -12];
 const WORLD = [150, 322];
 const WORLD_R = 22;
 // Branch curves (cubic): the last point is the sphere's left edge, so it follows the radius.
-const BRANCH = [[[288, 212], [384, 216], [430, 300]], [[292, 152], [384, 150], [430, 112]]];
-// The World bridge, drawn from the top of the World up into the fissure between the lobes (the
-// gap is clear of nodes and links from x 170 to 200), so the shimmer climbs base to gap.
-const BRIDGE = "M 156,300 C 174,268 185,236 185,200 L 185,140";
+const BRANCH = [[[271, 212], [384, 216], [430, 300]], [[275, 152], [384, 150], [430, 112]]];
+// The World bridge, drawn from the top of the World up into the Self's lower middle (through
+// the fissure, clear of nodes and links), where the Self's body is layered over it: it enters
+// the mind. The shimmer climbs it from the World into the Self.
+const BRIDGE = "M 156,300 C 172,272 185,250 185,226 L 185,206";
 const SHIMMER_S = 2.2;                             // seconds for one pulse to climb the bridge
 const SELF_X = 184;                                // centre of the Self (label, glow)
 const N_PART = 40;
@@ -45,23 +47,23 @@ const BG = { x: -330, y: -210, width: 1320, height: 840 };   // covers any lette
 // far to near (nearer nodes are larger and drawn on top); LOBES holds each lobe shell's
 // projected ellipse (cx, cy, rx, ry, rotation in degrees). Then 110 stars (x, y, r, opacity).
 const NODES = [
-  120.6, 161.7, 3.4, 137.1, 198.5, 3.44, 154.1, 175.5, 3.45, 140.7, 169.2, 3.48, 137.5, 171.5, 3.48, 139.6, 170.9, 3.51,
-  138.4, 169.2, 3.51, 132, 218.7, 3.53, 97.7, 193.8, 3.54, 134.7, 132.5, 3.54, 146, 176.7, 3.55, 150.4, 156.1, 3.55,
-  116.4, 194.9, 3.55, 103, 140.5, 3.57, 110.8, 202.9, 3.57, 101.4, 201.8, 3.58, 135.3, 225.4, 3.65, 103.2, 189.8, 3.67,
-  122.1, 143.6, 3.67, 108.3, 158.4, 3.67, 111.2, 193.4, 3.68, 108.6, 135.4, 3.73, 109.2, 219.5, 3.75, 123.5, 228.8, 3.8,
-  106.7, 238.9, 3.81, 84.7, 217.5, 3.83, 136.4, 240.4, 3.85, 79.8, 207.8, 3.88, 135.1, 119.7, 3.88, 95.2, 158.6, 3.89,
-  103.7, 228.3, 3.9, 263.7, 169, 3.93, 69.8, 186, 3.95, 92.3, 180.2, 3.97, 123, 118.3, 3.98, 270.2, 181.7, 3.99,
-  74.3, 181.3, 4.03, 87.1, 184.8, 4.04, 271.8, 178.4, 4.07, 275.8, 198.5, 4.07, 262.5, 207.4, 4.08, 76.2, 145.9, 4.08,
-  266.9, 196.1, 4.09, 262.4, 131, 4.09, 93.5, 138.6, 4.1, 91.8, 142, 4.1, 106.9, 125.1, 4.16, 88.6, 178, 4.2,
-  289, 152, 4.24, 258.2, 234.4, 4.24, 116.7, 115.8, 4.25, 101.1, 198.7, 4.27, 98.2, 132.2, 4.3, 277.5, 209.8, 4.32,
-  83.2, 180.1, 4.32, 249.5, 235.2, 4.33, 101.6, 132.4, 4.34, 94, 163.6, 4.36, 246.8, 231.4, 4.37, 106.3, 208.2, 4.39,
-  111.2, 172.2, 4.4, 113.7, 189.5, 4.41, 267.1, 227.5, 4.42, 253.5, 113.5, 4.44, 268.1, 232, 4.45, 294.8, 166.3, 4.46,
-  292.2, 169.5, 4.5, 248.4, 118.2, 4.51, 238.3, 111.7, 4.53, 271.9, 176.7, 4.54, 270.6, 224.4, 4.55, 288.9, 211.7, 4.57,
-  270.8, 162, 4.57, 277.1, 125.6, 4.58, 270.9, 155.6, 4.59, 284.3, 201.2, 4.6, 224.6, 222.8, 4.68, 256.5, 234.7, 4.69,
-  252, 122, 4.69, 270.5, 147.2, 4.69, 261.2, 197.4, 4.74, 252, 124.2, 4.79, 241.3, 231.2, 4.8, 253.2, 221.8, 4.8,
-  222.4, 126.8, 4.83, 268.9, 151.2, 4.83, 237.4, 225.8, 4.84, 281.3, 205, 4.84, 232.8, 143.9, 4.85, 233, 199.7, 4.85,
-  294.3, 156.3, 4.86, 215.8, 202.3, 4.87, 220.9, 171.6, 4.91, 228, 131.4, 4.92, 260.3, 148.6, 4.96, 246.8, 177.2, 4.97,
-  241.4, 177.5, 4.97, 268.3, 169.7, 4.99, 284.4, 164.5, 4.99, 261.4, 143.2, 5,
+  137.6, 161.7, 3.4, 154.1, 198.5, 3.44, 171.1, 175.5, 3.45, 157.7, 169.2, 3.48, 154.5, 171.5, 3.48, 156.6, 170.9, 3.51,
+  155.4, 169.2, 3.51, 149, 218.7, 3.53, 114.7, 193.8, 3.54, 151.7, 132.5, 3.54, 163, 176.7, 3.55, 167.4, 156.1, 3.55,
+  133.4, 194.9, 3.55, 120, 140.5, 3.57, 127.8, 202.9, 3.57, 118.4, 201.8, 3.58, 152.3, 225.4, 3.65, 120.2, 189.8, 3.67,
+  139.1, 143.6, 3.67, 125.3, 158.4, 3.67, 128.2, 193.4, 3.68, 125.6, 135.4, 3.73, 126.2, 219.5, 3.75, 140.5, 228.8, 3.8,
+  123.7, 238.9, 3.81, 101.7, 217.5, 3.83, 153.4, 240.4, 3.85, 96.8, 207.8, 3.88, 152.1, 119.7, 3.88, 112.2, 158.6, 3.89,
+  120.7, 228.3, 3.9, 246.7, 169, 3.93, 86.8, 186, 3.95, 109.3, 180.2, 3.97, 140, 118.3, 3.98, 253.2, 181.7, 3.99,
+  91.3, 181.3, 4.03, 104.1, 184.8, 4.04, 254.8, 178.4, 4.07, 258.8, 198.5, 4.07, 245.5, 207.4, 4.08, 93.2, 145.9, 4.08,
+  249.9, 196.1, 4.09, 245.4, 131, 4.09, 110.5, 138.6, 4.1, 108.8, 142, 4.1, 123.9, 125.1, 4.16, 105.6, 178, 4.2,
+  272, 152, 4.24, 241.2, 234.4, 4.24, 133.7, 115.8, 4.25, 118.1, 198.7, 4.27, 115.2, 132.2, 4.3, 260.5, 209.8, 4.32,
+  100.2, 180.1, 4.32, 232.5, 235.2, 4.33, 118.6, 132.4, 4.34, 111, 163.6, 4.36, 229.8, 231.4, 4.37, 123.3, 208.2, 4.39,
+  128.2, 172.2, 4.4, 130.7, 189.5, 4.41, 250.1, 227.5, 4.42, 236.5, 113.5, 4.44, 251.1, 232, 4.45, 277.8, 166.3, 4.46,
+  275.2, 169.5, 4.5, 231.4, 118.2, 4.51, 221.3, 111.7, 4.53, 254.9, 176.7, 4.54, 253.6, 224.4, 4.55, 271.9, 211.7, 4.57,
+  253.8, 162, 4.57, 260.1, 125.6, 4.58, 253.9, 155.6, 4.59, 267.3, 201.2, 4.6, 207.6, 222.8, 4.68, 239.5, 234.7, 4.69,
+  235, 122, 4.69, 253.5, 147.2, 4.69, 244.2, 197.4, 4.74, 235, 124.2, 4.79, 224.3, 231.2, 4.8, 236.2, 221.8, 4.8,
+  205.4, 126.8, 4.83, 251.9, 151.2, 4.83, 220.4, 225.8, 4.84, 264.3, 205, 4.84, 215.8, 143.9, 4.85, 216, 199.7, 4.85,
+  277.3, 156.3, 4.86, 198.8, 202.3, 4.87, 203.9, 171.6, 4.91, 211, 131.4, 4.92, 243.3, 148.6, 4.96, 229.8, 177.2, 4.97,
+  224.4, 177.5, 4.97, 251.3, 169.7, 4.99, 267.4, 164.5, 4.99, 244.4, 143.2, 5,
 ];
 const LINKS = [
   30, 24, 30, 22, 30, 23, 1, 7, 1, 12, 1, 10, 8, 15, 8, 17, 8, 14, 10, 5, 10, 6, 10, 3,
@@ -81,7 +83,7 @@ const LINKS = [
   40, 35, 73, 79, 73, 78, 73, 63, 83, 86, 83, 77, 70, 62, 70, 77, 98, 85, 63, 67, 63, 78, 80, 83,
   55, 62, 53, 62, 53, 39, 53, 71, 81, 93, 71, 70, 48, 66, 48, 38,
 ];
-const LOBES = [[140.4, 175.6, 89.4, 74.5, -177.7], [227.6, 176.4, 89.4, 74.5, -177.7]];
+const LOBES = [[157.4, 175.6, 89.4, 74.5, -177.7], [210.6, 176.4, 89.4, 74.5, -177.7]];
 const STARS = [
   173.6, 274.3, 0.86, 0.64, 261.1, 72.9, 0.69, 0.4, 594.7, 208.8, 0.76, 0.88, 653.7, 189.4, 0.67, 0.38,
   63.1, 144.9, 0.61, 0.42, 172.4, 238.7, 1.56, 0.77, 273.1, 174.5, 1.13, 0.51, 224.5, 29.6, 0.83, 0.93,
@@ -189,9 +191,9 @@ const STYLES = {
     for (let i = 0; i < STARS.length; i += 4) {
       c.add("circle", { cx: STARS[i], cy: STARS[i + 1], r: STARS[i + 2], opacity: STARS[i + 3] }, i % 12 === 0 ? twinkle : stars);
     }
-    c.add("ellipse", { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("brainhalo") });
     c.bridge({ stroke: "#8fd8cb" }, "#f0fffb");
-    c.brain({ shell: { fill: "#e5b45a", "fill-opacity": 0.07 }, link: { stroke: "#e5b45a", "stroke-opacity": 0.5, "stroke-width": 0.9 },
+    c.brain({ body: ["#0c1636", 0.8], glow: { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("brainhalo") },
+      shell: { fill: "#e5b45a", "fill-opacity": 0.07 }, link: { stroke: "#e5b45a", "stroke-opacity": 0.5, "stroke-width": 0.9 },
       ball: [[0, "#fdf0cc"], [0.5, "#e8bd6a"], [1, "#8a6424"]] });
     c.selfLabel(72, 12.5, { fill: "#c8d2ec", "font-weight": 500 });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R + 10, fill: c.ref("halo"), opacity: 0.35 });
@@ -219,7 +221,7 @@ const STYLES = {
     c.add("rect", Object.assign({ fill: c.ref("grid") }, BG));
     c.add("rect", Object.assign({ fill: c.ref("major") }, BG));
     c.bridge({ stroke: "#f0a44a", "stroke-dasharray": "3 4" }, "#ffe6c2");
-    c.brain({ shell: { fill: "#45c8e0", "fill-opacity": 0.06 }, link: { stroke: "#45c8e0", "stroke-opacity": 0.5, "stroke-width": 0.9 },
+    c.brain({ body: ["#16191e", 0.82], shell: { fill: "#45c8e0", "fill-opacity": 0.06 }, link: { stroke: "#45c8e0", "stroke-opacity": 0.5, "stroke-width": 0.9 },
       ball: [[0, "#d2f6fc"], [0.5, "#5fd0e6"], [1, "#17606e"]] });
     c.selfLabel(72, 11, { fill: "#b9c0c7", "font-weight": 500 });
     const bridgeTag = c.text("fwo-s-tag", 204, 314, 10, 9, { fill: "#8b96a1" });
@@ -269,9 +271,9 @@ const STYLES = {
     c.gradient("orbglow", [[0, "#b79cff", 0.5], [0.7, "#b79cff", 0.12], [1, "#b79cff", 0]], {});
     c.gradient("world", [[0, "#d9fff4"], [0.4, "#63e6c4"], [1, "#144d40"]], { cx: "42%", cy: "38%", r: "70%" });
     c.add("rect", Object.assign({ fill: c.ref("bg") }, BG));
-    c.add("ellipse", { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("tissue") });
     c.bridge({ stroke: "#63e6c4" }, "#eafff9");
-    c.brain({ shell: { fill: "#b79cff", "fill-opacity": 0.08 }, link: { stroke: "#b79cff", "stroke-opacity": 0.5, "stroke-width": 0.9 },
+    c.brain({ body: ["#110f1b", 0.8], glow: { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("tissue") },
+      shell: { fill: "#b79cff", "fill-opacity": 0.08 }, link: { stroke: "#b79cff", "stroke-opacity": 0.5, "stroke-width": 0.9 },
       ball: [[0, "#f5f0ff"], [0.5, "#c9b4ff"], [1, "#6d4fc2"]] });
     c.selfLabel(70, 12.5, { fill: "#c6c3ce", "font-weight": 500 });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R + 16, fill: c.ref("orbglow"), opacity: 0.35 });
@@ -297,7 +299,7 @@ const STYLES = {
     c.add("rect", Object.assign({ fill: "#f8fafc" }, BG));
     c.add("rect", Object.assign({ fill: c.ref("grid") }, BG));
     c.bridge({ stroke: "#0e6e8c", "stroke-dasharray": "4 3" }, "#7fe3ff");
-    c.brain({ shell: { fill: "#b23a1f", "fill-opacity": 0.08 }, link: { stroke: "#17355e", "stroke-opacity": 0.5, "stroke-width": 0.8 },
+    c.brain({ body: ["#f8fafc", 0.85], shell: { fill: "#b23a1f", "fill-opacity": 0.08 }, link: { stroke: "#17355e", "stroke-opacity": 0.5, "stroke-width": 0.8 },
       ball: [[0, "#f0a08a"], [0.5, "#bf4a2c"], [1, "#6b1f0f"]] });
     c.selfLabel(64, 11, { fill: "#17355e", "font-weight": 600 });
     c.add("line", { x1: SELF_X, y1: 70, x2: SELF_X, y2: 88, stroke: "#17355e", "stroke-width": 1 });
@@ -409,15 +411,18 @@ export function createPlate(lib, host, opts) {
       }
       c.add("path", Object.assign({ d, fill: "none" }, attrs));
     },
-    // The Self as in the 3D view: two translucent lobe shells (overlapping in the middle), the
-    // links, then the nodes as shaded balls, far to near, so the two lobes read as two graphs
-    // with a narrow fissure between them.
+    // The Self as in the 3D view: first its body (the two lobe outlines filled with the scene's
+    // own background colour, laid over the World bridge so the bridge enters the mind), an
+    // optional glow, the two translucent lobe shells (overlapping in the middle), the links,
+    // then the nodes as shaded balls, far to near: two graphs with a narrow fissure.
     brain(o) {
       c.gradient("ball", o.ball, { cx: "36%", cy: "32%", r: "72%" });
-      for (const L of LOBES) {
-        c.add("ellipse", Object.assign({ cx: L[0], cy: L[1], rx: L[2], ry: L[3],
-          transform: "rotate(" + L[4] + " " + L[0] + " " + L[1] + ")" }, o.shell));
-      }
+      const lobe = (L, attrs) => Object.assign({ cx: L[0], cy: L[1], rx: L[2], ry: L[3],
+        transform: "rotate(" + L[4] + " " + L[0] + " " + L[1] + ")" }, attrs);
+      const body = c.add("g", { opacity: o.body[1] });            // one opacity for the union
+      for (const L of LOBES) c.add("ellipse", lobe(L, { fill: o.body[0] }), body);
+      if (o.glow) c.add("ellipse", o.glow);
+      for (const L of LOBES) c.add("ellipse", lobe(L, o.shell));
       c.links(o.link);
       const g = c.add("g", { fill: c.ref("ball") });
       for (let k = 0; k < NODES.length; k += 3) c.add("circle", { cx: NODES[k], cy: NODES[k + 1], r: NODES[k + 2] }, g);
@@ -433,7 +438,7 @@ export function createPlate(lib, host, opts) {
       dyn.world.textContent = TEXT.world;
     },
     // The World bridge, and over it the shimmer: soft bright pulses that climb from the World
-    // into the fissure while motion is on, as many and as bright as the connection is strong.
+    // into the Self while motion is on, as many and as bright as the connection is strong.
     bridge(attrs, glow) {
       dyn.bridge = c.add("path", Object.assign({ d: BRIDGE, fill: "none", "vector-effect": "non-scaling-stroke",
         "stroke-linecap": "round" }, attrs));
@@ -571,7 +576,7 @@ export function createPlate(lib, host, opts) {
   }
 
   // The shimmer: 1 to 4 pulses (more with more connection) spaced evenly along the bridge at
-  // brightness 0.9 I, climbing from the World into the fissure while motion is on. No connection,
+  // brightness 0.9 I, climbing from the World into the Self while motion is on. No connection,
   // no shimmer; still or reduced motion, no shimmer (the bridge's width and opacity still show I).
   function shimmer(I, bw) {
     const on = motion && !state.placeholder && I > 0.02;
@@ -617,7 +622,7 @@ export function createPlate(lib, host, opts) {
     }
     if (motion) {
       for (let k = 0; k < N_PART; k++) u[k] = frac(u[k] + FLOW * dt);
-      // a falling dash offset moves the pulses forward along the bridge: World to fissure
+      // a falling dash offset moves the pulses forward along the bridge: World to Self
       shimmerAt = (shimmerAt - ((shimmerLen || 196) / SHIMMER_S) * dt) % 100000;
       busy = true;
     }

@@ -75,9 +75,9 @@ def test_main_css_sizes_the_plate_and_stops_its_twinkle():
     assert "@keyframes fwo-plate-twinkle" in css
 
 
-def test_bridge_rises_into_the_fissure_and_shimmers_only_with_motion_and_connection():
+def test_bridge_enters_the_self_and_shimmers_only_with_motion_and_connection():
     code = _read(PLATE)
-    assert 'const BRIDGE = "M 156,300 C 174,268 185,236 185,200 L 185,140";' in code   # World up into the gap
+    assert 'const BRIDGE = "M 156,300 C 172,272 185,250 185,226 L 185,206";' in code   # World up into the Self
     assert "const on = motion && !state.placeholder && I > 0.02;" in code
     assert "opacity: (0.9 * I).toFixed(3)" in code and "const n = 1 + Math.round(3 * I);" in code
     assert "shimmerAt = (shimmerAt - ((shimmerLen || 196) / SHIMMER_S) * dt) % 100000;" in code
@@ -85,3 +85,12 @@ def test_bridge_rises_into_the_fissure_and_shimmers_only_with_motion_and_connect
     for t in "abcd":
         body = code[code.index("  %s(c) {" % t):]
         assert body.index("c.bridge(") < body.index("c.brain("), t
+
+
+def test_the_self_body_is_layered_over_the_bridge():
+    code = _read(PLATE)
+    body = code[code.index("    brain(o) {"):]
+    assert body.index('const body = c.add("g", { opacity: o.body[1] });') < body.index('for (const L of LOBES) c.add("ellipse", lobe(L, o.shell));')
+    for t in "abcd":
+        style = code[code.index("  %s(c) {" % t):]
+        assert style.index("c.bridge(") < style.index("c.brain({ body: ["), t
