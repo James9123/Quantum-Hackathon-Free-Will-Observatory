@@ -8,7 +8,10 @@
 // The same visual mappings as the 3D view (build guide p.10), from the completed display run:
 //   future radius        = 52 * cbrt(p) scene units            (volume follows probability)
 //   branch thickness     = 2 + 10 p screen pixels              (non-scaling strokes)
-//   World bridge         = 4 + 12 I px, opacity 0.15 + 0.85 I   (I in bits, connection probe)
+//   World bridge         = 4 + 6 I px (at most 10), opacity 0.15 + 0.85 I   (I in bits,
+//                          connection probe); it rises from the World into the fissure
+//   shimmer              = 1 to 4 pulses climbing the bridge from the World into the fissure,
+//                          more and brighter with more connection; none at zero, none when still
 //   previous run         = dashed outlines labelled "previous" until the next result
 //   particles            = a FIXED 40 dots routed to the two branches in proportions p1 / p0;
 //                          decoration, never shot chronology
@@ -26,7 +29,10 @@ const WORLD = [150, 322];
 const WORLD_R = 22;
 // Branch curves (cubic): the last point is the sphere's left edge, so it follows the radius.
 const BRANCH = [[[288, 212], [384, 216], [430, 300]], [[292, 152], [384, 150], [430, 112]]];
-const BRIDGE = "M 184,246 C 180,268 170,288 156,300";
+// The World bridge, drawn from the top of the World up into the fissure between the lobes (the
+// gap is clear of nodes and links from x 170 to 200), so the shimmer climbs base to gap.
+const BRIDGE = "M 156,300 C 174,268 185,236 185,200 L 185,140";
+const SHIMMER_S = 2.2;                             // seconds for one pulse to climb the bridge
 const SELF_X = 184;                                // centre of the Self (label, glow)
 const N_PART = 40;
 const FLOW = 0.05;                                 // particle speed: branch lengths per second
@@ -184,10 +190,10 @@ const STYLES = {
       c.add("circle", { cx: STARS[i], cy: STARS[i + 1], r: STARS[i + 2], opacity: STARS[i + 3] }, i % 12 === 0 ? twinkle : stars);
     }
     c.add("ellipse", { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("brainhalo") });
+    c.bridge({ stroke: "#8fd8cb" }, "#f0fffb");
     c.brain({ shell: { fill: "#e5b45a", "fill-opacity": 0.07 }, link: { stroke: "#e5b45a", "stroke-opacity": 0.5, "stroke-width": 0.9 },
       ball: [[0, "#fdf0cc"], [0.5, "#e8bd6a"], [1, "#8a6424"]] });
     c.selfLabel(72, 12.5, { fill: "#c8d2ec", "font-weight": 500 });
-    c.bridge({ stroke: "#8fd8cb" });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R + 10, fill: c.ref("halo"), opacity: 0.35 });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R, fill: c.ref("world") });
     c.add("ellipse", { cx: WORLD[0], cy: WORLD[1], rx: 36, ry: 9, fill: "none", stroke: "#8fd8cb", "stroke-width": 1.6,
@@ -212,14 +218,14 @@ const STYLES = {
     c.add("rect", Object.assign({ fill: "#16191e" }, BG));
     c.add("rect", Object.assign({ fill: c.ref("grid") }, BG));
     c.add("rect", Object.assign({ fill: c.ref("major") }, BG));
+    c.bridge({ stroke: "#f0a44a", "stroke-dasharray": "3 4" }, "#ffe6c2");
     c.brain({ shell: { fill: "#45c8e0", "fill-opacity": 0.06 }, link: { stroke: "#45c8e0", "stroke-opacity": 0.5, "stroke-width": 0.9 },
       ball: [[0, "#d2f6fc"], [0.5, "#5fd0e6"], [1, "#17606e"]] });
     c.selfLabel(72, 11, { fill: "#b9c0c7", "font-weight": 500 });
-    c.bridge({ stroke: "#f0a44a", "stroke-dasharray": "3 4" });
     const bridgeTag = c.text("fwo-s-tag", 204, 314, 10, 9, { fill: "#8b96a1" });
     c.tag((v, narrow) => {
       bridgeTag.textContent = "I = " + v.I.toFixed(3) + " bits" + (narrow ? "" : " \u2192 " +
-        (v.I < 0.0005 ? "bridge at floor" : "bridge " + (4 + 12 * v.I).toFixed(1) + " px"));
+        (v.I < 0.0005 ? "bridge at floor" : "bridge " + (4 + 6 * v.I).toFixed(1) + " px"));
     }, [bridgeTag]);
     const wg = c.add("g", { stroke: "#f0a44a", fill: "none" });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R, "stroke-width": 1.6 }, wg);
@@ -264,10 +270,10 @@ const STYLES = {
     c.gradient("world", [[0, "#d9fff4"], [0.4, "#63e6c4"], [1, "#144d40"]], { cx: "42%", cy: "38%", r: "70%" });
     c.add("rect", Object.assign({ fill: c.ref("bg") }, BG));
     c.add("ellipse", { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("tissue") });
+    c.bridge({ stroke: "#63e6c4" }, "#eafff9");
     c.brain({ shell: { fill: "#b79cff", "fill-opacity": 0.08 }, link: { stroke: "#b79cff", "stroke-opacity": 0.5, "stroke-width": 0.9 },
       ball: [[0, "#f5f0ff"], [0.5, "#c9b4ff"], [1, "#6d4fc2"]] });
     c.selfLabel(70, 12.5, { fill: "#c6c3ce", "font-weight": 500 });
-    c.bridge({ stroke: "#63e6c4" });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R + 16, fill: c.ref("orbglow"), opacity: 0.35 });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R, fill: c.ref("world"), opacity: 0.92 });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R + 7, fill: "none", stroke: "#63e6c4", "stroke-width": 1, opacity: 0.45 });
@@ -290,18 +296,18 @@ const STYLES = {
     c.pattern("grid", 24, "M 24,0 L 0,0 0,24", "#d9e3ef");
     c.add("rect", Object.assign({ fill: "#f8fafc" }, BG));
     c.add("rect", Object.assign({ fill: c.ref("grid") }, BG));
+    c.bridge({ stroke: "#0e6e8c", "stroke-dasharray": "4 3" }, "#7fe3ff");
     c.brain({ shell: { fill: "#b23a1f", "fill-opacity": 0.08 }, link: { stroke: "#17355e", "stroke-opacity": 0.5, "stroke-width": 0.8 },
       ball: [[0, "#f0a08a"], [0.5, "#bf4a2c"], [1, "#6b1f0f"]] });
     c.selfLabel(64, 11, { fill: "#17355e", "font-weight": 600 });
     c.add("line", { x1: SELF_X, y1: 70, x2: SELF_X, y2: 88, stroke: "#17355e", "stroke-width": 1 });
-    c.bridge({ stroke: "#0e6e8c", "stroke-dasharray": "4 3" });
-    const bd = dimension(206, 324, 180, 286);
+    const bd = dimension(206, 324, 170, 290);
     const bdim = c.add("g", { class: "fwo-s-dim" });
     c.add("path", { d: bd.line, stroke: "#44597a", "stroke-width": 1, fill: "none" }, bdim);
     c.add("path", { d: bd.heads, fill: "#44597a" }, bdim);
     const bridgeTag = c.text("fwo-s-tag", 210, 334, 9.5, 9, { fill: "#44597a" });
     c.tag((v, narrow) => {
-      bridgeTag.textContent = "bridge " + (4 + 12 * v.I).toFixed(1) + " px" + (narrow ? "" : " \u00b7 op. " +
+      bridgeTag.textContent = "bridge " + (4 + 6 * v.I).toFixed(1) + " px" + (narrow ? "" : " \u00b7 op. " +
         (0.15 + 0.85 * v.I).toFixed(2) + " (I = " + v.I.toFixed(3) + ")");
     }, [bridgeTag, bdim]);
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R, fill: "#0e6e8c", stroke: "#17355e", "stroke-width": 1.6 });
@@ -426,9 +432,15 @@ export function createPlate(lib, host, opts) {
         Object.assign({ "text-anchor": "middle" }, attrs));
       dyn.world.textContent = TEXT.world;
     },
-    bridge(attrs) {
+    // The World bridge, and over it the shimmer: soft bright pulses that climb from the World
+    // into the fissure while motion is on, as many and as bright as the connection is strong.
+    bridge(attrs, glow) {
       dyn.bridge = c.add("path", Object.assign({ d: BRIDGE, fill: "none", "vector-effect": "non-scaling-stroke",
         "stroke-linecap": "round" }, attrs));
+      defs.appendChild(svg("filter", { id: uid + "shimmer", x: "-60%", y: "-20%", width: "220%", height: "140%" },
+        svg("feGaussianBlur", { stdDeviation: 1.4 })));
+      dyn.shimmer = c.add("path", { d: BRIDGE, fill: "none", stroke: glow, "stroke-linecap": "round",
+        filter: c.ref("shimmer"), display: "none" });
     },
     branches(under, underWidth, main) {
       for (const i of [1, 0]) {
@@ -485,6 +497,7 @@ export function createPlate(lib, host, opts) {
   let reduced = !!o.reducedMotion;
   let width = 0, height = 0, scale = 1, narrow = false;
   let running = false, last = 0;
+  let shimmerLen = 0, shimmerAt = 0;                     // bridge length (scene units), dash offset
   let split = N_PART / 2;                                // particles on Future 1's branch
   const u = new Float64Array(N_PART);                    // position along the branch, 0..1
 
@@ -537,7 +550,9 @@ export function createPlate(lib, host, opts) {
       }
     }
     const I = state.placeholder ? 0 : state.I;
-    set(dyn.bridge, { "stroke-width": (4 + 12 * I).toFixed(2), opacity: (0.15 + 0.85 * I).toFixed(3) });
+    const bw = 4 + 6 * I;
+    set(dyn.bridge, { "stroke-width": bw.toFixed(2), opacity: (0.15 + 0.85 * I).toFixed(3) });
+    shimmer(I, bw);
     placeParticles(r);
     // previous run: dashed outlines, labelled once beside Future 0's
     const show = ghost !== null;
@@ -553,6 +568,24 @@ export function createPlate(lib, host, opts) {
       const gx = Math.min(FC[0][0] + GHOST_OFF[0] + g0 + 8, W - 6 - len);
       set(dyn.ghostLabel, { x: gx, y: FC[0][1] + GHOST_OFF[1] + 4 });
     }
+  }
+
+  // The shimmer: 1 to 4 pulses (more with more connection) spaced evenly along the bridge at
+  // brightness 0.9 I, climbing from the World into the fissure while motion is on. No connection,
+  // no shimmer; still or reduced motion, no shimmer (the bridge's width and opacity still show I).
+  function shimmer(I, bw) {
+    const on = motion && !state.placeholder && I > 0.02;
+    dyn.shimmer.setAttribute("display", on ? "inline" : "none");
+    if (!on) return;
+    if (!shimmerLen) {
+      try { shimmerLen = dyn.shimmer.getTotalLength(); } catch (err) { shimmerLen = 0; }
+      if (!shimmerLen) shimmerLen = 196;
+    }
+    const n = 1 + Math.round(3 * I);
+    const period = shimmerLen / n;
+    const pulse = Math.min(24, period * 0.45);
+    set(dyn.shimmer, { "stroke-width": (0.85 * bw / Math.max(0.2, scale)).toFixed(2),
+      "stroke-dasharray": n1(pulse) + " " + n1(period - pulse), "stroke-dashoffset": n1(shimmerAt), opacity: (0.9 * I).toFixed(3) });
   }
 
   function applyTags() {
@@ -584,6 +617,8 @@ export function createPlate(lib, host, opts) {
     }
     if (motion) {
       for (let k = 0; k < N_PART; k++) u[k] = frac(u[k] + FLOW * dt);
+      // a falling dash offset moves the pulses forward along the bridge: World to fissure
+      shimmerAt = (shimmerAt - ((shimmerLen || 196) / SHIMMER_S) * dt) % 100000;
       busy = true;
     }
     apply();

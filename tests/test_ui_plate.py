@@ -22,8 +22,8 @@ def test_plate_keeps_the_scene_mappings():
     assert "const RMAX = 52;" in code and "RMAX * Math.cbrt(" in code       # radius ~ cbrt(p)
     assert "2 + 10 * p[i]" in code                                          # branch 2 + 10 p ...
     assert '"vector-effect": "non-scaling-stroke"' in code                  # ... in screen pixels
-    assert "4 + 12 * I" in code and "0.15 + 0.85 * I" in code               # bridge follows connection
-    assert "placeholder ? 4 : 4 + 12 * I" in _read("qollab_project/ui/scene.js")   # both views agree
+    assert "const bw = 4 + 6 * I;" in code and "0.15 + 0.85 * I" in code    # bridge follows connection, at most 10 px
+    assert "placeholder ? 4 : 4 + 6 * I" in _read("qollab_project/ui/scene.js")    # both views agree
     assert "const N_PART = 40;" in code and "Math.round(to.p1 * N_PART)" in code
 
 
@@ -73,3 +73,15 @@ def test_main_css_sizes_the_plate_and_stops_its_twinkle():
     assert "#fwo-app .fwo-scene .fwo-scene-host.fwo-scene-host--plate { height: auto; aspect-ratio: 660 / 420; }" in css
     assert "#fwo-app .fwo-plate--still .fwo-plate-twinkle { animation: none; }" in css
     assert "@keyframes fwo-plate-twinkle" in css
+
+
+def test_bridge_rises_into_the_fissure_and_shimmers_only_with_motion_and_connection():
+    code = _read(PLATE)
+    assert 'const BRIDGE = "M 156,300 C 174,268 185,236 185,200 L 185,140";' in code   # World up into the gap
+    assert "const on = motion && !state.placeholder && I > 0.02;" in code
+    assert "opacity: (0.9 * I).toFixed(3)" in code and "const n = 1 + Math.round(3 * I);" in code
+    assert "shimmerAt = (shimmerAt - ((shimmerLen || 196) / SHIMMER_S) * dt) % 100000;" in code
+    # the bridge is drawn before the brain, so it rises behind the translucent lobe shells
+    for t in "abcd":
+        body = code[code.index("  %s(c) {" % t):]
+        assert body.index("c.bridge(") < body.index("c.brain("), t
