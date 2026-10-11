@@ -117,7 +117,7 @@ The plate keeps the 3D view's mappings: radius `52 · cbrt(p)` scene units, bran
 2 + 10 p screen pixels (non-scaling strokes), bridge 2 + 10 I px at opacity 0.15 + 0.85 I,
 dashed outlines for the previous run, and a fixed 40 particles split p1 / p0 that flow evenly
 when motion is on. Annotations always show the run's own numbers, never the in-between frames
-of the one-second transition. The brain layout and the stars are fixed constants, so a change
+of the one-second transition. The brain is two lobes of nodes slightly apart, a narrow fissure with three links across it, like the 3D view's two hemispheres. The brain layout and the stars are fixed constants, so a change
 in the picture always means a change in the numbers. The frame keeps the drawing's 660 x 420
 proportions; labels are kept at a readable size on phones and switch to shorter wording below
 480 px. Reduced motion (or the Motion box unticked) stops the flow, the transition and the
