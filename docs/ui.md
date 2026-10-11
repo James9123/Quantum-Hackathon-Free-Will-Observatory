@@ -1,5 +1,8 @@
 # The Observatory page (JS UI)
 
+*Part of the [documentation set](README.md); see [development.md](development.md) for
+running this page locally in stub mode.*
+
 **Layout (friendly version, 2026-10-11).** The page reads top to bottom as three steps, then
 the results in plain words, then optional detail panels:
 

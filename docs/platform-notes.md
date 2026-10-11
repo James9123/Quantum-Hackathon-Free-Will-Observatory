@@ -1,5 +1,8 @@
 # Qollab platform notes (for contributors)
 
+*Part of the [documentation set](README.md); see [architecture.md](architecture.md) for how
+this project's own code uses the rules below.*
+
 What the code in this repo relies on about the Qollab runtime. Sources: Qollab docs
 (qollab.xyz/learn/docs: runtime-environment, python-qiskit-projects, js-qiskit-projects,
 compute-backends, primitives, transpilation, error-mitigation), the hackathon rules page,

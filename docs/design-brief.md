@@ -1,7 +1,52 @@
 # Design brief: visual overhaul of the Observatory page
 
+*Part of the [documentation set](README.md).*
+
 Paste this (whole) into the design tool, together with the baseline screenshots in
 `build/ui-baseline/` (regenerate with `.venv/bin/python tools/ui_shots.py`).
+
+## Inspiration: Laplace's Demon and the limits of calculation
+
+One of the Observatory's three personas is **Laplace's Demon**, and the name is not
+decoration. In 1814, Pierre-Simon Laplace opened his *Essai philosophique sur les
+probabilités* with a thought experiment: an intellect that knew, at a single instant, the
+precise position and momentum of every particle in the universe could — given Newtonian
+mechanics and enough calculating power — derive the entire past and future with certainty.
+"Nothing would be uncertain, and the future, as the past, would be present to its eyes."
+This "demon" became the canonical statement of classical, mechanistic determinism: chance is
+not a fact about the world, only a name for our ignorance of its exact state.
+
+Bell's theorem and its experimental tests (the CHSH inequality this team's toolkit is built
+around — `qk_bounds.py`, validated on the CHSH reference project in
+[reference/chsh/](../reference/chsh/)) are the modern, empirical answer to that picture. Any
+**local hidden-variable theory** — any model in which a system's measurement outcomes are
+fixed in advance by some underlying variable, local and non-conspiratorial, exactly the kind
+of hidden deterministic substrate a Laplace's-Demon-style account of quantum randomness would
+need — predicts CHSH correlations bounded by **S ≤ 2**. Quantum mechanics predicts, and
+decades of experiments confirm, violations up to the **Tsirelson bound S = 2√2 ≈ 2.828**. A
+demon that merely lacked our information, but was otherwise playing by local, realist rules,
+could not reproduce what quantum systems actually do.
+
+The Observatory borrows this history rather than re-running it: the live page does not
+perform a CHSH test (see [claims.md](claims.md), Card C — Connection is explicitly *not* an
+entanglement certification), but its Demon persona dramatizes the same tension in miniature.
+The Demon computes an exact forecast from the quantum state before any shots are taken —
+Laplace's "present to its eyes" — yet what it computes is a *probability*, not a certainty,
+and the project's central result (the same 50/50 outcome is high-capacity under one setting
+and zero-capacity under another, [README § The question](../README.md#the-question)) is a
+question Laplace's framework has no room for: knowing the odds perfectly is not the same as
+them being fixed, and whether an input can *move* those odds is a different question from
+whether the Demon can predict them. The Self, Demon and Observer personas stage that
+three-way disagreement — about the same job's counts — as a dialogue rather than an equation.
+
+**Where the honesty rule still applies.** Bell tests rule out *local hidden-variable*
+determinism specifically; they say nothing about superdeterminism, non-local hidden-variable
+accounts (Bohmian mechanics survives them by construction), or determinism in general, and
+nothing at all about free will as philosophers debate it. The Observatory's fiction goes
+further than the physics licenses — that is the point of calling it a fiction. Keep the
+Laplace's Demon framing here, in the narrative brief; [claims.md](claims.md) and
+[model.md](model.md) stay scoped to the project's own measured, falsifiable statements about
+Capacity, Openness and Connection, and should not be read as a Bell-inequality claim.
 
 ## Goal and audience
 

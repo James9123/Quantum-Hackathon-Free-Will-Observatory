@@ -1,5 +1,8 @@
 # The model
 
+*Part of the [documentation set](README.md); see [architecture.md](architecture.md) for how
+this model is wired into the running system.*
+
 The exact two-qubit experiment behind the Free Will Observatory, every reading's definition,
 the bit-order rule, the uncertainty interval, and what none of it shows. The fiction is
 intentional; the circuit behaviour underneath it is reproducible, and this page is the

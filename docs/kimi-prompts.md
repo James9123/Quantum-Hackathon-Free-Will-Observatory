@@ -1,5 +1,8 @@
 # Kimi Design prompts for the visual overhaul
 
+*Part of the [documentation set](README.md). This is a process record of the prompts used
+with an AI design tool; [design-brief.md](design-brief.md) is the actual specification.*
+
 Paste prompt 1 with the current-state screenshots and the team build guide attached. Prompts 2
 and 3 follow once a direction is chosen. The repo-side rules live in `docs/design-brief.md`.
 

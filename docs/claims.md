@@ -1,5 +1,8 @@
 # Claims
 
+*Part of the [documentation set](README.md). These are the project's only empirical claims;
+the philosophical framing in [design-brief.md](design-brief.md) is narrative, not a claim.*
+
 Every result in this project is stated as a **claim card**, a record that connects a
 number to everything a reader must accept before the number means anything:
 
