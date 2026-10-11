@@ -756,3 +756,20 @@ def test_pack_real_project_python_entry(tmp_path, monkeypatch, capsys):
     assert not any("__pycache__" in r or r.endswith(".pyc") for r in rel)
     assert len(rel) <= pack.MAX_FILES
     assert "def main(intention_deg: float = 90.0" in cap.out
+
+
+
+def test_scrub_ignores_base64_payloads_but_not_text_around_them(tmp_path, monkeypatch):
+    """A guarded word that only appears inside a data-URI payload is binary noise; the same
+    word in plain text next to it must still be reported, with the right line number."""
+    pats = tmp_path / "pats.txt"
+    pats.write_text("forbiddenword\n")
+    monkeypatch.setenv(scrub_check.ENV_VAR, str(pats))
+    payload = "A" * 40 + "forbiddenword" + "B" * 40
+    src = tmp_path / "x.js"
+    src.write_text('const img = "data:image/png;base64,%s";\nconst note = "forbiddenword";\n' % payload)
+    hits = scrub_check.scan_text(src.read_text(), scrub_check.load_patterns(str(pats)), "x.js")
+    assert [h.line for h in hits] == [2]
+    masked = scrub_check.mask_data_uris(src.read_text())
+    assert len(masked) == len(src.read_text()) and "forbiddenword" in masked.splitlines()[1]
+    assert "forbiddenword" not in masked.splitlines()[0]

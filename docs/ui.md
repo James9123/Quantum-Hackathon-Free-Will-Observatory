@@ -123,6 +123,32 @@ seeded sampler; the backend name then says `[stub: JS closed-form sampler]` and 
 lines are borrowed from the nearest canned run, marked `[stub]`. A test checks that the JS
 closed form agrees with `observatory.prediction` to 1e-9.
 
+## Sprite portraits (`ui/sprites.js`, `ui/dialogue.js`)
+
+The portrait beside the dialogue line is an animated pixel-art sprite per guide, keyed to the
+page's state. Sheets are horizontal strips of square cells: 128 px for wide screens and a
+64 px strip for phones (derived by area-averaging the 128 px art, never CSS-scaled; the element
+is drawn at a whole-number scale with `image-rendering: pixelated`). `tools/build_sprites.py`
+embeds the team's SpriteGen exports as data URIs (JavaScript on Qollab cannot fetch project
+files) and copies each sheet's timing from its sidecar and frame names.
+
+| State of the page | The Self | Laplace's Demon | The Observer |
+|---|---|---|---|
+| at rest | idle | idle | idle (stare while the point-of-view dial is being turned) |
+| a job is running | idle | gesture (works the orb) | stare |
+| result: the choice measurably moved the odds | happy | gesture if the sample fell within the forecast's shot noise, anger if it fell outside | dance |
+| result: no resolved influence | angry: frames 1–4 once, then hold on frame 4 until the dials change or a new run starts | same rule as above | dance |
+| the run failed | angry (same hold) | anger | idle |
+
+Timing rules: each sheet plays at its own fps; a sheet with per-frame `ticks` holds frames
+for that many ticks (the Observer's stare holds its first image for 61 ticks, about 7.6 s,
+then plays the 7 movement frames: a long pause, then a glance); a sheet with `play`/`hold`
+plays those frames once and stays on the hold frame. Under `prefers-reduced-motion` the
+portrait shows one still key frame (the hold frame where one exists, else the first) and
+never advances. Only the shown guide's portrait animates; switching guides restarts the
+animation for the new guide in the current state. When a guide has no sheet, the labelled
+placeholder box is shown instead.
+
 ## Accessibility checklist
 
 Checked in a Chromium-based browser in stub mode on Sat 2026-10-10 (evening, MDT), then

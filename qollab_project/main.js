@@ -26,6 +26,7 @@ import { renderBadge } from "./ui/badge.js";
 import { createTabs } from "./ui/tabs.js";
 import { createScene } from "./ui/scene.js";
 import { createDialogue } from "./ui/dialogue.js";
+import { SPRITES } from "./ui/sprites.js";
 import { renderBars, renderBarLegend, renderLines, renderLineLegend } from "./ui/chart.js";
 import { renderFutures, renderReadings, renderRunError, renderDemonForecast, renderDemonCompare, renderBaselines, renderRecord, renderHow, renderSure, renderHonesty, renderCoverage, personaName } from "./ui/readings.js";
 
@@ -227,7 +228,12 @@ async function start() {
   const scheduleForecast = dom.debounce(refreshForecast, 150, setTimeout);
 
   for (const input of [el.intention, el.coupling, el.perspective]) {
-    input.addEventListener("input", () => { syncOutputs(); scheduleForecast(); });
+    input.addEventListener("input", () => {
+      syncOutputs();
+      scheduleForecast();
+      // a new draft: the portraits return to rest (the Observer stares when the point of view turns)
+      if (dialogue && !running) dialogue.setMood({ phase: "idle", perspectiveMoved: input === el.perspective });
+    });
   }
   el.shots.addEventListener("input", () => {
     el.shots.removeAttribute("aria-invalid");
@@ -246,7 +252,7 @@ async function start() {
       dialogue = createDialogue(dom, {
         box: el.dialogue, portrait: el.dialoguePortrait, portraitWho: el.portraitWho, name: el.dialogueName,
         text: el.dialogueText, skip: el.dialogueSkip, live: el.poetic, sound: el.sound, soundHelp: el.soundHelp,
-      }, { reducedMotion: reduced, setTimeoutFn: setTimeout, seed: 20261011 });
+      }, { reducedMotion: reduced, setTimeoutFn: setTimeout, seed: 20261011, sprites: SPRITES });
       // The greeting is on screen from the start, silently: nothing is announced or played on load.
       dialogue.show("self", personaName("self"), txt.INTRO.self, { announce: false, animate: false });
     } catch (err) {
@@ -409,11 +415,22 @@ async function start() {
     el.progress.hidden = true;
   }
 
+  // Did the sample land within two standard errors of the Demon's forecast?
+  function forecastHit(run) {
+    const m = run.metrics || {}, p = run.prediction || {};
+    const pf = Number(p.p_self_1), pm = Number(m.p_self_1);
+    const n = Number((m.shots_seen || {}).display) || 0;
+    if (!Number.isFinite(pf) || !Number.isFinite(pm) || n <= 0) return null;
+    const sigma = Math.sqrt(Math.max(pf * (1 - pf), 1e-12) / n);
+    return Math.abs(pm - pf) <= 2 * sigma;
+  }
+
   function showResult(run, secs) {
     previous = current;
     current = run;
     const m = run.metrics || {};
     const expl = run.explanation || {};
+    if (dialogue) dialogue.setMood({ phase: "done", resolved: !!m.resolved, forecastHit: forecastHit(run) });
     renderFutures(dom, { f0: el.future0, f1: el.future1 }, current, previous, null);
     renderReadings(dom, txt, el.readings, current);
     drawChart();
@@ -449,6 +466,7 @@ async function start() {
     jobsUsed += 1;
     if (oneJob) lockRun();
     else el.run.setAttribute("aria-disabled", "true");
+    if (dialogue) dialogue.setMood({ phase: "working" });
     replace(el.runError);
     const draft = readDraft();
     status("Running one job on " + name + ": four tiny circuits" + (draft.canary ? " plus the self-check" : "") + ", " +
@@ -471,6 +489,7 @@ async function start() {
       if (run.status !== "completed") {
         const r = run.error ? run : Object.assign({ error: "the engine returned no status" }, run);
         renderRunError(dom, el.runError, r, current && current.source ? current.source.job_id : null);
+        if (dialogue) dialogue.setMood({ phase: "failed" });
         status("The run failed after " + secs + " s: " + r.error, true);
         return;
       }
@@ -496,6 +515,7 @@ async function start() {
   let drawnChartW = 0, drawnCurveW = 0, redrawPending = false;
   function redraw() {
     if (scene.available) scene.resize();
+    if (dialogue) dialogue.refresh();
     if (el.chart.clientWidth !== drawnChartW) { drawnChartW = el.chart.clientWidth; drawChart(); }
     if (el.curve.clientWidth !== drawnCurveW) { drawnCurveW = el.curve.clientWidth; drawCurve(); }
   }

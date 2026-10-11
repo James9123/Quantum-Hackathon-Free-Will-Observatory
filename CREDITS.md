@@ -139,6 +139,19 @@ permissive open-source licenses (Apache-2.0, BSD-3-Clause, MIT). `tools/pack_for
 flags any script import from a host other than cdn.jsdelivr.net, the only external host
 Qollab allows.
 
+## Artwork
+
+The three guide portraits in the dialogue box are pixel-art sprite sheets generated with
+[SpriteGen](https://spritegen.ai) (style "cozy pixel", front-right view) from prompts written
+by the team, then cropped to busts, aligned frame by frame and resized by the team
+(`design/persona-sprites.md` records the prompts and every edit). They are AI-generated art,
+disclosed here as such. The sheets ship inside `qollab_project/ui/sprites.js` as base64 data
+URIs, built by `tools/build_sprites.py` (which also derives the 64 px phone sheets by
+area-averaging the 128 px art). No other image assets are used.
+
+TODO(team): confirm that the SpriteGen plan the art was generated on permits redistribution
+under this repository's MIT license, and record the plan name here.
+
 ## Platform documentation
 
 - Qollab documentation (qollab.xyz/learn/docs). Our summary of what the code relies on is

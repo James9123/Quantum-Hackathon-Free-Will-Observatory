@@ -194,11 +194,21 @@ def load_patterns(path=None):
 
 # ------------------------------------------------------------------ matching
 
+# A base64 payload inside a data URI is binary data, like the image files the scanner already
+# skips; random runs of base64 letters would otherwise trip short patterns. The payload is
+# replaced by a same-length placeholder so line numbers and columns stay exact.
+_DATA_URI = re.compile(r"(data:[\w.+/-]+;base64,)([A-Za-z0-9+/=]{48,})")
+
+
+def mask_data_uris(text):
+    return _DATA_URI.sub(lambda m: m.group(1) + "." * len(m.group(2)), text)
+
+
 def scan_text(text, patterns, location, first_line=1):
     """Every (line, pattern) hit in `text`. Line numbers start at `first_line`."""
     if not text:
         return []
-    text = text.replace("\r\n", "\n")       # so "$" anchors before a Windows line end too
+    text = mask_data_uris(text.replace("\r\n", "\n"))   # "$" anchors before a Windows line end too
     starts = [0] + [m.end() for m in re.finditer("\n", text)]
 
     def line_end(li):
