@@ -36,14 +36,22 @@ Source: TODO(captain).
 
 ## What it does
 
-**The scene.** A dark brain-shaped graph (two fixed ellipsoid lobes; the decorative nodes
-are *not* qubits) holds one fictional Self. Two branches leave it, **Future 0** and
-**Future 1**, sized by the measured probabilities of the last run. A **World bridge** joins
-the Self to a second qubit; its weight follows the measured Connection reading. The previous
-run stays as a muted ghost, so a change is a comparison, never a flourish. Nothing moves
-until a fresh job has returned.
+**The scene.** A brain-shaped graph (two fixed lobes; the decorative nodes are *not* qubits)
+holds one fictional Self. Two branches leave it, **Future 0** and **Future 1**, sized by the
+measured probabilities of the last run. A **World bridge** rises from a second qubit, the
+World, into the Self; its width and opacity follow the measured Connection reading. The
+previous run stays as a dashed outline, so a change is a comparison, never a flourish. The
+picture's sizes and weights change only when a fresh job returns; the slow drift, the particle
+flow and the bridge's shimmer are decoration, off under reduced motion or with the Motion box
+unticked.
+
+**Four page styles.** The page opens in style A (night observatory); the Style switch at the
+top changes it to B (instrument console), C (luminous anatomy) or D (blueprint, light). Each
+style draws the same data in its own way.
 
 **Three personas, one data set.** Switching persona changes the explanation, never the data.
+Each guide speaks in an RPG-style dialogue box, and only about what it can see; a short
+opening scene introduces them.
 
 | Persona | What they do | What it reveals |
 |---|---|---|
