@@ -53,6 +53,7 @@ This effort is supported by Qollab & IonQ
 | `qollab_project/ui/tabs.js` | yes | Persona tabs (WAI-ARIA tabs, roving tabindex, arrow keys). |
 | `qollab_project/ui/badge.js` | yes | Backend badge. |
 | `qollab_project/ui/scene.js` | yes | The three.js scene (below). Exports `mulberry32` and `brainGraph` so the geometry is testable. |
+| `qollab_project/ui/plate.js` | yes | The scene drawn flat as SVG in the four design directions' styles (below). A theme selects it with `--fwo-scene-plate`; it needs no WebGL. |
 | `qollab_project/ui/chart.js` | yes | Hand-rolled SVG bar chart (previous / current / forecast) and line chart (theory curves). |
 | `qollab_project/ui/readings.js` | yes | Futures, the three readings, Demon forecast and comparison, baselines, run-failure view, the drawer (circuit text, count tables, job record, honesty), coverage and noise tables. |
 | `dev/index.html`, `dev/boot.js`, `dev/stub_api.js`, `dev/stub_data.js` | no | Stub mode for local testing (below). |
@@ -98,6 +99,29 @@ ES modules in stub mode.
 | Theory chart (drawer) | ideal capacity (solid), P_low / P_high (dashed), connection (dash-dot) against w, with the draft's w as a diamond |
 
 Colour is never the only signal: labels, hatching, dash patterns and text carry everything.
+
+## Drawn scenes for the design themes (`ui/plate.js`)
+
+Each design theme (`dev/themes/theme-a..d.css`, `?theme=a|b|c|d`) sets `--fwo-scene-plate`
+to its letter, and `main.js` then draws the scene with `ui/plate.js` instead of the three.js
+view. Without the variable the 3D view runs, unchanged.
+
+| Style | Look |
+|---|---|
+| a, night observatory | starfield sky, gold shaded orbs with halos, dotted light along the branches, ringed teal World |
+| b, instrument console | engineering grid, wireframe reticles with tick rings and centre marks, hollow nodes, annotated `t = ... px` and `I = ... bits` |
+| c, luminous anatomy | violet glowing tissue behind the brain, haloed nodes, glowing orbs, mint World |
+| d, blueprint | graph paper, ink lines, brick-red discs with a hatched quadrant and centre lines, dimension line `Ø = 52 · ∛p`, annotated widths |
+
+The plate keeps the 3D view's mappings: radius `52 · cbrt(p)` scene units, branch width
+2 + 10 p screen pixels (non-scaling strokes), bridge 2 + 10 I px at opacity 0.15 + 0.85 I,
+dashed outlines for the previous run, and a fixed 40 particles split p1 / p0 that flow evenly
+when motion is on. Annotations always show the run's own numbers, never the in-between frames
+of the one-second transition. The brain layout and the stars are fixed constants, so a change
+in the picture always means a change in the numbers. The frame keeps the drawing's 660 x 420
+proportions; labels are kept at a readable size on phones and switch to shorter wording below
+480 px. Reduced motion (or the Motion box unticked) stops the flow, the transition and the
+star twinkle.
 
 ## Stub mode (local testing)
 

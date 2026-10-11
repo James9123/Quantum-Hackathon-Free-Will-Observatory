@@ -25,6 +25,7 @@ import * as txt from "./ui/text.js";
 import { renderBadge } from "./ui/badge.js";
 import { createTabs } from "./ui/tabs.js";
 import { createScene } from "./ui/scene.js";
+import { createPlate } from "./ui/plate.js";
 import { createDialogue } from "./ui/dialogue.js";
 import { SPRITES } from "./ui/sprites.js";
 import { renderBars, renderBarLegend, renderLines, renderLineLegend } from "./ui/chart.js";
@@ -111,6 +112,17 @@ function sceneColors(appEl) {
     }
   } catch (err) { /* defaults in ui/scene.js */ }
   return out;
+}
+
+// A theme can ask for one of the flat drawn scenes (ui/plate.js) instead of the 3D view:
+// --fwo-scene-plate: a | b | c | d (the four design directions). Unset: the 3D view.
+function scenePlate(appEl) {
+  try {
+    const v = getComputedStyle(appEl).getPropertyValue("--fwo-scene-plate").trim();
+    return /^[abcd]$/.test(v) ? v : "";
+  } catch (err) {
+    return "";
+  }
 }
 
 async function start() {
@@ -272,7 +284,10 @@ async function start() {
       console.warn("[observatory] dialogue box unavailable: " + err);
     }
   }
-  const scene = createScene(THREE, dom, el.sceneHost, Object.assign({ reducedMotion: reduced, setTimeoutFn: setTimeout, colors: sceneColors(el.app) }, sceneFlags(el.app)));
+  const plateStyle = scenePlate(el.app);
+  const scene = plateStyle
+    ? createPlate(dom, el.sceneHost, { style: plateStyle, reducedMotion: reduced, setTimeoutFn: setTimeout })
+    : createScene(THREE, dom, el.sceneHost, Object.assign({ reducedMotion: reduced, setTimeoutFn: setTimeout, colors: sceneColors(el.app) }, sceneFlags(el.app)));
   el.motion.checked = !reduced;
   if (reduced) el.motionHelp.textContent = "Your system asks for reduced motion, so animation is off; tick to allow it anyway.";
   el.motion.addEventListener("change", () => { if (scene.available) scene.setMotion(el.motion.checked); });

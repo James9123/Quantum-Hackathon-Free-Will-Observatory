@@ -85,6 +85,7 @@ if (params.get("axe") === "1") {
 // ---------------------------------------------------------------- dev only: drive a state
 // ?auto=<intention_deg>|<coupling>|<perspective_deg>   e.g. ?auto=90|0.5|45
 // &persona=self|demon|observer   &how=1 (open the How-this-works drawer)   &norun=1 (sliders only)
+// &prev=<intention_deg>|<coupling>|<perspective_deg>  run these settings first, so the scene shows a previous run
 // Used for screenshots and demo rehearsal; sets <html data-fwo-auto="done"> when finished.
 const auto = params.get("auto");
 if (auto) {
@@ -105,18 +106,28 @@ if (auto) {
   });
   (async () => {
     await until(() => byId("fwo-run") && !byId("fwo-run").disabled, 20000);
-    setRange("fwo-intention", ideg);
-    setRange("fwo-coupling", w);
-    setRange("fwo-perspective", pdeg);
-    if (persona && byId("fwo-tab-" + persona)) byId("fwo-tab-" + persona).click();
-    if (params.get("norun") !== "1") {
+    const runAndWait = async () => {
       const before = (byId("fwo-factual") || {}).textContent || "";
       byId("fwo-run").click();
       await until(() => {
         const now = (byId("fwo-factual") || {}).textContent || "";
         return now.trim().length > 0 && now !== before;
       }, 30000);
+    };
+    const prev = params.get("prev");
+    if (prev) {
+      const [pi, pw, pp] = prev.split("|").map(Number);
+      setRange("fwo-intention", pi);
+      setRange("fwo-coupling", pw);
+      setRange("fwo-perspective", pp);
+      await runAndWait();
+      await until(() => byId("fwo-run") && !byId("fwo-run").disabled, 20000);
     }
+    setRange("fwo-intention", ideg);
+    setRange("fwo-coupling", w);
+    setRange("fwo-perspective", pdeg);
+    if (persona && byId("fwo-tab-" + persona)) byId("fwo-tab-" + persona).click();
+    if (params.get("norun") !== "1") await runAndWait();
     if (params.get("how") === "1" && byId("fwo-how")) byId("fwo-how").open = true;
     await new Promise((r) => setTimeout(r, 1400));   // let the 1 s result transition finish
     document.documentElement.dataset.fwoAuto = "done";

@@ -230,6 +230,14 @@
   background: var(--fwo-scene-label-bg, rgba(11, 19, 38, 0.72)); padding: 1px 7px; border-radius: 999px;
 }
 #fwo-app .fwo-scene-label--self { color: var(--fwo-self); font-weight: 500; }
+/* The flat drawn scene (ui/plate.js), chosen by a theme with --fwo-scene-plate: the frame keeps
+   the drawing's 660 x 420 proportions, so the plate fills it with nothing letterboxed. */
+#fwo-app .fwo-scene .fwo-scene-host.fwo-scene-host--plate { height: auto; aspect-ratio: 660 / 420; }
+#fwo-app .fwo-plate { display: block; width: 100%; height: 100%; }
+#fwo-app .fwo-plate text { font-family: var(--fwo-font-text); }
+#fwo-app .fwo-plate-twinkle { animation: fwo-plate-twinkle 7s ease-in-out infinite; }
+#fwo-app .fwo-plate--still .fwo-plate-twinkle { animation: none; }
+@keyframes fwo-plate-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 #fwo-app .fwo-scene-label--world { color: var(--fwo-world); transform: translate(-100%, -50%); }
 #fwo-app .fwo-scene-label--g1, #fwo-app .fwo-scene-label--g0 { color: var(--fwo-ghost); font-weight: 500; }
 #fwo-app .fwo-scene-fallback { padding: 24px 16px; color: var(--fwo-text); }

@@ -21,6 +21,7 @@
   --fwo-scene-world: #f0a44a; --fwo-scene-world-light: #f6c78a; --fwo-scene-world-deep: #7a4b12; --fwo-scene-ghost: #8b96a1;
   --fwo-scene-link: #45c8e0; --fwo-scene-label-bg: rgba(22, 25, 30, 0.86);
   --fwo-scene-transparent: 1; --fwo-scene-halo: 0;
+  --fwo-scene-plate: b;   /* the scene is this direction's drawn plate (ui/plate.js) */
   /* theme-local shades */
   --b-mono: var(--fwo-font-display); --b-sans: var(--fwo-font-text);
   --b-well: #10141a; --b-tick: #3a424b; --b-tick-maj: #57626d; --b-dash: #2a6e7c; --b-mark: #4a535d;
@@ -365,3 +366,6 @@
   #fwo-app[data-theme="b"] details.fwo-panel { padding: 4px 14px; }
   #fwo-app[data-theme="b"] details.fwo-panel[open] { padding-bottom: 12px; }
 }
+
+/* ------------------------------------------------------------ the drawn scene (ui/plate.js) */
+#fwo-app[data-theme="b"] .fwo-plate text { font-family: var(--b-mono); }

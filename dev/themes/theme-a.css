@@ -23,6 +23,7 @@
   --fwo-scene-world: #8fd8cb; --fwo-scene-world-light: #d9fbf3; --fwo-scene-world-deep: #1f5a50; --fwo-scene-ghost: #8090b8;
   --fwo-scene-link: #e5b45a; --fwo-scene-label-bg: rgba(7, 13, 31, 0.78);
   --fwo-scene-transparent: 1;   /* the canvas is clear: the sky + stars below show through */
+  --fwo-scene-plate: a;   /* the scene is this direction's drawn plate (ui/plate.js) */
   /* --fwo-scene-halo stays 0: ui/scene.js builds its halo texture with hex.toString(16),
      but main.js forwards every themed colour as a "#rrggbb" string, so with ANY theme the
      flag makes the page fail to start ("##f7d08966 could not be parsed as a color").
@@ -622,3 +623,6 @@
 @media (prefers-reduced-motion: reduce) {
   #fwo-app[data-theme="a"] .fwo-scene-host::after { animation: none; }
 }
+
+/* ------------------------------------------------------------ the drawn scene (ui/plate.js) */
+#fwo-app[data-theme="a"] .fwo-plate text { font-family: var(--fwo-font-text); }

@@ -23,6 +23,7 @@
   --fwo-scene-world: #0e6e8c; --fwo-scene-world-light: #5fa9c2; --fwo-scene-world-deep: #0a4558; --fwo-scene-ghost: #7c90ac;
   --fwo-scene-link: #17355e; --fwo-scene-label-bg: rgba(255, 255, 255, 0.88);
   --fwo-scene-transparent: 1;
+  --fwo-scene-plate: d;   /* the scene is this direction's drawn plate (ui/plate.js) */
 
   font-size: 14px;
   line-height: 1.55;
@@ -389,3 +390,6 @@
   #fwo-app[data-theme="d"] .fwo-more > h2 { font-size: 22px; }
   #fwo-app[data-theme="d"] .fwo-footer { padding: 12px 14px; }
 }
+
+/* ------------------------------------------------------------ the drawn scene (ui/plate.js) */
+#fwo-app[data-theme="d"] .fwo-plate text { font-family: var(--fwo-font-text); }

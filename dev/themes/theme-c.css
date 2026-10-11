@@ -52,6 +52,7 @@
   --fwo-scene-link: #b79cff;
   --fwo-scene-label-bg: rgba(5, 5, 7, 0.8);
   --fwo-scene-transparent: 1;
+  --fwo-scene-plate: c;   /* the scene is this direction's drawn plate (ui/plate.js) */
   /* --fwo-scene-halo: 1 is the intended hook, but today ui/scene.js makeHaloTexture() does
      hex.toString(16) on the "#rrggbb" string main.js reads from CSS ("##d3c2ff66"), which
      throws and aborts the whole page start. Until that one-line fix lands, the glows behind
@@ -389,3 +390,6 @@
   #fwo-app[data-theme="c"] details.fwo-panel[open] { padding-bottom: 18px; }
   #fwo-app[data-theme="c"] .fwo-footer { text-align: left; }
 }
+
+/* ------------------------------------------------------------ the drawn scene (ui/plate.js) */
+#fwo-app[data-theme="c"] .fwo-plate text { font-family: var(--fwo-font-text); }
