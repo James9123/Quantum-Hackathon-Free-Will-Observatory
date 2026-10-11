@@ -2,7 +2,7 @@
 //   - globalThis.backend: a stand-in object (Qollab injects a PyProxy instead)
 //   - main.js starts first; index.html is injected with innerHTML a little later,
 //     so main.js's whenMounted() polling is exercised
-// Query parameters: ?backend=basic|ionq|error|none  &mount=ms  &slow=N  &axe=1  &reduce=1  &nowebgl=1
+// Query parameters: ?backend=basic|ionq|error|none  &mount=ms  &slow=N  &axe=1  &reduce=1  &nowebgl=1  &theme=a|b|c|d  &clean=1
 // (none: no global `backend` at all, to exercise main.js's missing-backend path;
 //  reduce=1 makes matchMedia report prefers-reduced-motion: reduce, so the no-animation
 //  path can be checked in a browser that cannot emulate the preference;
@@ -39,9 +39,30 @@ for (const a of document.querySelectorAll("[data-scenario]")) {
 // main.js never settles (it ends with `await new Promise(() => {})`), so do not await it.
 import("../qollab_project/main.js").catch((err) => console.error("main.js failed: " + err));
 
+// ?theme=a|b|c|d: one of the four design directions as a dev-only stylesheet (never uploaded),
+// loaded BEFORE the page mounts so main.js reads the themed scene colours.
+// ?clean=1 hides the stub banner and paints the page in the app's background (for screenshots).
+const theme = params.get("theme");
+if (theme && /^[abcd]$/.test(theme)) {
+  await new Promise((resolve) => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "./themes.css";
+    link.onload = resolve;
+    link.onerror = resolve;
+    document.head.appendChild(link);
+  });
+}
 const html = await (await fetch("../qollab_project/index.html", { cache: "no-store" })).text();
 setTimeout(() => {
   document.getElementById("qollab-root").innerHTML = html;
+  const app = document.getElementById("fwo-app");
+  if (theme && /^[abcd]$/.test(theme)) app.dataset.theme = theme;
+  if (params.get("clean") === "1") {
+    const bar = document.querySelector(".stub-bar");
+    if (bar) bar.hidden = true;
+    document.body.style.background = getComputedStyle(app).backgroundColor;
+  }
 }, mountDelay);
 
 if (params.get("axe") === "1") {

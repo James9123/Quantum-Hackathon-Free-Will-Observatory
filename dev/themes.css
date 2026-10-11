@@ -1,0 +1,66 @@
+/* Dev-only: the four design directions from the design pass, as token sets over the
+   friendly page. Loaded by dev/boot.js with ?theme=a|b|c|d; never part of the upload.
+   When the team picks one, its block moves into qollab_project/main.css (without the
+   font import if the platform should stay offline-safe). */
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap");
+
+/* A: Night observatory (navy, brass, serif display) */
+#fwo-app[data-theme="a"] {
+  --fwo-bg: #070d1f; --fwo-surface: #101b3a; --fwo-surface-2: #16224a; --fwo-border: #2a3a6b; --fwo-control: #e5b45a;
+  --fwo-text: #f3ecdc; --fwo-muted: #aab5cf; --fwo-self: #e5b45a; --fwo-self-strong: #f7d089; --fwo-world: #8fd8cb;
+  --fwo-on-accent: #201806; --fwo-focus: #ffd166; --fwo-ok-fg: #7ed9a0; --fwo-ok-bg: #10291f; --fwo-warn-fg: #f2c14e;
+  --fwo-warn-bg: #2e2508; --fwo-error-fg: #f08a76; --fwo-error-bg: #33161a; --fwo-info-bg: #12224a; --fwo-ghost: #8090b8;
+  --fwo-chart-grid: #1d2b55; --fwo-chart-forecast: #8fd8cb; --fwo-chart-band: #aab5cf; --fwo-radius: 14px;
+  --fwo-font-display: "Cormorant Garamond", Georgia, serif; --fwo-font-text: "Inter", system-ui, sans-serif;
+  --fwo-scene-bg: #070d1f; --fwo-scene-self: #e5b45a; --fwo-scene-self-light: #f7d089; --fwo-scene-self-deep: #7a5a1c;
+  --fwo-scene-world: #8fd8cb; --fwo-scene-world-light: #c5efe8; --fwo-scene-world-deep: #2e6a61; --fwo-scene-ghost: #8090b8;
+  --fwo-scene-link: #e5b45a; --fwo-scene-label-bg: rgba(7, 13, 31, 0.78);
+}
+#fwo-app[data-theme="a"] h1, #fwo-app[data-theme="a"] h2 { font-weight: 600; letter-spacing: 0.01em; }
+#fwo-app[data-theme="a"] h1 { font-size: 2.6rem; }
+
+/* B: Instrument console (slate, monospaced readouts, square corners) */
+#fwo-app[data-theme="b"] {
+  --fwo-bg: #14171b; --fwo-surface: #1b1f24; --fwo-surface-2: #21262c; --fwo-border: #31383f; --fwo-control: #45c8e0;
+  --fwo-text: #e7eaed; --fwo-muted: #9aa4ad; --fwo-self: #45c8e0; --fwo-self-strong: #7fdcf0; --fwo-world: #f0a44a;
+  --fwo-on-accent: #062832; --fwo-focus: #ffd84d; --fwo-ok-fg: #46c98b; --fwo-ok-bg: #12261d; --fwo-warn-fg: #e5b85c;
+  --fwo-warn-bg: #2b2310; --fwo-error-fg: #f06a5e; --fwo-error-bg: #2e1615; --fwo-info-bg: #1e2830; --fwo-ghost: #8b96a1;
+  --fwo-chart-grid: #2a3037; --fwo-chart-forecast: #f0a44a; --fwo-chart-band: #9aa4ad; --fwo-radius: 3px;
+  --fwo-font-display: "IBM Plex Mono", ui-monospace, monospace; --fwo-font-text: "IBM Plex Sans", system-ui, sans-serif;
+  --fwo-scene-bg: #14171b; --fwo-scene-self: #45c8e0; --fwo-scene-self-light: #7fdcf0; --fwo-scene-self-deep: #135f6d;
+  --fwo-scene-world: #f0a44a; --fwo-scene-world-light: #f6c78a; --fwo-scene-world-deep: #7a4b12; --fwo-scene-ghost: #8b96a1;
+  --fwo-scene-link: #45c8e0; --fwo-scene-label-bg: rgba(20, 23, 27, 0.82);
+}
+#fwo-app[data-theme="b"] .fwo-out, #fwo-app[data-theme="b"] .fwo-reading-num, #fwo-app[data-theme="b"] .fwo-future-p { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+#fwo-app[data-theme="b"] h1 { font-size: 1.9rem; letter-spacing: 0; }
+
+/* C: Luminous anatomy (near-black, violet glow, editorial serif) */
+#fwo-app[data-theme="c"] {
+  --fwo-bg: #050507; --fwo-surface: #0e0e13; --fwo-surface-2: #15151d; --fwo-border: #26262f; --fwo-control: #b79cff;
+  --fwo-text: #f6f4f0; --fwo-muted: #a7a4b0; --fwo-self: #b79cff; --fwo-self-strong: #d3c2ff; --fwo-world: #63e6c4;
+  --fwo-on-accent: #17102b; --fwo-focus: #e4d9ff; --fwo-ok-fg: #6fe3a5; --fwo-ok-bg: #0f2219; --fwo-warn-fg: #efc65e;
+  --fwo-warn-bg: #272010; --fwo-error-fg: #f27e8e; --fwo-error-bg: #2a1217; --fwo-info-bg: #14121e; --fwo-ghost: #948fa6;
+  --fwo-chart-grid: #1e1e27; --fwo-chart-forecast: #63e6c4; --fwo-chart-band: #a7a4b0; --fwo-radius: 22px;
+  --fwo-font-display: "Fraunces", Georgia, serif; --fwo-font-text: "Space Grotesk", system-ui, sans-serif;
+  --fwo-scene-bg: #050507; --fwo-scene-self: #b79cff; --fwo-scene-self-light: #d3c2ff; --fwo-scene-self-deep: #4a3a8c;
+  --fwo-scene-world: #63e6c4; --fwo-scene-world-light: #a8f3df; --fwo-scene-world-deep: #1d6a57; --fwo-scene-ghost: #948fa6;
+  --fwo-scene-link: #b79cff; --fwo-scene-label-bg: rgba(5, 5, 7, 0.8);
+}
+#fwo-app[data-theme="c"] h1 { font-size: 2.8rem; font-weight: 400; letter-spacing: -0.01em; }
+#fwo-app[data-theme="c"] .fwo-reading-num, #fwo-app[data-theme="c"] .fwo-future-p { font-weight: 400; }
+
+/* D: Blueprint, light (off-white, ink, condensed display) */
+#fwo-app[data-theme="d"] {
+  color-scheme: light;
+  --fwo-bg: #edf2f7; --fwo-surface: #f8fafc; --fwo-surface-2: #ffffff; --fwo-border: #9fb4cc; --fwo-control: #17355e;
+  --fwo-text: #17355e; --fwo-muted: #44597a; --fwo-self: #b23a1f; --fwo-self-strong: #8f2e18; --fwo-world: #0e6e8c;
+  --fwo-on-accent: #ffffff; --fwo-focus: #b23a1f; --fwo-ok-fg: #1e7b34; --fwo-ok-bg: #e3f3e6; --fwo-warn-fg: #8a5a00;
+  --fwo-warn-bg: #fbf0d9; --fwo-error-fg: #b3261e; --fwo-error-bg: #fbe4e2; --fwo-info-bg: #dfe9f4; --fwo-ghost: #7c90ac;
+  --fwo-chart-grid: #d5e0ec; --fwo-chart-forecast: #0e6e8c; --fwo-chart-band: #44597a; --fwo-radius: 2px;
+  --fwo-font-display: "Barlow Condensed", system-ui, sans-serif; --fwo-font-text: "IBM Plex Mono", ui-monospace, monospace;
+  --fwo-scene-bg: #edf2f7; --fwo-scene-self: #b23a1f; --fwo-scene-self-light: #d9735b; --fwo-scene-self-deep: #5e1d0e;
+  --fwo-scene-world: #0e6e8c; --fwo-scene-world-light: #5fa9c2; --fwo-scene-world-deep: #0a4558; --fwo-scene-ghost: #7c90ac;
+  --fwo-scene-link: #17355e; --fwo-scene-label-bg: rgba(255, 255, 255, 0.88);
+}
+#fwo-app[data-theme="d"] h1 { font-size: 2.6rem; text-transform: uppercase; letter-spacing: 0.02em; }
+#fwo-app[data-theme="d"] { font-size: 15px; }
