@@ -706,3 +706,24 @@ def test_guide_demo_acts_on_the_seeded_simulator(name, settings, p_ideal, c_idea
         assert NO_RESOLVED in r["explanation"]["factual"]
     else:
         assert m["capacity"] == 1.0 and m["capacity_ci95"] == pytest.approx([1.0 - E1024, 1.0])
+
+
+
+def test_coupling_is_the_visibility_distinguishability_duality():
+    """Capacity = cos(gamma) is the Self's interference visibility = the overlap of the World's
+    two records; distinguishability = concurrence = sin(gamma); C^2 + D^2 = 1 (pure state)."""
+    import numpy as np
+    from qiskit.quantum_info import Statevector, concurrence
+    for w in (0.0, 0.25, 0.5, 0.75, 1.0):
+        g = w * math.pi / 2
+        sv = Statevector(obs.make_circuit(math.pi / 2, g, 0.0, reference=True))
+        rec0 = sv.data[[0, 2]] * math.sqrt(2)      # World amplitudes given Self = 0
+        rec1 = sv.data[[1, 3]] * math.sqrt(2)      # World amplitudes given Self = 1
+        overlap = abs(np.vdot(rec0, rec1))
+        D = math.sqrt(1 - overlap ** 2)
+        C = obs.exact_metrics(dict(obs.DEFAULTS, world_coupling=w))["capacity"]
+        assert C == pytest.approx(math.cos(g), abs=1e-12)
+        assert overlap == pytest.approx(C, abs=1e-12)
+        assert D == pytest.approx(math.sin(g), abs=1e-12)
+        assert concurrence(sv) == pytest.approx(math.sin(g), abs=1e-9)
+        assert C * C + D * D == pytest.approx(1.0, abs=1e-12)

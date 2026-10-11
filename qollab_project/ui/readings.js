@@ -248,8 +248,12 @@ export function renderDrawer(lib, txt, slot, run, profile) {
   parts.push(h("h3", {}, "Honesty"));
   parts.push(h("p", {}, txt.HONESTY));
   parts.push(h("p", { class: "fwo-small" }, "The correspondence between the controls and the words intention, World and perspective is designed, not discovered: " +
-    "the phase is called intention because varying it changes interference; the coupling is called World influence because it correlates the Self with a second system; " +
+    "the phase is called intention because varying it changes interference; the coupling is called World coupling because it wires the Self to a second qubit that records which alternative it took " +
+    "(the World never pushes the Self toward a future; its record only reduces the interference the Self can use); " +
     "the readout angle is called perspective because it changes the measured observable. A responsive classical system can also score highly on capacity."));
+  parts.push(h("p", { class: "fwo-small" }, "World coupling (w) is a controlled rotation by 2 gamma with gamma = w pi/2: coherent and reversible in principle, not noise. " +
+    "In the ideal state Capacity = cos(gamma) is the Self's interference visibility and the World's which-alternative distinguishability is sin(gamma); " +
+    "they satisfy C^2 + D^2 = 1, the wave-particle duality relation, so the slider trades one for the other. Joint control of Self and World could undo the coupling."));
   replace(slot, parts);
 }
 

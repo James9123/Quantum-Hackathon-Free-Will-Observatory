@@ -66,6 +66,32 @@ reduced state has the off-diagonal element e^{iφ} cos γ / 2: the interference 
 available to any equatorial readout is **cos γ**. This is coherent coupling, not a noise
 slider; the information is in the World, not lost.
 
+### Visibility and distinguishability
+
+The controlled rotation is `exp(−iγ |1⟩⟨1|_Self ⊗ Y_World)`: a von Neumann pre-measurement in
+which the World is a one-qubit pointer. Its two records of the Self are r₀ = |0⟩ and
+r₁ = cos γ |0⟩ + sin γ |1⟩, which overlap by cos γ. Three quantities follow:
+
+- **Capacity C = cos γ** is exactly the Self's interference visibility V (the fringe range
+  of P(Self = 1) over φ).
+- **The World's which-alternative distinguishability D = √(1 − cos²γ) = sin γ**, which is
+  also the concurrence of the pure Self–World state.
+- **C² + D² = 1**: the slider rides along the wave–particle duality relation V² + D² ≤ 1
+  (Greenberger & Yasin 1988; Jaeger, Shimony & Vaidman 1995; Englert 1996), saturated here
+  because the state is pure. Under the noise dial (§9) V falls below cos γ and the relation
+  becomes a strict inequality.
+
+So "World coupling" is the strength of a which-alternative detector, and Capacity is the
+visibility it trades away. The slider is linear in the angle, not in capacity or information:
+at w = 0.5, C = 0.707 and the reference-basis connection is 0.311 bits. Two honesty points:
+the coupling is unitary and reversible, so joint control of Self and World could uncompute
+it and restore full capacity (the "constraint" at w = 1 is relative to Self-only controls);
+and the World is one qubit whose record is fully readable by the connection probe, unlike a
+many-body environment whose records are effectively irreversible.
+
+*Measured:* at w ∈ {0, 0.25, 0.5, 0.75, 1} the engine's capacity equals the record overlap
+and cos γ, the concurrence equals sin γ, and C² + D² = 1 to 10⁻¹² (a test checks it).
+
 ## 3. The display probability
 
 Write θ = φ − β. `RZ(−β)` turns e^{iφ} into e^{iθ} (up to a global phase). `H` on the Self
@@ -280,7 +306,8 @@ draws.
   model degrades it. The measurements are real outputs of the simulator; the Self and its
   philosophical meaning are the team's artistic construction.
 - **Not discovered, designed.** Phase is called intention, coupling is called World
-  influence and the readout angle is called perspective because each points to an
+  coupling (the World records which alternative the Self took; it never pushes the Self
+  toward a future) and the readout angle is called perspective because each points to an
   inspectable operation. The words are labels for gates.
 - **Specific to this control family:** phase changes on the Self, fixed coupling, the
   specified readout. **Joint control of Self and World could undo their coupling** and

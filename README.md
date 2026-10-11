@@ -207,9 +207,13 @@ From the explanation drawer, in the team's own words:
 > Self and its philosophical meaning are our artistic construction.
 
 - **Designed, not discovered.** Phase is called *intention* because varying it changes
-  interference; coupling is called *World influence* because it correlates the Self with a
-  second system; the readout angle is called *perspective* because it changes the measured
-  observable. Each metaphor points to an inspectable operation.
+  interference; coupling is called *World coupling* because it wires the Self to a second
+  qubit that records which alternative it took (the World never pushes the Self toward a
+  future; its record only reduces the interference the Self can use); the readout angle is
+  called *perspective* because it changes the measured observable. Each metaphor points to
+  an inspectable operation. In the ideal state Capacity = cos γ is the Self's interference
+  visibility and the World's distinguishability is sin γ, with C² + D² = 1: the slider rides
+  the wave–particle duality relation ([docs/model.md](docs/model.md) §2).
 - **Users supply the intention.** Version one has no autonomous learning or goals.
 - **Specific to the chosen controls:** phase changes on the Self, fixed coupling, the
   specified readout. Joint control of Self and World could undo their coupling.
