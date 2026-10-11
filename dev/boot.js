@@ -60,3 +60,45 @@ if (params.get("axe") === "1") {
   }, 3000);
   document.head.appendChild(s);
 }
+
+// ---------------------------------------------------------------- dev only: drive a state
+// ?auto=<intention_deg>|<coupling>|<perspective_deg>   e.g. ?auto=90|0.5|45
+// &persona=self|demon|observer   &how=1 (open the How-this-works drawer)   &norun=1 (sliders only)
+// Used for screenshots and demo rehearsal; sets <html data-fwo-auto="done"> when finished.
+const auto = params.get("auto");
+if (auto) {
+  const [ideg, w, pdeg] = auto.split("|").map(Number);
+  const persona = params.get("persona");
+  const byId = (id) => document.getElementById(id);
+  const setRange = (id, v) => {
+    const el = byId(id);
+    if (!el || !Number.isFinite(v)) return;
+    el.value = String(v);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    el.dispatchEvent(new Event("change", { bubbles: true }));
+  };
+  const until = (pred, ms) => new Promise((resolve) => {
+    const t0 = Date.now();
+    const tick = () => (pred() ? resolve(true) : (Date.now() - t0 > ms ? resolve(false) : setTimeout(tick, 100)));
+    tick();
+  });
+  (async () => {
+    await until(() => byId("fwo-run") && !byId("fwo-run").disabled, 20000);
+    setRange("fwo-intention", ideg);
+    setRange("fwo-coupling", w);
+    setRange("fwo-perspective", pdeg);
+    if (persona && byId("fwo-tab-" + persona)) byId("fwo-tab-" + persona).click();
+    if (params.get("norun") !== "1") {
+      const before = (byId("fwo-factual") || {}).textContent || "";
+      byId("fwo-run").click();
+      await until(() => {
+        const now = (byId("fwo-factual") || {}).textContent || "";
+        return now.trim().length > 0 && now !== before;
+      }, 30000);
+    }
+    if (params.get("how") === "1" && byId("fwo-how")) byId("fwo-how").open = true;
+    await new Promise((r) => setTimeout(r, 1400));   // let the 1 s result transition finish
+    document.documentElement.dataset.fwoAuto = "done";
+    console.log("auto: done");
+  })();
+}
