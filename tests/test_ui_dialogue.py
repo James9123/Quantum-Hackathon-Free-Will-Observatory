@@ -215,3 +215,24 @@ def test_easter_egg_stage_in_the_style_panel():
     call = MAIN[MAIN.index("const egg = createEggStage("):MAIN.index("const styleOptions")]
     assert "SPRITES" not in call                                          # the dialogue box's sheets stay there
     assert "showStyles(false);" not in MAIN[MAIN.index("const egg = createEggStage("):MAIN.index("const styleOptions")]
+
+
+def test_easter_egg_self_does_not_jitter():
+    """Every frame of the angry strip stands on the same ground line with its feet in the same place."""
+    import base64
+    import io
+    from PIL import Image
+    eggs = _read("qollab_project/ui/eggs.js")
+    data = json.loads(eggs[eggs.index("export const EGGS = ") + len("export const EGGS = "):eggs.rindex(";")])
+    sheet = data["angry"]
+    im = Image.open(io.BytesIO(base64.b64decode(sheet["src"].split(",", 1)[1]))).convert("RGBA")
+    cell, grounds, centres = sheet["cell"], set(), []
+    for i in range(sheet["frames"]):
+        a = im.crop((i * cell, 0, (i + 1) * cell, cell)).getchannel("A")
+        bottom = a.getbbox()[3] - 1
+        px = a.load()
+        xs = [x for y in range(bottom - 6, bottom + 1) for x in range(cell) if px[x, y]]
+        grounds.add(bottom)
+        centres.append(sum(xs) / len(xs))
+    assert len(grounds) == 1, grounds
+    assert max(centres) - min(centres) <= 1.0, centres
