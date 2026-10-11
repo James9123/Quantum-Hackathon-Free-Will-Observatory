@@ -2,7 +2,14 @@
    is scoped under #fwo-app so nothing leaks into the host page. Dark navy scene,
    teal = Self, amber = World, light text. Text colours are chosen for >= 4.5:1
    contrast on their backgrounds (tests/test_ui_static.py computes the ratios).
-   The page reads as three steps, then plain-word results, then detail panels. */
+   The page reads as three steps, then plain-word results, then detail panels.
+   It also carries the four design directions as page styles, A to D, each scoped by
+   data-theme on #fwo-app: A is the default (index.html), and the Style switch at the top of
+   the page changes it. The one external resource is the Google Fonts stylesheet for the
+   four styles' typefaces (team decision, 2026-10-11); without it each style falls back to
+   system fonts. */
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=Space+Grotesk:wght@400;500;700&family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;1,500&display=swap");
+
 
 #fwo-app {
   --fwo-bg: #0b1326;
@@ -161,6 +168,17 @@
 #fwo-app .fwo-dialogue-hint[hidden] { display: none; }
 #fwo-app .fwo-dialogue-head .fwo-scene-skip { margin-left: auto; }
 @keyframes fwo-cue { to { transform: translateY(2px); opacity: 0.4; } }
+
+/* ------------------------------------------------------------ the Style switch (A to D) */
+#fwo-app .fwo-style { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 14px; padding: 0; border: 0; min-width: 0; }
+#fwo-app .fwo-style legend { float: left; margin: 0 6px 0 0; padding: 0; font-size: 0.8125rem; font-weight: 600; color: var(--fwo-muted); }
+#fwo-app .fwo-style label {
+  position: relative; display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; cursor: pointer;
+  border: 1px solid var(--fwo-border); border-radius: 999px; font-size: 0.8125rem; color: var(--fwo-muted); background: transparent;
+}
+#fwo-app .fwo-style input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+#fwo-app .fwo-style label:has(input:checked) { color: var(--fwo-text); border-color: var(--fwo-self); background: var(--fwo-surface-2); font-weight: 600; }
+#fwo-app .fwo-style label:has(input:focus-visible) { outline: 3px solid var(--fwo-focus); outline-offset: 2px; }
 
 /* ------------------------------------------------------------ dials + run */
 #fwo-app .fwo-field { margin: 12px 0; }
@@ -367,3 +385,1769 @@
     transition: none !important; animation: none !important; scroll-behavior: auto !important;
   }
 }
+
+/* ==================================================================== style A, Night observatory
+   deep navy sky, brass instruments for the Self, teal for the World, Cormorant Garamond over Inter, arc gauges. Every selector starts with #fwo-app[data-theme="a"]. */
+/* ------------------------------------------------------------ tokens */
+#fwo-app[data-theme="a"] {
+  --fwo-bg: #070d1f; --fwo-surface: #101b3a; --fwo-surface-2: #16224a; --fwo-border: #2a3a6b; --fwo-control: #e5b45a;
+  --fwo-text: #f3ecdc; --fwo-muted: #aab5cf; --fwo-self: #e5b45a; --fwo-self-strong: #f7d089; --fwo-world: #8fd8cb;
+  --fwo-on-accent: #201806; --fwo-focus: #ffd166; --fwo-ok-fg: #7ed9a0; --fwo-ok-bg: #10291f; --fwo-warn-fg: #f2c14e;
+  --fwo-warn-bg: #2e2508; --fwo-error-fg: #f6c9bf; --fwo-error-bg: #33161a; --fwo-info-bg: #12224a; --fwo-ghost: #8090b8;
+  --fwo-chart-grid: #22315e; --fwo-chart-forecast: #f7d089; --fwo-chart-band: #aab5cf; --fwo-radius: 14px;
+  --fwo-font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --fwo-font-text: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* 3D scene palette (read once by main.js) */
+  --fwo-scene-bg: #070d1f; --fwo-scene-self: #e5b45a; --fwo-scene-self-light: #f7d089; --fwo-scene-self-deep: #7a5a20;
+  --fwo-scene-world: #8fd8cb; --fwo-scene-world-light: #d9fbf3; --fwo-scene-world-deep: #1f5a50; --fwo-scene-ghost: #8090b8;
+  --fwo-scene-link: #e5b45a; --fwo-scene-label-bg: rgba(7, 13, 31, 0.78);
+  --fwo-scene-transparent: 1;   /* the canvas is clear: the sky + stars below show through */
+  --fwo-scene-plate: a;   /* the scene is this direction's drawn plate (ui/plate.js) */
+  /* --fwo-scene-halo stays 0: ui/scene.js builds its halo texture with hex.toString(16),
+     but main.js forwards every themed colour as a "#rrggbb" string, so with ANY theme the
+     flag makes the page fail to start ("##f7d08966 could not be parsed as a color").
+     The halos are drawn in CSS below (see .fwo-scene-labels::before). Once scene.js
+     accepts strings, flip this to 1 and delete that rule. */
+  --fwo-scene-halo: 1;
+  /* theme-private tokens */
+  --fwo-a-track: #2c3b6e; --fwo-a-tick: #4a5c92; --fwo-a-brass-deep: #8a6a2f; --fwo-a-star: 220, 230, 255;
+  --fwo-a-scene-h: clamp(280px, 40vw, 420px);
+
+  position: relative; isolation: isolate;
+  padding: 40px 32px 56px;
+  background-color: #070d1f;
+  background-image: radial-gradient(1200px 780px at 50% -12%, #111e44 0%, #0b1534 34%, #070d1f 62%);
+  color: var(--fwo-text);
+  font-family: var(--fwo-font-text);
+  font-size: 16px; line-height: 1.55;
+  accent-color: #e5b45a;
+}
+
+/* a faint, tiled starfield across the whole page (several co-prime tile sizes, so no
+   repeat is visible); the dense field lives behind the 3D scene */
+#fwo-app[data-theme="a"]::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(circle at 97px 110px, rgba(var(--fwo-a-star), 0.4) 0 0.78px, transparent 1.48px) 0 0 / 173px 173px,
+    radial-gradient(circle at 42px 167px, rgba(var(--fwo-a-star), 0.46) 0 1.04px, transparent 1.74px) 0 0 / 211px 211px,
+    radial-gradient(circle at 159px 191px, rgba(var(--fwo-a-star), 0.41) 0 0.77px, transparent 1.47px) 0 0 / 239px 239px,
+    radial-gradient(circle at 81px 36px, rgba(var(--fwo-a-star), 0.41) 0 0.93px, transparent 1.63px) 0 0 / 263px 263px,
+    radial-gradient(circle at 272px 117px, rgba(var(--fwo-a-star), 0.34) 0 0.84px, transparent 1.54px) 0 0 / 307px 307px,
+    radial-gradient(circle at 165px 37px, rgba(var(--fwo-a-star), 0.6) 0 0.98px, transparent 1.68px) 0 0 / 353px 353px,
+    radial-gradient(circle at 194px 314px, rgba(var(--fwo-a-star), 0.29) 0 1.13px, transparent 1.83px) 0 0 / 401px 401px,
+    radial-gradient(circle at 417px 405px, rgba(var(--fwo-a-star), 0.35) 0 0.79px, transparent 1.49px) 0 0 / 449px 449px,
+    radial-gradient(circle at 18px 38px, rgba(var(--fwo-a-star), 0.6) 0 1.0px, transparent 1.70px) 0 0 / 503px 503px,
+    radial-gradient(circle at 296px 430px, rgba(var(--fwo-a-star), 0.55) 0 0.77px, transparent 1.47px) 0 0 / 557px 557px,
+    radial-gradient(circle at 569px 594px, rgba(var(--fwo-a-star), 0.58) 0 0.81px, transparent 1.51px) 0 0 / 613px 613px,
+    radial-gradient(circle at 343px 476px, rgba(var(--fwo-a-star), 0.43) 0 1.14px, transparent 1.84px) 0 0 / 659px 659px,
+    radial-gradient(circle at 59px 28px, rgba(var(--fwo-a-star), 0.43) 0 0.84px, transparent 1.54px) 0 0 / 727px 727px,
+    radial-gradient(circle at 559px 320px, rgba(var(--fwo-a-star), 0.51) 0 1.09px, transparent 1.79px) 0 0 / 809px 809px;
+  background-repeat: repeat;
+}
+
+#fwo-app[data-theme="a"] h1, #fwo-app[data-theme="a"] h2, #fwo-app[data-theme="a"] h3 {
+  font-family: var(--fwo-font-display); font-weight: 600; letter-spacing: 0.01em; color: var(--fwo-text);
+}
+#fwo-app[data-theme="a"] h2 {
+  font-size: 23px; line-height: 1.2; padding-bottom: 9px; margin: 0 0 14px;
+  /* the thin brass rule under a heading */
+  background: linear-gradient(90deg, rgba(229, 180, 90, 0.9), rgba(229, 180, 90, 0.32) 34%, #2a3a6b 68%, #2a3a6b) left bottom / 100% 1px no-repeat;
+}
+#fwo-app[data-theme="a"] h2 .fwo-step-n {
+  font: 700 0.56em/1 var(--fwo-font-text); width: 1.75em; height: 1.75em; margin-right: 8px; vertical-align: 0.18em;
+}
+#fwo-app[data-theme="a"] h3 { font-family: var(--fwo-font-text); font-size: 15px; font-weight: 600; letter-spacing: 0; }
+#fwo-app[data-theme="a"] .fwo-step-n {
+  background: linear-gradient(180deg, #f2c979, #d9a441); color: #201806;
+  box-shadow: 0 0 0 1px #8a6a2f, 0 0 10px rgba(229, 180, 90, 0.35);
+}
+#fwo-app[data-theme="a"] .fwo-small, #fwo-app[data-theme="a"] .fwo-help { font-size: 13px; color: var(--fwo-muted); }
+#fwo-app[data-theme="a"] .fwo-help { font-size: 12.5px; line-height: 1.5; }
+#fwo-app[data-theme="a"] .fwo-tech { font-weight: 400; font-size: 12.5px; color: var(--fwo-muted); }
+
+/* ------------------------------------------------------------ hero */
+#fwo-app[data-theme="a"] .fwo-hero { text-align: center; margin-bottom: 30px; }
+#fwo-app[data-theme="a"] .fwo-kicker {
+  font: 600 11.5px/1.5 var(--fwo-font-text); letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--fwo-self); margin-bottom: 10px;
+}
+#fwo-app[data-theme="a"] .fwo-title {
+  font: 600 46px/1.1 var(--fwo-font-display); letter-spacing: 0.015em; color: #f8f0dc; margin-bottom: 14px;
+}
+#fwo-app[data-theme="a"] .fwo-hook { font-size: 15.5px; line-height: 1.6; color: #c9cfdf; max-width: 780px; margin: 0 auto 18px; }
+#fwo-app[data-theme="a"] .fwo-steps { justify-content: center; gap: 10px 22px; font-weight: 500; font-size: 14.5px; margin: 0; }
+#fwo-app[data-theme="a"] .fwo-steps .fwo-step-n { font-size: 0.8em; }
+
+/* ------------------------------------------------------------ layout + panels */
+#fwo-app[data-theme="a"] .fwo-layout { gap: 22px; margin-bottom: 22px; }
+#fwo-app[data-theme="a"] .fwo-col { gap: 22px; }
+#fwo-app[data-theme="a"] .fwo-panel {
+  background: linear-gradient(180deg, #101b3a, #0d1731); border: 1px solid #2a3a6b; border-radius: 14px;
+  padding: 22px; box-shadow: 0 10px 34px rgba(0, 0, 0, 0.35); margin: 0 0 22px;
+}
+#fwo-app[data-theme="a"] .fwo-col > .fwo-panel { margin: 0; }
+
+/* ------------------------------------------------------------ guide: underline tabs */
+#fwo-app[data-theme="a"] .fwo-tabs { display: flex; gap: 4px; border-bottom: 1px solid #2a3a6b; margin-bottom: 16px; }
+#fwo-app[data-theme="a"] .fwo-tab {
+  flex: 1 1 0; background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 6px 6px 0 0;
+  margin-bottom: -1px; padding: 8px 12px 10px; min-height: 52px; color: var(--fwo-muted); box-shadow: none; gap: 2px;
+}
+#fwo-app[data-theme="a"] .fwo-tab:hover { color: var(--fwo-text); border-bottom-color: #4a5c92; background: rgba(22, 34, 74, 0.35); }
+#fwo-app[data-theme="a"] .fwo-tab[aria-selected="true"] {
+  color: var(--fwo-self-strong); border-bottom-color: var(--fwo-self); box-shadow: none;
+  background: linear-gradient(180deg, rgba(229, 180, 90, 0) 20%, rgba(229, 180, 90, 0.09));
+}
+#fwo-app[data-theme="a"] .fwo-tab-name { font-weight: 500; font-size: 15px; }
+#fwo-app[data-theme="a"] .fwo-tab[aria-selected="true"] .fwo-tab-name { color: var(--fwo-self-strong); font-weight: 600; }
+#fwo-app[data-theme="a"] .fwo-tab-role { font-size: 12px; }
+#fwo-app[data-theme="a"] .fwo-tip { font-size: 14.5px; color: #c9cfdf; margin: 10px 2px 0; }
+#fwo-app[data-theme="a"] .fwo-guide-foot { border-top: 1px dashed #33447a; margin-top: 14px; padding-top: 10px; }
+
+/* the RPG dialogue box as a brass-lined instrument plate; the pixel-art portrait is never scaled or filtered */
+#fwo-app[data-theme="a"] .fwo-dialogue {
+  background: rgba(22, 34, 74, 0.55); border: 1px solid #33447a; border-radius: 12px; padding: 14px;
+  box-shadow: inset 0 0 0 1px rgba(229, 180, 90, 0.14), 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+#fwo-app[data-theme="a"] .fwo-portrait {
+  border: 1px solid #33447a; border-radius: 10px;
+  background: radial-gradient(circle at 50% 42%, #142250, #070d1f 74%);
+}
+#fwo-app[data-theme="a"] .fwo-portrait--sprite { border-style: solid; }
+#fwo-app[data-theme="a"] .fwo-dialogue--self .fwo-portrait { border-color: #8a6a2f; box-shadow: 0 0 0 1px rgba(229, 180, 90, 0.22), 0 0 18px rgba(229, 180, 90, 0.18); }
+#fwo-app[data-theme="a"] .fwo-dialogue--demon .fwo-portrait { border-color: #2e6a61; box-shadow: 0 0 0 1px rgba(143, 216, 203, 0.22), 0 0 18px rgba(143, 216, 203, 0.16); }
+#fwo-app[data-theme="a"] .fwo-dialogue--observer .fwo-portrait { border-color: #4a5c92; box-shadow: 0 0 0 1px rgba(128, 144, 184, 0.22), 0 0 18px rgba(128, 144, 184, 0.16); }
+#fwo-app[data-theme="a"] .fwo-dialogue-name { font: 600 1.3rem/1.2 var(--fwo-font-display); letter-spacing: 0.01em; }
+#fwo-app[data-theme="a"] .fwo-dialogue--self .fwo-dialogue-name { color: var(--fwo-self-strong); }
+#fwo-app[data-theme="a"] .fwo-dialogue--demon .fwo-dialogue-name { color: var(--fwo-world); }
+#fwo-app[data-theme="a"] .fwo-dialogue--observer .fwo-dialogue-name { color: #c8d2ec; }
+#fwo-app[data-theme="a"] .fwo-dialogue-text { font: italic 500 1.25rem/1.45 var(--fwo-font-display); }   /* the persona line, as designed */
+#fwo-app[data-theme="a"] .fwo-dialogue-skip { border: 1px solid #33447a; border-radius: 999px; color: var(--fwo-muted); padding: 4px 14px; }
+#fwo-app[data-theme="a"] .fwo-dialogue-skip:hover, #fwo-app[data-theme="a"] .fwo-dialogue-skip:focus-visible { color: var(--fwo-text); border-color: var(--fwo-self); }
+#fwo-app[data-theme="a"] .fwo-portrait-who { color: var(--fwo-text); }
+
+/* ------------------------------------------------------------ dials */
+#fwo-app[data-theme="a"] .fwo-field { margin: 16px 0; }
+#fwo-app[data-theme="a"] .fwo-range-head { margin-bottom: 2px; }
+#fwo-app[data-theme="a"] .fwo-range-head label { font-weight: 500; font-size: 14px; }
+#fwo-app[data-theme="a"] .fwo-field > label { font-weight: 500; font-size: 14px; }
+#fwo-app[data-theme="a"] .fwo-out { font: 600 13px/1.5 var(--fwo-font-text); color: var(--fwo-self-strong); font-variant-numeric: lining-nums tabular-nums; }
+
+/* brass slider: thin track, glowing instrument knob */
+#fwo-app[data-theme="a"] input[type="range"] {
+  -webkit-appearance: none; appearance: none; height: 44px; min-height: 44px; margin: 0; padding: 0;
+  background: transparent; cursor: pointer; border-radius: 6px;
+}
+#fwo-app[data-theme="a"] input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--fwo-a-track); }
+#fwo-app[data-theme="a"] input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 20px; height: 20px; margin-top: -8px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f9e2ae, #d9a441 70%); border: 2px solid #0b1430;
+  box-shadow: 0 0 0 1px #8a6a2f, 0 0 14px rgba(229, 180, 90, 0.55);
+}
+#fwo-app[data-theme="a"] input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--fwo-a-track); }
+#fwo-app[data-theme="a"] input[type="range"]::-moz-range-progress { height: 4px; border-radius: 2px; background: linear-gradient(90deg, #8a6a2f, #e5b45a); }
+#fwo-app[data-theme="a"] input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f9e2ae, #d9a441 70%);
+  border: 2px solid #0b1430; box-shadow: 0 0 0 1px #8a6a2f, 0 0 14px rgba(229, 180, 90, 0.55);
+}
+#fwo-app[data-theme="a"] input[type="number"], #fwo-app[data-theme="a"] select {
+  background: #070d1f; border: 1px solid #5a6ca3; border-radius: 8px; color: var(--fwo-text);
+}
+#fwo-app[data-theme="a"] input[type="checkbox"] { accent-color: #e5b45a; }
+
+#fwo-app[data-theme="a"] .fwo-actions { margin-top: 22px; }
+#fwo-app[data-theme="a"] .fwo-button {
+  background: linear-gradient(180deg, #f2c979, #d9a441); border: 1px solid #8a6a2f; border-radius: 12px; color: #201806;
+  font: 600 15.5px/1.2 var(--fwo-font-text); min-height: 48px; box-shadow: 0 4px 18px rgba(229, 180, 90, 0.35);
+}
+#fwo-app[data-theme="a"] .fwo-button .fwo-step-n { background: #201806; color: #f7d089; box-shadow: none; }
+#fwo-app[data-theme="a"] .fwo-button:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: linear-gradient(180deg, #f9d88f, #e0ab45); border-color: #a07a35; box-shadow: 0 4px 22px rgba(229, 180, 90, 0.5);
+}
+#fwo-app[data-theme="a"] .fwo-button:disabled, #fwo-app[data-theme="a"] .fwo-button[aria-disabled="true"] {
+  background: rgba(22, 34, 74, 0.6); color: var(--fwo-muted); border: 1px dashed #4a5c92; box-shadow: none;
+}
+#fwo-app[data-theme="a"] .fwo-button:disabled .fwo-step-n, #fwo-app[data-theme="a"] .fwo-button[aria-disabled="true"] .fwo-step-n {
+  background: #2c3b6e; color: #f3ecdc;
+}
+#fwo-app[data-theme="a"] #fwo-run-policy { margin-top: 10px; font-size: 12.5px; }
+
+/* status: a glowing lamp + soft green wash (red when the run failed) */
+#fwo-app[data-theme="a"] .fwo-status {
+  display: flex; gap: 10px; align-items: baseline; margin: 14px 0 0; padding: 13px 18px;
+  background: linear-gradient(90deg, rgba(126, 217, 160, 0.10), rgba(18, 34, 74, 0.35) 70%);
+  border: 1px solid #24436a; border-left: 3px solid #7ed9a0; border-radius: 10px; font-size: 14px; color: #e4e9d9;
+}
+#fwo-app[data-theme="a"] .fwo-status::before {
+  content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; background: #7ed9a0;
+  box-shadow: 0 0 8px rgba(126, 217, 160, 0.8); transform: translateY(-1px);
+}
+#fwo-app[data-theme="a"] .fwo-status--error {
+  border-color: #5a2a2e; border-left-color: #f08a76; color: #f6c9bf;
+  background: linear-gradient(90deg, rgba(240, 138, 118, 0.12), rgba(51, 22, 26, 0.5) 70%);
+}
+#fwo-app[data-theme="a"] .fwo-status--error::before { background: #f08a76; box-shadow: 0 0 8px rgba(240, 138, 118, 0.8); }
+#fwo-app[data-theme="a"] .fwo-progress { background: rgba(18, 34, 74, 0.6); border: 1px solid #2a3a6b; border-radius: 8px; }
+#fwo-app[data-theme="a"] .fwo-progress::before { color: var(--fwo-self); }
+#fwo-app[data-theme="a"] .fwo-note { background: rgba(22, 34, 74, 0.55); border: 1px solid #2a3a6b; border-radius: 10px; }
+#fwo-app[data-theme="a"] .fwo-note--warn { background: var(--fwo-warn-bg); color: var(--fwo-warn-fg); border-color: #6b5410; }
+#fwo-app[data-theme="a"] .fwo-note--error { background: var(--fwo-error-bg); color: var(--fwo-error-fg); border-color: #7a3a3a; }
+#fwo-app[data-theme="a"] .fwo-draft { border-top: 1px dashed #33447a; padding-top: 12px; margin-top: 12px; font-size: 12.5px; font-variant-numeric: lining-nums tabular-nums; }
+
+/* disclosure summaries */
+#fwo-app[data-theme="a"] .fwo-details > summary { color: var(--fwo-self-strong); font-weight: 500; font-size: 14.5px; min-height: 44px; }
+#fwo-app[data-theme="a"] .fwo-details > summary::before { color: var(--fwo-muted); }
+#fwo-app[data-theme="a"] details.fwo-panel { padding: 8px 22px; margin: 0 0 12px; }
+#fwo-app[data-theme="a"] details.fwo-panel[open] { padding-bottom: 20px; }
+#fwo-app[data-theme="a"] details.fwo-panel > summary { font-size: 15.5px; }
+#fwo-app[data-theme="a"] .fwo-more > h2 { margin: 30px 0 14px; font-size: 26px; }
+
+/* ------------------------------------------------------------ the scene: sky, stars, halos */
+#fwo-app[data-theme="a"] .fwo-scene { padding: 14px; }
+#fwo-app[data-theme="a"] .fwo-scene > h2 { margin: 4px 6px 12px; }
+#fwo-app[data-theme="a"] .fwo-scene-host {
+  height: var(--fwo-a-scene-h); border: 1px solid #1d2c5a; border-radius: 10px; isolation: isolate; container-type: size;
+  background-color: #070d1f;
+  background-image: radial-gradient(80% 80% at 50% 28%, #101d44 0%, #0a1330 55%, #070d1f 100%);
+}
+/* the starfield: one 1 px point per element, every other star a hand-seeded box-shadow */
+#fwo-app[data-theme="a"] .fwo-scene-host::before, #fwo-app[data-theme="a"] .fwo-scene-host::after {
+  content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 1px; z-index: -1; pointer-events: none;
+  border-radius: 50%; background: transparent;
+}
+#fwo-app[data-theme="a"] .fwo-scene-host::before { box-shadow: 173.6px 274.3px 0 0.4px rgba(var(--fwo-a-star), 0.64),
+    261.1px 72.9px 0 0.2px rgba(var(--fwo-a-star), 0.4),
+    653.7px 189.4px 0 0.2px rgba(var(--fwo-a-star), 0.38),
+    63.1px 144.9px 0 0.1px rgba(var(--fwo-a-star), 0.42),
+    273.1px 174.5px 0 0.6px rgba(var(--fwo-a-star), 0.51),
+    144.8px 115.7px 0 0.3px rgba(var(--fwo-a-star), 0.53),
+    312.6px 245.9px 0 0.0px rgba(var(--fwo-a-star), 0.52),
+    166.0px 48.9px 0 0.2px rgba(var(--fwo-a-star), 0.62),
+    502.6px 192.4px 0 0.7px rgba(var(--fwo-a-star), 0.28),
+    459.5px 50.2px 0 0.1px rgba(var(--fwo-a-star), 0.62),
+    384.0px 163.9px 0 0.3px rgba(var(--fwo-a-star), 0.67),
+    424.3px 368.1px 0 0.6px rgba(var(--fwo-a-star), 0.41),
+    165.1px 399.8px 0 0.9px rgba(var(--fwo-a-star), 0.47), 165.1px 399.8px 3px 1.9px rgba(var(--fwo-a-star), 0.16),
+    18.2px 209.3px 0 0.8px rgba(var(--fwo-a-star), 0.54), 18.2px 209.3px 3px 1.8px rgba(var(--fwo-a-star), 0.19),
+    171.7px 279.0px 0 1.1px rgba(var(--fwo-a-star), 0.41), 171.7px 279.0px 3px 2.1px rgba(var(--fwo-a-star), 0.14),
+    133.1px 332.4px 0 0.9px rgba(var(--fwo-a-star), 0.6), 133.1px 332.4px 3px 1.9px rgba(var(--fwo-a-star), 0.21),
+    154.5px 95.2px 0 0.9px rgba(var(--fwo-a-star), 0.46), 154.5px 95.2px 3px 1.9px rgba(var(--fwo-a-star), 0.16),
+    624.7px 208.3px 0 0.2px rgba(var(--fwo-a-star), 0.41),
+    275.9px 278.1px 0 1.1px rgba(var(--fwo-a-star), 0.35), 275.9px 278.1px 3px 2.1px rgba(var(--fwo-a-star), 0.12),
+    260.5px 91.7px 0 1.2px rgba(var(--fwo-a-star), 0.35), 260.5px 91.7px 3px 2.2px rgba(var(--fwo-a-star), 0.12),
+    24.8px 277.7px 0 0.4px rgba(var(--fwo-a-star), 0.51),
+    220.3px 73.7px 0 0.0px rgba(var(--fwo-a-star), 0.45),
+    286.0px 24.3px 0 0.6px rgba(var(--fwo-a-star), 0.51),
+    171.6px 311.9px 0 1.1px rgba(var(--fwo-a-star), 0.49), 171.6px 311.9px 3px 2.1px rgba(var(--fwo-a-star), 0.17),
+    181.5px 398.6px 0 0.7px rgba(var(--fwo-a-star), 0.43),
+    471.2px 134.4px 0 0.3px rgba(var(--fwo-a-star), 0.25),
+    625.9px 163.2px 0 0.3px rgba(var(--fwo-a-star), 0.55),
+    55.5px 85.3px 0 0.9px rgba(var(--fwo-a-star), 0.42), 55.5px 85.3px 3px 1.9px rgba(var(--fwo-a-star), 0.15),
+    46.2px 18.0px 0 0.7px rgba(var(--fwo-a-star), 0.48),
+    643.1px 368.0px 0 1.2px rgba(var(--fwo-a-star), 0.44), 643.1px 368.0px 3px 2.2px rgba(var(--fwo-a-star), 0.15),
+    83.0px 350.4px 0 0.3px rgba(var(--fwo-a-star), 0.65),
+    247.2px 308.1px 0 0.2px rgba(var(--fwo-a-star), 0.42),
+    164.0px 67.2px 0 1.1px rgba(var(--fwo-a-star), 0.65), 164.0px 67.2px 3px 2.1px rgba(var(--fwo-a-star), 0.23),
+    216.8px 167.2px 0 1.2px rgba(var(--fwo-a-star), 0.61), 216.8px 167.2px 3px 2.2px rgba(var(--fwo-a-star), 0.21),
+    600.2px 20.6px 0 0.3px rgba(var(--fwo-a-star), 0.33),
+    246.7px 360.8px 0 0.5px rgba(var(--fwo-a-star), 0.43),
+    511.1px 393.6px 0 0.1px rgba(var(--fwo-a-star), 0.67),
+    408.2px 93.7px 0 0.4px rgba(var(--fwo-a-star), 0.35),
+    361.3px 30.1px 0 0.1px rgba(var(--fwo-a-star), 0.53),
+    362.7px 267.3px 0 0.1px rgba(var(--fwo-a-star), 0.36),
+    457.4px 172.8px 0 0.3px rgba(var(--fwo-a-star), 0.47),
+    625.5px 132.7px 0 0.7px rgba(var(--fwo-a-star), 0.5),
+    275.5px 360.1px 0 1.2px rgba(var(--fwo-a-star), 0.5), 275.5px 360.1px 3px 2.2px rgba(var(--fwo-a-star), 0.17),
+    132.6px 303.9px 0 0.2px rgba(var(--fwo-a-star), 0.25),
+    591.9px 178.6px 0 1.0px rgba(var(--fwo-a-star), 0.53), 591.9px 178.6px 3px 2.0px rgba(var(--fwo-a-star), 0.19),
+    579.6px 193.9px 0 0.2px rgba(var(--fwo-a-star), 0.26),
+    363.6px 268.0px 0 1.1px rgba(var(--fwo-a-star), 0.31), 363.6px 268.0px 3px 2.1px rgba(var(--fwo-a-star), 0.11),
+    409.7px 156.8px 0 0.6px rgba(var(--fwo-a-star), 0.35),
+    188.7px 218.7px 0 1.1px rgba(var(--fwo-a-star), 0.33), 188.7px 218.7px 3px 2.1px rgba(var(--fwo-a-star), 0.12),
+    323.8px 335.6px 0 1.2px rgba(var(--fwo-a-star), 0.39), 323.8px 335.6px 3px 2.2px rgba(var(--fwo-a-star), 0.14),
+    86.6px 392.5px 0 1.2px rgba(var(--fwo-a-star), 0.59), 86.6px 392.5px 3px 2.2px rgba(var(--fwo-a-star), 0.21),
+    123.3px 93.9px 0 0.5px rgba(var(--fwo-a-star), 0.61),
+    28.9px 349.3px 0 0.1px rgba(var(--fwo-a-star), 0.67),
+    362.6px 262.3px 0 0.4px rgba(var(--fwo-a-star), 0.54),
+    383.9px 179.4px 0 0.8px rgba(var(--fwo-a-star), 0.56),
+    289.8px 13.6px 0 0.7px rgba(var(--fwo-a-star), 0.59),
+    157.4px 318.6px 0 0.9px rgba(var(--fwo-a-star), 0.57), 157.4px 318.6px 3px 1.9px rgba(var(--fwo-a-star), 0.2),
+    121.1px 199.0px 0 0.1px rgba(var(--fwo-a-star), 0.34),
+    284.8px 41.8px 0 0.5px rgba(var(--fwo-a-star), 0.61),
+    511.0px 214.7px 0 0.1px rgba(var(--fwo-a-star), 0.6),
+    653.5px 305.6px 0 1.0px rgba(var(--fwo-a-star), 0.39), 653.5px 305.6px 3px 2.0px rgba(var(--fwo-a-star), 0.14),
+    111.7px 328.8px 0 1.1px rgba(var(--fwo-a-star), 0.3), 111.7px 328.8px 3px 2.1px rgba(var(--fwo-a-star), 0.1),
+    183.3px 340.0px 0 0.2px rgba(var(--fwo-a-star), 0.6),
+    603.8px 89.8px 0 0.3px rgba(var(--fwo-a-star), 0.6),
+    212.0px 19.2px 0 0.2px rgba(var(--fwo-a-star), 0.36),
+    614.5px 284.0px 0 1.1px rgba(var(--fwo-a-star), 0.37), 614.5px 284.0px 3px 2.1px rgba(var(--fwo-a-star), 0.13),
+    683.9px 51.8px 0 0.7px rgba(var(--fwo-a-star), 0.63),
+    752.8px 198.1px 0 1.2px rgba(var(--fwo-a-star), 0.59), 752.8px 198.1px 3px 2.2px rgba(var(--fwo-a-star), 0.21),
+    702.1px 280.7px 0 0.7px rgba(var(--fwo-a-star), 0.35),
+    854.8px 256.0px 0 1.2px rgba(var(--fwo-a-star), 0.54), 854.8px 256.0px 3px 2.2px rgba(var(--fwo-a-star), 0.19),
+    760.8px 326.1px 0 0.5px rgba(var(--fwo-a-star), 0.35),
+    875.0px 367.5px 0 0.0px rgba(var(--fwo-a-star), 0.37),
+    814.5px 91.3px 0 0.2px rgba(var(--fwo-a-star), 0.3),
+    799.4px 116.4px 0 0.6px rgba(var(--fwo-a-star), 0.29),
+    749.9px 395.0px 0 1.1px rgba(var(--fwo-a-star), 0.58), 749.9px 395.0px 3px 2.1px rgba(var(--fwo-a-star), 0.2),
+    991.7px 332.0px 0 0.9px rgba(var(--fwo-a-star), 0.43), 991.7px 332.0px 3px 1.9px rgba(var(--fwo-a-star), 0.15),
+    790.1px 60.0px 0 0.2px rgba(var(--fwo-a-star), 0.36),
+    835.4px 277.4px 0 0.2px rgba(var(--fwo-a-star), 0.62),
+    856.5px 246.0px 0 0.4px rgba(var(--fwo-a-star), 0.27),
+    993.0px 174.9px 0 0.4px rgba(var(--fwo-a-star), 0.5),
+    918.2px 162.2px 0 0.7px rgba(var(--fwo-a-star), 0.64),
+    662.6px 24.2px 0 1.1px rgba(var(--fwo-a-star), 0.67), 662.6px 24.2px 3px 2.1px rgba(var(--fwo-a-star), 0.23),
+    698.5px 135.7px 0 0.9px rgba(var(--fwo-a-star), 0.46), 698.5px 135.7px 3px 1.9px rgba(var(--fwo-a-star), 0.16),
+    945.0px 66.6px 0 1.1px rgba(var(--fwo-a-star), 0.56), 945.0px 66.6px 3px 2.1px rgba(var(--fwo-a-star), 0.2),
+    820.5px 196.8px 0 0.6px rgba(var(--fwo-a-star), 0.6),
+    739.3px 176.7px 0 0.8px rgba(var(--fwo-a-star), 0.35), 739.3px 176.7px 3px 1.8px rgba(var(--fwo-a-star), 0.12),
+    766.3px 99.4px 0 0.5px rgba(var(--fwo-a-star), 0.41),
+    827.4px 398.6px 0 0.9px rgba(var(--fwo-a-star), 0.47), 827.4px 398.6px 3px 1.9px rgba(var(--fwo-a-star), 0.16),
+    708.1px 48.3px 0 0.8px rgba(var(--fwo-a-star), 0.36), 708.1px 48.3px 3px 1.8px rgba(var(--fwo-a-star), 0.13),
+    773.6px 391.9px 0 0.6px rgba(var(--fwo-a-star), 0.6),
+    847.4px 296.8px 0 0.4px rgba(var(--fwo-a-star), 0.36),
+    893.0px 310.0px 0 0.5px rgba(var(--fwo-a-star), 0.65),
+    695.7px 242.5px 0 1.0px rgba(var(--fwo-a-star), 0.48), 695.7px 242.5px 3px 2.0px rgba(var(--fwo-a-star), 0.17),
+    970.0px 334.0px 0 1.0px rgba(var(--fwo-a-star), 0.48), 970.0px 334.0px 3px 2.0px rgba(var(--fwo-a-star), 0.17),
+    814.0px 67.5px 0 0.3px rgba(var(--fwo-a-star), 0.28),
+    871.6px 120.0px 0 0.7px rgba(var(--fwo-a-star), 0.26),
+    135.7px 425.7px 0 0.4px rgba(var(--fwo-a-star), 0.49),
+    319.7px 429.9px 0 0.0px rgba(var(--fwo-a-star), 0.58),
+    611.3px 432.6px 0 0.6px rgba(var(--fwo-a-star), 0.29),
+    611.3px 422.8px 0 0.5px rgba(var(--fwo-a-star), 0.57),
+    29.3px 421.0px 0 0.7px rgba(var(--fwo-a-star), 0.57),
+    588.6px 424.6px 0 0.1px rgba(var(--fwo-a-star), 0.35),
+    209.6px 422.7px 0 0.5px rgba(var(--fwo-a-star), 0.33),
+    35.9px 418.4px 0 0.9px rgba(var(--fwo-a-star), 0.27), 35.9px 418.4px 3px 1.9px rgba(var(--fwo-a-star), 0.09),
+    571.3px 420.0px 0 0.3px rgba(var(--fwo-a-star), 0.4),
+    52.6px 422.6px 0 0.6px rgba(var(--fwo-a-star), 0.34),
+    445.9px 423.9px 0 0.2px rgba(var(--fwo-a-star), 0.53),
+    5.7px 418.2px 0 0.4px rgba(var(--fwo-a-star), 0.63),
+    200.8px 430.7px 0 0.7px rgba(var(--fwo-a-star), 0.3),
+    977.9px 427.5px 0 0.1px rgba(var(--fwo-a-star), 0.65),
+    670.9px 419.9px 0 0.5px rgba(var(--fwo-a-star), 0.35),
+    673.0px 427.8px 0 0.0px rgba(var(--fwo-a-star), 0.65),
+    501.9px 436.4px 0 0.2px rgba(var(--fwo-a-star), 0.67),
+    832.4px 437.3px 0 0.3px rgba(var(--fwo-a-star), 0.52),
+    215.6px 435.3px 0 0.3px rgba(var(--fwo-a-star), 0.65),
+    978.2px 425.9px 0 0.3px rgba(var(--fwo-a-star), 0.6),
+    585.2px 433.2px 0 0.7px rgba(var(--fwo-a-star), 0.42); }
+#fwo-app[data-theme="a"] .fwo-scene-host::after {
+  box-shadow: 594.7px 208.8px 0 0.3px rgba(var(--fwo-a-star), 0.88),
+    172.4px 238.7px 0 1.1px rgba(var(--fwo-a-star), 0.77), 172.4px 238.7px 3px 2.1px rgba(var(--fwo-a-star), 0.27),
+    224.5px 29.6px 0 0.3px rgba(var(--fwo-a-star), 0.93),
+    86.1px 211.4px 0 0.8px rgba(var(--fwo-a-star), 0.85),
+    294.7px 397.0px 0 1.0px rgba(var(--fwo-a-star), 0.86), 294.7px 397.0px 3px 2.0px rgba(var(--fwo-a-star), 0.3),
+    18.2px 17.3px 0 0.9px rgba(var(--fwo-a-star), 0.88), 18.2px 17.3px 3px 1.9px rgba(var(--fwo-a-star), 0.31),
+    608.3px 344.1px 0 1.0px rgba(var(--fwo-a-star), 0.93), 608.3px 344.1px 3px 2.0px rgba(var(--fwo-a-star), 0.33),
+    448.7px 391.9px 0 0.9px rgba(var(--fwo-a-star), 0.7), 448.7px 391.9px 3px 1.9px rgba(var(--fwo-a-star), 0.24),
+    514.1px 99.8px 0 1.1px rgba(var(--fwo-a-star), 0.7), 514.1px 99.8px 3px 2.1px rgba(var(--fwo-a-star), 0.24),
+    202.1px 56.7px 0 0.3px rgba(var(--fwo-a-star), 0.7),
+    10.8px 128.2px 0 0.6px rgba(var(--fwo-a-star), 0.92),
+    26.2px 143.3px 0 0.5px rgba(var(--fwo-a-star), 0.73),
+    137.8px 403.6px 0 0.4px rgba(var(--fwo-a-star), 0.82),
+    37.8px 28.8px 0 0.5px rgba(var(--fwo-a-star), 0.88),
+    580.1px 305.9px 0 1.2px rgba(var(--fwo-a-star), 0.9), 580.1px 305.9px 3px 2.2px rgba(var(--fwo-a-star), 0.32),
+    218.7px 80.4px 0 1.1px rgba(var(--fwo-a-star), 0.77), 218.7px 80.4px 3px 2.1px rgba(var(--fwo-a-star), 0.27),
+    233.2px 397.7px 0 0.2px rgba(var(--fwo-a-star), 0.92),
+    139.2px 150.9px 0 1.0px rgba(var(--fwo-a-star), 0.83), 139.2px 150.9px 3px 2.0px rgba(var(--fwo-a-star), 0.29),
+    603.5px 83.5px 0 0.4px rgba(var(--fwo-a-star), 0.88),
+    23.7px 173.3px 0 1.0px rgba(var(--fwo-a-star), 0.79), 23.7px 173.3px 3px 2.0px rgba(var(--fwo-a-star), 0.28),
+    30.5px 18.4px 0 0.1px rgba(var(--fwo-a-star), 0.89),
+    496.7px 381.6px 0 0.8px rgba(var(--fwo-a-star), 0.91),
+    19.8px 100.4px 0 0.6px rgba(var(--fwo-a-star), 0.92),
+    325.7px 386.4px 0 0.2px rgba(var(--fwo-a-star), 0.81),
+    485.5px 343.0px 0 0.9px rgba(var(--fwo-a-star), 0.68), 485.5px 343.0px 3px 1.9px rgba(var(--fwo-a-star), 0.24),
+    217.7px 135.7px 0 0.4px rgba(var(--fwo-a-star), 0.8),
+    58.8px 43.7px 0 0.6px rgba(var(--fwo-a-star), 0.75),
+    295.4px 100.5px 0 0.5px rgba(var(--fwo-a-star), 0.68),
+    443.5px 312.2px 0 1.0px rgba(var(--fwo-a-star), 0.72), 443.5px 312.2px 3px 2.0px rgba(var(--fwo-a-star), 0.25),
+    154.9px 337.1px 0 0.8px rgba(var(--fwo-a-star), 0.94),
+    70.7px 199.6px 0 1.0px rgba(var(--fwo-a-star), 0.84), 70.7px 199.6px 3px 2.0px rgba(var(--fwo-a-star), 0.29),
+    127.6px 404.9px 0 0.7px rgba(var(--fwo-a-star), 0.9),
+    137.0px 109.0px 0 0.7px rgba(var(--fwo-a-star), 0.71),
+    136.6px 8.7px 0 0.4px rgba(var(--fwo-a-star), 0.72),
+    124.7px 132.6px 0 0.2px rgba(var(--fwo-a-star), 0.81),
+    38.8px 385.6px 0 0.5px rgba(var(--fwo-a-star), 0.88),
+    408.5px 343.7px 0 0.2px rgba(var(--fwo-a-star), 0.8),
+    148.8px 170.6px 0 1.0px rgba(var(--fwo-a-star), 0.83), 148.8px 170.6px 3px 2.0px rgba(var(--fwo-a-star), 0.29),
+    254.1px 54.7px 0 0.3px rgba(var(--fwo-a-star), 0.76),
+    589.0px 20.9px 0 0.7px rgba(var(--fwo-a-star), 0.78),
+    30.6px 266.2px 0 0.1px rgba(var(--fwo-a-star), 0.76),
+    250.4px 395.8px 0 0.2px rgba(var(--fwo-a-star), 0.85),
+    644.1px 206.7px 0 1.1px rgba(var(--fwo-a-star), 0.89), 644.1px 206.7px 3px 2.1px rgba(var(--fwo-a-star), 0.31),
+    232.8px 315.5px 0 0.2px rgba(var(--fwo-a-star), 0.88),
+    900.3px 348.6px 0 0.1px rgba(var(--fwo-a-star), 0.87),
+    771.1px 260.8px 0 0.9px rgba(var(--fwo-a-star), 0.69), 771.1px 260.8px 3px 1.9px rgba(var(--fwo-a-star), 0.24),
+    793.1px 378.1px 0 0.5px rgba(var(--fwo-a-star), 0.7),
+    734.0px 311.9px 0 0.0px rgba(var(--fwo-a-star), 0.82),
+    739.4px 388.2px 0 0.3px rgba(var(--fwo-a-star), 0.73),
+    758.9px 15.2px 0 1.1px rgba(var(--fwo-a-star), 0.93), 758.9px 15.2px 3px 2.1px rgba(var(--fwo-a-star), 0.33),
+    679.3px 285.4px 0 1.1px rgba(var(--fwo-a-star), 0.7), 679.3px 285.4px 3px 2.1px rgba(var(--fwo-a-star), 0.24),
+    793.7px 354.1px 0 0.8px rgba(var(--fwo-a-star), 0.74), 793.7px 354.1px 3px 1.8px rgba(var(--fwo-a-star), 0.26),
+    798.8px 95.0px 0 0.9px rgba(var(--fwo-a-star), 0.94), 798.8px 95.0px 3px 1.9px rgba(var(--fwo-a-star), 0.33),
+    777.1px 179.2px 0 0.2px rgba(var(--fwo-a-star), 0.81),
+    942.0px 74.8px 0 1.0px rgba(var(--fwo-a-star), 0.72), 942.0px 74.8px 3px 2.0px rgba(var(--fwo-a-star), 0.25),
+    870.7px 104.5px 0 0.6px rgba(var(--fwo-a-star), 0.85),
+    713.4px 330.6px 0 0.8px rgba(var(--fwo-a-star), 0.73), 713.4px 330.6px 3px 1.8px rgba(var(--fwo-a-star), 0.26),
+    784.4px 307.3px 0 0.5px rgba(var(--fwo-a-star), 0.86),
+    920.5px 29.1px 0 0.9px rgba(var(--fwo-a-star), 0.86), 920.5px 29.1px 3px 1.9px rgba(var(--fwo-a-star), 0.3),
+    925.7px 38.0px 0 0.2px rgba(var(--fwo-a-star), 0.77),
+    713.8px 28.2px 0 0.8px rgba(var(--fwo-a-star), 0.77), 713.8px 28.2px 3px 1.8px rgba(var(--fwo-a-star), 0.27),
+    662.2px 177.1px 0 1.1px rgba(var(--fwo-a-star), 0.84), 662.2px 177.1px 3px 2.1px rgba(var(--fwo-a-star), 0.29),
+    992.1px 130.9px 0 0.7px rgba(var(--fwo-a-star), 0.86),
+    826.0px 239.1px 0 1.1px rgba(var(--fwo-a-star), 0.92), 826.0px 239.1px 3px 2.1px rgba(var(--fwo-a-star), 0.32),
+    772.9px 129.9px 0 1.1px rgba(var(--fwo-a-star), 0.77), 772.9px 129.9px 3px 2.1px rgba(var(--fwo-a-star), 0.27),
+    949.5px 251.9px 0 0.9px rgba(var(--fwo-a-star), 0.92), 949.5px 251.9px 3px 1.9px rgba(var(--fwo-a-star), 0.32),
+    713.0px 109.8px 0 0.9px rgba(var(--fwo-a-star), 0.9), 713.0px 109.8px 3px 1.9px rgba(var(--fwo-a-star), 0.32),
+    772.4px 369.4px 0 1.0px rgba(var(--fwo-a-star), 0.93), 772.4px 369.4px 3px 2.0px rgba(var(--fwo-a-star), 0.33),
+    727.6px 204.1px 0 0.5px rgba(var(--fwo-a-star), 0.75),
+    833.7px 133.1px 0 0.7px rgba(var(--fwo-a-star), 0.72),
+    948.3px 196.8px 0 0.3px rgba(var(--fwo-a-star), 0.83),
+    820.2px 251.8px 0 0.4px rgba(var(--fwo-a-star), 0.73),
+    230.2px 418.0px 0 0.1px rgba(var(--fwo-a-star), 0.84),
+    331.2px 417.4px 0 0.6px rgba(var(--fwo-a-star), 0.71),
+    791.4px 439.5px 0 0.3px rgba(var(--fwo-a-star), 0.68),
+    821.3px 424.1px 0 0.2px rgba(var(--fwo-a-star), 0.7),
+    704.6px 417.6px 0 0.6px rgba(var(--fwo-a-star), 0.8);
+  animation: fwo-a-twinkle 7s ease-in-out infinite;
+}
+@keyframes fwo-a-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+#fwo-app[data-theme="a"] .fwo-scene-label {
+  font: 500 12.5px/1.5 var(--fwo-font-text); color: #c8d2ec; padding: 2px 8px; letter-spacing: 0.01em;
+}
+#fwo-app[data-theme="a"] .fwo-scene-label--self { color: #c8d2ec; }
+#fwo-app[data-theme="a"] .fwo-scene-label--world { color: var(--fwo-world); }
+#fwo-app[data-theme="a"] .fwo-scene-label--g1, #fwo-app[data-theme="a"] .fwo-scene-label--g0 { color: #93a3cc; font-size: 11.5px; }
+/* Halos behind the spheres and the World's ring. Screen positions follow the camera in
+   scene.js: it looks at world point (0.35, -0.2) from camZ = max(7.6, 9.9 / aspect) with a
+   38 deg fov, so one world unit is min(H / 5.234, W / 6.817) px (the host's size, read
+   here as container-query units); the futures sit at (2.25, +1.02) and (2.25, -1.05), the
+   brain at (-1.35, 0.12) and the World at (-1.35, -1.95), 0.3 units deeper (x 0.965).
+   The label layer is not a stacking context, so its ::before at z-index -1 paints under
+   the transparent canvas: the glows are really behind the spheres. */
+#fwo-app[data-theme="a"] .fwo-scene-labels::before {
+  --fwo-a-pxu: min(100cqh / 5.234, 100cqw / 6.817);
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(circle calc(var(--fwo-a-pxu) * 1.3) at calc(50% + var(--fwo-a-pxu) * 1.9) calc(50% - var(--fwo-a-pxu) * 1.22),
+      rgba(229, 180, 90, 0.5), rgba(229, 180, 90, 0.17) 44%, rgba(229, 180, 90, 0) 72%),
+    radial-gradient(circle calc(var(--fwo-a-pxu) * 1.3) at calc(50% + var(--fwo-a-pxu) * 1.9) calc(50% + var(--fwo-a-pxu) * 0.85),
+      rgba(229, 180, 90, 0.5), rgba(229, 180, 90, 0.17) 44%, rgba(229, 180, 90, 0) 72%),
+    radial-gradient(circle calc(var(--fwo-a-pxu) * 0.82) at calc(50% - var(--fwo-a-pxu) * 1.64) calc(50% + var(--fwo-a-pxu) * 1.69),
+      rgba(143, 216, 203, 0.44), rgba(143, 216, 203, 0.14) 44%, rgba(143, 216, 203, 0) 72%),
+    radial-gradient(ellipse calc(var(--fwo-a-pxu) * 1.55) calc(var(--fwo-a-pxu) * 1.3) at calc(50% - var(--fwo-a-pxu) * 1.7) calc(50% - var(--fwo-a-pxu) * 0.32),
+      rgba(61, 90, 168, 0.5), rgba(61, 90, 168, 0) 72%);
+}
+#fwo-app[data-theme="a"] .fwo-scene-labels::after {
+  --fwo-a-pxu: calc(min(100cqh / 5.234, 100cqw / 6.817) * 0.965);
+  content: ""; position: absolute; pointer-events: none; box-sizing: border-box;
+  width: calc(var(--fwo-a-pxu) * 1.309); height: calc(var(--fwo-a-pxu) * 0.327);
+  left: calc(50% - var(--fwo-a-pxu) * 1.7); top: calc(50% + var(--fwo-a-pxu) * 1.75);
+  transform: translate(-50%, -50%) rotate(-16deg);
+  border: 1.6px solid rgba(143, 216, 203, 0.82); border-radius: 50%;
+  box-shadow: 0 0 6px rgba(143, 216, 203, 0.25), inset 0 0 6px rgba(143, 216, 203, 0.2);
+}
+#fwo-app[data-theme="a"] .fwo-scene-fallback { color: var(--fwo-text); }
+#fwo-app[data-theme="a"] .fwo-scene-caption { font-size: 12.5px; padding: 0 6px; margin-top: 12px; }
+#fwo-app[data-theme="a"] .fwo-motion { padding: 0 6px; }
+
+/* ------------------------------------------------------------ futures */
+#fwo-app[data-theme="a"] .fwo-futures { gap: 14px; margin-top: 14px; }
+#fwo-app[data-theme="a"] .fwo-future { background: rgba(22, 34, 74, 0.55); border: 1px solid #26346b; border-radius: 12px; padding: 16px 18px; }
+#fwo-app[data-theme="a"] .fwo-future-h { font: 600 13.5px/1.2 var(--fwo-font-text); letter-spacing: 0.02em; color: var(--fwo-self-strong); margin-bottom: 8px; }
+#fwo-app[data-theme="a"] .fwo-future-p { font: 600 46px/1 var(--fwo-font-display); color: var(--fwo-self-strong); margin-bottom: 8px; }
+#fwo-app[data-theme="a"] .fwo-future-p--empty { color: var(--fwo-muted); }
+#fwo-app[data-theme="a"] .fwo-future .fwo-meter { height: 5px; border-radius: 3px; background: var(--fwo-a-track); border: 0; margin: 10px 0 8px; }
+#fwo-app[data-theme="a"] .fwo-future .fwo-meter-fill { background: linear-gradient(90deg, #8a6a2f, #e5b45a); border-radius: 3px; }
+
+/* ------------------------------------------------------------ readings: arc gauges */
+#fwo-app[data-theme="a"] .fwo-results > h2 { margin-bottom: 8px; }
+#fwo-app[data-theme="a"] .fwo-results > .fwo-small { margin-bottom: 14px; }
+#fwo-app[data-theme="a"] .fwo-readings { gap: 18px; }
+#fwo-app[data-theme="a"] .fwo-reading {
+  display: flex; flex-direction: column; align-items: flex-start;
+  background: rgba(22, 34, 74, 0.55); border: 1px solid #26346b; border-radius: 12px; padding: 18px;
+}
+#fwo-app[data-theme="a"] .fwo-reading > h3, #fwo-app[data-theme="a"] .fwo-reading > p { align-self: stretch; }
+#fwo-app[data-theme="a"] .fwo-reading--resolved { border-color: #5a4a22; box-shadow: 0 0 0 1px rgba(229, 180, 90, 0.25), 0 0 24px rgba(229, 180, 90, 0.10); }
+#fwo-app[data-theme="a"] .fwo-reading--unresolved { border: 1px dashed #2e6a61; }
+#fwo-app[data-theme="a"] .fwo-reading-h { order: -3; font: 600 14.5px/1.3 var(--fwo-font-text); color: var(--fwo-self-strong); margin-bottom: 6px; }
+#fwo-app[data-theme="a"] .fwo-reading > .fwo-meter { order: -2; }
+#fwo-app[data-theme="a"] .fwo-reading-value { order: -1; margin: 0 0 8px; }
+#fwo-app[data-theme="a"] .fwo-reading-num { font: 700 34px/1.1 var(--fwo-font-text); color: var(--fwo-text); font-variant-numeric: lining-nums tabular-nums; }
+#fwo-app[data-theme="a"] .fwo-reading-unit { font: 500 14px/1 var(--fwo-font-text); color: var(--fwo-muted); }
+#fwo-app[data-theme="a"] .fwo-reading-line { font-size: 13.5px; color: #d9d3c4; margin: 0 0 5px; }
+#fwo-app[data-theme="a"] .fwo-tech-line { font-size: 12px; border-top: 1px solid #26346b; padding-top: 9px; margin-top: 6px; }
+#fwo-app[data-theme="a"] .fwo-honest { font-size: 13.5px; margin-top: 14px; }
+
+/* The gauge: a 150 x 92 box, centre (75, 74), radius 56, like the mockup's SVG. The
+   track is a half ring (radial gradient); the fill is a conic wedge from the left,
+   cut to a ring by a gradient mask; the 95% band is a wider, translucent wedge under
+   it; eleven ticks and the 0 / 1 labels sit on the meter's ::after. Values come from
+   --fwo-v / --fwo-lo / --fwo-hi, which readings.js sets on the meter. */
+#fwo-app[data-theme="a"] .fwo-reading .fwo-meter {
+  position: relative; width: 150px; height: 92px; margin: 2px 0 2px; flex: none;
+  background: none; border: 0; border-radius: 0; overflow: visible;
+}
+#fwo-app[data-theme="a"] .fwo-reading .fwo-meter::before {
+  content: ""; position: absolute; left: 15px; top: 14px; width: 120px; height: 60px;
+  background: radial-gradient(circle at 60px 60px, transparent 52.2px, var(--fwo-a-track) 52.8px 59.2px, transparent 59.8px);
+}
+#fwo-app[data-theme="a"] .fwo-reading .fwo-meter::after {
+  content: "0 1"; position: absolute; left: 7px; top: 6px; width: 136px; height: 86px; box-sizing: border-box;
+  padding: 73px 7px 0; font: 500 10px/12px var(--fwo-font-text); color: var(--fwo-muted);
+  text-align: justify; text-align-last: justify; white-space: nowrap; letter-spacing: 0;
+  background: conic-gradient(from 269.3deg at 68px 68px, var(--fwo-a-tick) 0deg 1.4deg, transparent 1.4deg 18deg, var(--fwo-a-tick) 18deg 19.4deg, transparent 19.4deg 36deg, var(--fwo-a-tick) 36deg 37.4deg, transparent 37.4deg 54deg, var(--fwo-a-tick) 54deg 55.4deg, transparent 55.4deg 72deg, var(--fwo-a-tick) 72deg 73.4deg, transparent 73.4deg 90deg, var(--fwo-a-tick) 90deg 91.4deg, transparent 91.4deg 108deg, var(--fwo-a-tick) 108deg 109.4deg, transparent 109.4deg 126deg, var(--fwo-a-tick) 126deg 127.4deg, transparent 127.4deg 144deg, var(--fwo-a-tick) 144deg 145.4deg, transparent 145.4deg 162deg, var(--fwo-a-tick) 162deg 163.4deg, transparent 163.4deg 180deg, var(--fwo-a-tick) 180deg 181.4deg, transparent 181.4deg);
+  -webkit-mask: radial-gradient(circle at 68px 68px, transparent 61.5px, #000 62px 67px, transparent 67.5px),
+    linear-gradient(#000, #000) 0 72px / 20px 14px no-repeat, linear-gradient(#000, #000) 116px 72px / 20px 14px no-repeat;
+  mask: radial-gradient(circle at 68px 68px, transparent 61.5px, #000 62px 67px, transparent 67.5px),
+    linear-gradient(#000, #000) 0 72px / 20px 14px no-repeat, linear-gradient(#000, #000) 116px 72px / 20px 14px no-repeat;
+}
+#fwo-app[data-theme="a"] .fwo-reading .fwo-meter .fwo-meter-band {
+  left: 12px !important; width: 126px !important; top: 11px; bottom: auto; height: 66px; border: 0; border-radius: 0; z-index: auto;
+  background: conic-gradient(from 270deg at 63px 63px, transparent 0 calc(var(--fwo-lo, 0) * 180deg),
+    rgba(247, 208, 137, 0.3) calc(var(--fwo-lo, 0) * 180deg) calc(var(--fwo-hi, 0) * 180deg), transparent 0);
+  -webkit-mask: radial-gradient(circle at 63px 63px, transparent 49.6px, #000 50.2px 61.8px, transparent 62.4px);
+  mask: radial-gradient(circle at 63px 63px, transparent 49.6px, #000 50.2px 61.8px, transparent 62.4px);
+}
+#fwo-app[data-theme="a"] .fwo-reading .fwo-meter .fwo-meter-fill {
+  left: 15px !important; width: 120px !important; top: 14px; bottom: auto; height: 64px; transition: none; overflow: visible;
+  background: conic-gradient(from 270deg at 60px 60px, #e5b45a 0 calc(var(--fwo-v, 0) * 180deg), transparent 0);
+  -webkit-mask: radial-gradient(circle at 60px 60px, transparent 52.2px, #000 52.8px 59.2px, transparent 59.8px);
+  mask: radial-gradient(circle at 60px 60px, transparent 52.2px, #000 52.8px 59.2px, transparent 59.8px);
+}
+/* round caps at the start and at the value */
+#fwo-app[data-theme="a"] .fwo-reading .fwo-meter .fwo-meter-fill::before,
+#fwo-app[data-theme="a"] .fwo-reading .fwo-meter .fwo-meter-fill::after {
+  content: ""; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: #e5b45a;
+}
+#fwo-app[data-theme="a"] .fwo-reading .fwo-meter .fwo-meter-fill::before { left: 0.5px; top: 56.5px; }
+#fwo-app[data-theme="a"] .fwo-reading .fwo-meter .fwo-meter-fill::after {
+  left: calc(60px + 56px * cos(180deg - var(--fwo-v, 0) * 180deg) - 3.5px);
+  top: calc(60px - 56px * sin(180deg - var(--fwo-v, 0) * 180deg) - 3.5px);
+}
+
+/* ------------------------------------------------------------ chart, tables, chips, baselines */
+#fwo-app[data-theme="a"] .fwo-svg text { font-family: var(--fwo-font-text); font-weight: 500; fill: var(--fwo-text); }
+#fwo-app[data-theme="a"] .fwo-svg .fwo-axis-label { fill: var(--fwo-muted); }
+#fwo-app[data-theme="a"] .fwo-svg .fwo-c-grid line { stroke: #22315e; }
+#fwo-app[data-theme="a"] .fwo-svg .fwo-c-grid text { fill: var(--fwo-muted); font-size: 11.5px; }
+#fwo-app[data-theme="a"] .fwo-svg .fwo-c-grid line.fwo-c-axis { stroke: #4a5c92; }
+#fwo-app[data-theme="a"] .fwo-c-hatch { stroke: rgba(229, 180, 90, 0.55); stroke-width: 2; }
+#fwo-app[data-theme="a"] .fwo-c-bar--previous { stroke: var(--fwo-ghost); stroke-width: 1.5; }
+#fwo-app[data-theme="a"] .fwo-c-bar--current { fill: #e5b45a; stroke: #e5b45a; stroke-width: 1; }
+#fwo-app[data-theme="a"] .fwo-c-bar--forecast { fill: rgba(229, 180, 90, 0.07); stroke: var(--fwo-self-strong); stroke-width: 2; }
+#fwo-app[data-theme="a"] .fwo-c-value { font-size: 12px; font-weight: 600; }
+#fwo-app[data-theme="a"] .fwo-c-cat { font-weight: 600; fill: #c8d2ec; }
+#fwo-app[data-theme="a"] .fwo-c-line--capacity { stroke: var(--fwo-self); }
+#fwo-app[data-theme="a"] .fwo-c-line--band { stroke: var(--fwo-chart-band); }
+#fwo-app[data-theme="a"] .fwo-c-line--connection { stroke: var(--fwo-world); }
+#fwo-app[data-theme="a"] .fwo-c-point { fill: var(--fwo-text); stroke: #070d1f; }
+#fwo-app[data-theme="a"] .fwo-caption { font-size: 13.5px; color: #c9cfdf; }
+#fwo-app[data-theme="a"] .fwo-legend { gap: 6px 18px; font-size: 12.5px; color: var(--fwo-muted); margin: 12px 0 4px; }
+#fwo-app[data-theme="a"] .fwo-factual { font-size: 15.5px; font-weight: 400; font-variant-numeric: lining-nums tabular-nums; }
+#fwo-app[data-theme="a"] .fwo-formula { color: var(--fwo-world); }
+#fwo-app[data-theme="a"] pre, #fwo-app[data-theme="a"] .fwo-pre { background: #070d1f; border: 1px solid #2a3a6b; border-radius: 10px; }
+#fwo-app[data-theme="a"] th, #fwo-app[data-theme="a"] td { border-bottom: 1px solid #26346b; }
+#fwo-app[data-theme="a"] thead th { background: #16224a; }
+#fwo-app[data-theme="a"] .fwo-table-cap { font-size: 12.5px; }
+#fwo-app[data-theme="a"] .fwo-chips { gap: 8px; margin: 4px 0 10px; }
+#fwo-app[data-theme="a"] .fwo-chip {
+  border: 1px solid #33447a; border-radius: 999px; padding: 6px 13px; font-size: 12.5px; color: #c8d2ec; background: rgba(22, 34, 74, 0.5);
+}
+#fwo-app[data-theme="a"] .fwo-chip--strong { border-color: #8a6a2f; color: var(--fwo-self-strong); font-weight: 600; }
+#fwo-app[data-theme="a"] .fwo-baselines { gap: 18px; }
+#fwo-app[data-theme="a"] .fwo-baseline { border: 1px dashed #3a4c82; border-radius: 12px; padding: 16px 18px; }
+#fwo-app[data-theme="a"] .fwo-baseline .fwo-reading-h { color: var(--fwo-world); font-size: 14px; }
+#fwo-app[data-theme="a"] .fwo-steps-list li { margin-bottom: 8px; }
+
+/* ------------------------------------------------------------ footer */
+#fwo-app[data-theme="a"] .fwo-footer { text-align: center; margin-top: 30px; padding-top: 22px; border-top: 1px solid #2a3a6b; }
+#fwo-app[data-theme="a"] .fwo-attribution { font: 600 21px/1.3 var(--fwo-font-display); color: var(--fwo-text); margin-bottom: 8px; }
+#fwo-app[data-theme="a"] .fwo-footer .fwo-small { max-width: 760px; margin: 0 auto; font-size: 12.5px; }
+
+/* ------------------------------------------------------------ narrow screens */
+@media (max-width: 760px) {
+  #fwo-app[data-theme="a"] { padding: 24px 16px 40px; --fwo-a-scene-h: 340px; }
+  #fwo-app[data-theme="a"] .fwo-hero { text-align: left; margin-bottom: 22px; }
+  #fwo-app[data-theme="a"] .fwo-title { font-size: 32px; }
+  #fwo-app[data-theme="a"] .fwo-hook { font-size: 14.5px; margin-left: 0; }
+  #fwo-app[data-theme="a"] .fwo-steps { justify-content: flex-start; gap: 8px 16px; font-size: 14px; }
+  #fwo-app[data-theme="a"] .fwo-layout, #fwo-app[data-theme="a"] .fwo-col { gap: 16px; }
+  #fwo-app[data-theme="a"] .fwo-panel { padding: 16px; margin-bottom: 16px; border-radius: 12px; }
+  #fwo-app[data-theme="a"] .fwo-scene { padding: 12px; }
+  #fwo-app[data-theme="a"] h2 { font-size: 21px; }
+  #fwo-app[data-theme="a"] .fwo-more > h2 { font-size: 23px; margin-top: 22px; }
+  #fwo-app[data-theme="a"] details.fwo-panel { padding: 6px 16px; }
+  #fwo-app[data-theme="a"] .fwo-future-p { font-size: 40px; }
+  #fwo-app[data-theme="a"] .fwo-futures { gap: 10px; }
+  #fwo-app[data-theme="a"] .fwo-future { padding: 12px 14px; }
+  #fwo-app[data-theme="a"] .fwo-reading { padding: 16px; }
+  #fwo-app[data-theme="a"] .fwo-readings { gap: 12px; }
+  #fwo-app[data-theme="a"] .fwo-status { padding: 11px 14px; }
+}
+@media (max-width: 480px) {
+  #fwo-app[data-theme="a"] .fwo-tabs { gap: 0; }
+  #fwo-app[data-theme="a"] .fwo-tab { padding: 8px 4px 10px; min-height: 48px; text-align: center; align-items: center; }
+  #fwo-app[data-theme="a"] .fwo-tab-name { font-size: 13.5px; }
+  #fwo-app[data-theme="a"] .fwo-tab-role { font-size: 11px; }
+  #fwo-app[data-theme="a"] .fwo-dialogue { padding: 10px; }
+  #fwo-app[data-theme="a"] .fwo-dialogue-name { font-size: 1.15rem; }
+  #fwo-app[data-theme="a"] .fwo-dialogue-text { font-size: 1.125rem; }
+  #fwo-app[data-theme="a"] .fwo-future-p { font-size: 34px; }
+}
+
+/* motion: the base already stops every animation and transition under
+   prefers-reduced-motion; the twinkle is named here too so the intent is explicit */
+@media (prefers-reduced-motion: reduce) {
+  #fwo-app[data-theme="a"] .fwo-scene-host::after { animation: none; }
+}
+
+/* ------------------------------------------------------------ the drawn scene (ui/plate.js) */
+#fwo-app[data-theme="a"] .fwo-plate text { font-family: var(--fwo-font-text); }
+#fwo-app[data-theme="a"] .fwo-plate .fwo-s-tag { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.02em; }
+
+/* ==================================================================== style B, Instrument console
+   flat dark slate, IBM Plex Mono readouts over IBM Plex Sans, thin grid lines, precision-scale gauges. Every selector starts with #fwo-app[data-theme="b"]. */
+/* ------------------------------------------------------------ tokens + page */
+#fwo-app[data-theme="b"] {
+  --fwo-bg: #14171b; --fwo-surface: #1b1f24; --fwo-surface-2: #21262c; --fwo-border: #31383f; --fwo-control: #6b7784;
+  --fwo-text: #e7eaed; --fwo-muted: #9aa4ad; --fwo-self: #45c8e0; --fwo-self-strong: #7fdcf0; --fwo-world: #f0a44a;
+  --fwo-on-accent: #062832; --fwo-focus: #ffd84d; --fwo-ok-fg: #46c98b; --fwo-ok-bg: #12261d; --fwo-warn-fg: #e5b85c;
+  --fwo-warn-bg: #2b2310; --fwo-error-fg: #f06a5e; --fwo-error-bg: #2e1615; --fwo-info-bg: #1e2830; --fwo-ghost: #8b96a1;
+  --fwo-chart-grid: #262c33; --fwo-chart-forecast: #f0a44a; --fwo-chart-band: #9aa4ad; --fwo-radius: 3px;
+  --fwo-font-display: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fwo-font-text: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* 3D scene: transparent canvas over the engineering grid, no halos (wireframe feel) */
+  --fwo-scene-bg: #16191e; --fwo-scene-self: #45c8e0; --fwo-scene-self-light: #7fdcf0; --fwo-scene-self-deep: #135f6d;
+  --fwo-scene-world: #f0a44a; --fwo-scene-world-light: #f6c78a; --fwo-scene-world-deep: #7a4b12; --fwo-scene-ghost: #8b96a1;
+  --fwo-scene-link: #45c8e0; --fwo-scene-label-bg: rgba(22, 25, 30, 0.86);
+  --fwo-scene-transparent: 1; --fwo-scene-halo: 0;
+  --fwo-scene-plate: b;   /* the scene is this direction's drawn plate (ui/plate.js) */
+  /* theme-local shades */
+  --b-mono: var(--fwo-font-display); --b-sans: var(--fwo-font-text);
+  --b-well: #10141a; --b-tick: #3a424b; --b-tick-maj: #57626d; --b-dash: #2a6e7c; --b-mark: #4a535d;
+  --b-text-2: #b9c0c7; --b-text-3: #c3cad1; --b-grid: rgba(255, 255, 255, 0.028);
+
+  font-family: var(--b-sans); font-size: 14px; line-height: 1.5;
+  padding: 24px 28px 44px;
+  /* faint 100 px engineering grid over the whole page (its colour is still #14171b) */
+  background: repeating-linear-gradient(90deg, var(--b-grid) 0 1px, transparent 1px 100px),
+              repeating-linear-gradient(0deg, var(--b-grid) 0 1px, transparent 1px 100px), var(--fwo-bg);
+}
+#fwo-app[data-theme="b"] a { color: var(--fwo-self-strong); text-decoration-color: var(--b-dash); }
+#fwo-app[data-theme="b"] h1, #fwo-app[data-theme="b"] h2, #fwo-app[data-theme="b"] h3, #fwo-app[data-theme="b"] h4 {
+  font-family: var(--b-mono); letter-spacing: 0.01em;
+}
+#fwo-app[data-theme="b"] h2 { font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--fwo-text); }
+#fwo-app[data-theme="b"] h3 { font-size: 12.5px; font-weight: 600; line-height: 1.3; }
+
+/* ------------------------------------------------------------ hero */
+#fwo-app[data-theme="b"] .fwo-hero { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--fwo-border); }
+#fwo-app[data-theme="b"] .fwo-kicker {
+  font: 500 11px/1.5 var(--b-mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--fwo-self); margin-bottom: 8px;
+}
+#fwo-app[data-theme="b"] h1.fwo-title { font: 700 30px/1.15 var(--b-mono); letter-spacing: 0.01em; color: var(--fwo-text); margin-bottom: 10px; }
+#fwo-app[data-theme="b"] .fwo-hook { font: 400 14px/1.55 var(--b-sans); color: var(--b-text-2); max-width: 860px; margin-bottom: 10px; }
+#fwo-app[data-theme="b"] .fwo-hook strong { color: var(--fwo-text); }
+#fwo-app[data-theme="b"] .fwo-steps { font: 500 12px/1.4 var(--b-mono); color: var(--b-text-2); gap: 8px 22px; margin-top: 10px; }
+#fwo-app[data-theme="b"] .fwo-step-n {
+  width: 1.7em; height: 1.7em; border-radius: 2px; font: 700 11px/1 var(--b-mono);
+  background: var(--fwo-self); color: var(--fwo-on-accent);
+}
+
+/* ------------------------------------------------------------ panels (wireframe frames) */
+#fwo-app[data-theme="b"] .fwo-layout { gap: 16px; margin-bottom: 16px; }
+#fwo-app[data-theme="b"] .fwo-col { gap: 16px; }
+#fwo-app[data-theme="b"] .fwo-panel {
+  position: relative; border: 1px solid var(--fwo-border); border-radius: 3px; background: var(--fwo-surface); padding: 16px;
+}
+/* the registration mark in the corner of every frame */
+#fwo-app[data-theme="b"] .fwo-panel::before {
+  content: "+"; position: absolute; top: 1px; left: 5px; font: 400 10px/1 var(--b-mono); color: var(--b-mark); pointer-events: none;
+}
+#fwo-app[data-theme="b"] .fwo-panel > h2 { padding-bottom: 8px; margin: 0 0 12px; border-bottom: 1px solid var(--fwo-border); }
+#fwo-app[data-theme="b"] .fwo-panel > h2::after,
+#fwo-app[data-theme="b"] .fwo-more > h2::after { content: ""; display: block; width: 44px; height: 1px; background: var(--fwo-self); margin-top: 5px; }
+#fwo-app[data-theme="b"] .fwo-more > h2 { font-size: 13.5px; margin: 22px 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--fwo-border); }
+#fwo-app[data-theme="b"] h2 .fwo-step-n { margin-right: 8px; vertical-align: 0.1em; }
+
+/* ------------------------------------------------------------ guide: segmented tabs + dialogue */
+#fwo-app[data-theme="b"] .fwo-tabs { gap: 0; margin-bottom: 12px; }
+#fwo-app[data-theme="b"] .fwo-tab {
+  background: var(--fwo-surface); border: 1px solid var(--fwo-border); border-radius: 0; margin-left: -1px;
+  padding: 7px 10px; min-height: 50px; color: var(--fwo-muted); font-family: var(--b-mono);
+}
+#fwo-app[data-theme="b"] .fwo-tab:first-child { margin-left: 0; border-radius: 3px 0 0 3px; }
+#fwo-app[data-theme="b"] .fwo-tab:last-child { border-radius: 0 3px 3px 0; }
+#fwo-app[data-theme="b"] .fwo-tab:hover { background: var(--fwo-surface-2); color: var(--fwo-text); border-color: var(--fwo-border); }
+#fwo-app[data-theme="b"] .fwo-tab[aria-selected="true"] {
+  background: var(--fwo-self); border-color: var(--fwo-self); color: var(--fwo-on-accent); box-shadow: none; position: relative; z-index: 1;
+}
+#fwo-app[data-theme="b"] .fwo-tab:focus-visible { outline-offset: -3px; position: relative; z-index: 2; }
+#fwo-app[data-theme="b"] .fwo-tab-name { font: 600 12px/1.25 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-tab-role { font: 400 10px/1.3 var(--b-mono); color: var(--fwo-muted); }
+#fwo-app[data-theme="b"] .fwo-tab[aria-selected="true"] .fwo-tab-name,
+#fwo-app[data-theme="b"] .fwo-tab[aria-selected="true"] .fwo-tab-role { color: var(--fwo-on-accent); }
+
+#fwo-app[data-theme="b"] .fwo-dialogue {
+  border: 1px solid var(--fwo-border); border-radius: 3px; background: var(--fwo-surface-2); padding: 14px; gap: 6px 14px;
+  /* double rule: a second hairline 3 px inside the frame */
+  box-shadow: inset 0 0 0 3px var(--fwo-surface-2), inset 0 0 0 4px rgba(49, 56, 63, 0.8);
+}
+#fwo-app[data-theme="b"] .fwo-portrait {
+  position: relative; border: 1px dashed var(--fwo-control); border-radius: 2px; background: var(--b-well);
+}
+#fwo-app[data-theme="b"] .fwo-portrait--sprite { border-style: solid; border-color: var(--fwo-border); }
+#fwo-app[data-theme="b"] .fwo-dialogue--self .fwo-portrait { border-color: var(--b-dash); }
+#fwo-app[data-theme="b"] .fwo-dialogue--demon .fwo-portrait { border-color: #7a4b12; }
+/* viewfinder corners on the portrait tile (hairlines on the tile's own edge; the sprite itself is untouched) */
+#fwo-app[data-theme="b"] .fwo-portrait::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; --c: var(--fwo-self);
+  background:
+    linear-gradient(var(--c), var(--c)) 0 0 / 9px 1px, linear-gradient(var(--c), var(--c)) 0 0 / 1px 9px,
+    linear-gradient(var(--c), var(--c)) 100% 0 / 9px 1px, linear-gradient(var(--c), var(--c)) 100% 0 / 1px 9px,
+    linear-gradient(var(--c), var(--c)) 0 100% / 9px 1px, linear-gradient(var(--c), var(--c)) 0 100% / 1px 9px,
+    linear-gradient(var(--c), var(--c)) 100% 100% / 9px 1px, linear-gradient(var(--c), var(--c)) 100% 100% / 1px 9px;
+  background-repeat: no-repeat;
+}
+#fwo-app[data-theme="b"] .fwo-dialogue--demon .fwo-portrait::after { --c: var(--fwo-world); }
+#fwo-app[data-theme="b"] .fwo-dialogue--observer .fwo-portrait::after { --c: var(--b-tick-maj); }
+#fwo-app[data-theme="b"] .fwo-portrait-ph { font: 500 9px/1.3 var(--b-mono); letter-spacing: 0.12em; }
+#fwo-app[data-theme="b"] .fwo-portrait-who { font: 600 11.5px/1.2 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-portrait-size { font: 400 9.5px/1.3 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-dialogue-name { font: 600 12.5px/1.3 var(--b-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+#fwo-app[data-theme="b"] .fwo-dialogue-skip { font: 500 11px/1 var(--b-mono); letter-spacing: 0.04em; border-radius: 2px; min-height: 36px; padding: 4px 10px; }
+#fwo-app[data-theme="b"] .fwo-dialogue-text { font: italic 400 15px/1.5 var(--b-sans); min-height: 5em; margin-top: 6px; }
+#fwo-app[data-theme="b"] .fwo-tip { font: 400 13px/1.5 var(--b-sans); color: var(--b-text-2); margin: 8px 2px 0; }
+#fwo-app[data-theme="b"] .fwo-guide-foot { border-top: 1px dashed var(--fwo-border); margin-top: 12px; padding-top: 8px; }
+
+/* ------------------------------------------------------------ dials + run */
+#fwo-app[data-theme="b"] .fwo-field { margin: 12px 0 14px; }
+#fwo-app[data-theme="b"] .fwo-field > label, #fwo-app[data-theme="b"] .fwo-range-head label,
+#fwo-app[data-theme="b"] .fwo-check > label { font: 500 12.5px/1.35 var(--b-sans); color: var(--fwo-text); }
+#fwo-app[data-theme="b"] .fwo-tech { font: 400 11px/1.3 var(--b-mono); color: var(--fwo-muted); }
+#fwo-app[data-theme="b"] .fwo-out { font: 600 11.5px/1.5 var(--b-mono); color: var(--fwo-self); }
+#fwo-app[data-theme="b"] .fwo-small { font-size: 12px; line-height: 1.5; }
+#fwo-app[data-theme="b"] .fwo-help { font: 400 11.5px/1.45 var(--b-sans); color: var(--fwo-muted); margin-top: 3px; }
+#fwo-app[data-theme="b"] input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--fwo-self); }
+
+/* native range, drawn as a dark rail with ruler ticks and a rectangular cyan thumb */
+#fwo-app[data-theme="b"] input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 36px; min-height: 36px; margin: 2px 0 0; padding: 0;
+  background: transparent; cursor: pointer; border-radius: 2px;
+}
+#fwo-app[data-theme="b"] input[type="range"]:focus-visible { outline: 3px solid var(--fwo-focus); outline-offset: -3px; }
+#fwo-app[data-theme="b"] input[type="range"]::-webkit-slider-runnable-track {
+  box-sizing: border-box; height: 8px; border: 1px solid var(--b-tick); border-radius: 2px;
+  background: repeating-linear-gradient(90deg, #2a3037 0 1px, transparent 1px calc((100% - 1px) / 10)), var(--b-well);
+}
+#fwo-app[data-theme="b"] input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; box-sizing: border-box; width: 14px; height: 26px; margin-top: -9px;
+  border: 1px solid #0b2a31; border-radius: 2px;
+  background: linear-gradient(90deg, transparent 0 calc(50% - 0.5px), #0b2a31 calc(50% - 0.5px) calc(50% + 0.5px), transparent calc(50% + 0.5px)) 0 3px / 100% calc(100% - 6px) no-repeat,
+              var(--fwo-self);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+#fwo-app[data-theme="b"] input[type="range"]::-moz-range-track {
+  box-sizing: border-box; height: 8px; border: 1px solid var(--b-tick); border-radius: 2px; background: var(--b-well);
+}
+#fwo-app[data-theme="b"] input[type="range"]::-moz-range-progress {
+  height: 6px; background: repeating-linear-gradient(90deg, var(--fwo-self) 0 3px, transparent 3px 6px);
+}
+#fwo-app[data-theme="b"] input[type="range"]::-moz-range-thumb {
+  box-sizing: border-box; width: 14px; height: 26px; border: 1px solid #0b2a31; border-radius: 2px; background: var(--fwo-self);
+}
+#fwo-app[data-theme="b"] input[type="number"], #fwo-app[data-theme="b"] select {
+  font: 500 13px/1.4 var(--b-mono); color: var(--fwo-text); background: var(--b-well);
+  border: 1px solid var(--fwo-control); border-radius: 2px; min-height: 38px;
+}
+
+#fwo-app[data-theme="b"] .fwo-actions { margin-top: 16px; }
+#fwo-app[data-theme="b"] .fwo-button {
+  font: 600 13.5px/1.2 var(--b-mono); letter-spacing: 0.06em; border: 1px solid var(--b-dash); border-radius: 3px;
+  background: var(--fwo-self); color: var(--fwo-on-accent); min-height: 46px; padding: 10px 18px;
+}
+#fwo-app[data-theme="b"] .fwo-button .fwo-step-n { background: var(--fwo-on-accent); color: var(--fwo-self); }
+#fwo-app[data-theme="b"] .fwo-button:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--fwo-self-strong); border-color: var(--b-dash); }
+#fwo-app[data-theme="b"] .fwo-button:disabled, #fwo-app[data-theme="b"] .fwo-button[aria-disabled="true"] {
+  background: var(--fwo-surface-2); color: var(--fwo-muted); border: 1px dashed var(--b-mark);
+}
+#fwo-app[data-theme="b"] .fwo-button:disabled .fwo-step-n, #fwo-app[data-theme="b"] .fwo-button[aria-disabled="true"] .fwo-step-n {
+  background: var(--b-mark); color: var(--fwo-bg);
+}
+#fwo-app[data-theme="b"] #fwo-run-policy { font: 400 11.5px/1.45 var(--b-sans); color: var(--fwo-muted); margin-top: 8px; }
+#fwo-app[data-theme="b"] .fwo-status {
+  border: 1px solid var(--fwo-border); border-left: 3px solid var(--fwo-ok-fg); border-radius: 3px; background: var(--fwo-surface);
+  padding: 9px 14px 9px 12px; margin-top: 12px; font: 500 12.5px/1.5 var(--b-mono); color: #d8e6dc; font-variant-numeric: tabular-nums;
+}
+#fwo-app[data-theme="b"] .fwo-status::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; background: var(--fwo-ok-fg); margin-right: 10px; vertical-align: 1px;
+}
+#fwo-app[data-theme="b"] .fwo-status--error { border-left-color: var(--fwo-error-fg); background: var(--fwo-error-bg); color: var(--fwo-error-fg); }
+#fwo-app[data-theme="b"] .fwo-status--error::before { background: var(--fwo-error-fg); }
+#fwo-app[data-theme="b"] .fwo-progress { border-radius: 2px; font: 500 12px/1.5 var(--b-mono); background: var(--fwo-surface-2); }
+#fwo-app[data-theme="b"] .fwo-progress::before { color: var(--fwo-self); }
+#fwo-app[data-theme="b"] .fwo-note { border-radius: 3px; font: 400 12px/1.5 var(--b-sans); }
+#fwo-app[data-theme="b"] .fwo-draft {
+  font: 400 11px/1.55 var(--b-mono); color: var(--fwo-muted); border-top: 1px dashed var(--fwo-border); padding-top: 10px; margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ detail drawers */
+#fwo-app[data-theme="b"] .fwo-details > summary { font: 500 12.5px/1.4 var(--b-mono); color: var(--fwo-self); letter-spacing: 0.01em; }
+#fwo-app[data-theme="b"] .fwo-details > summary::before { color: var(--fwo-muted); font-size: 11px; }
+#fwo-app[data-theme="b"] details.fwo-panel { padding: 4px 16px; margin: 0 0 10px; }
+#fwo-app[data-theme="b"] details.fwo-panel[open] { padding-bottom: 14px; }
+#fwo-app[data-theme="b"] details.fwo-panel > summary { font-size: 13px; font-weight: 600; min-height: 44px; }
+#fwo-app[data-theme="b"] details.fwo-panel[open] > summary { border-bottom: 1px solid var(--fwo-border); margin-bottom: 10px; }
+
+/* ------------------------------------------------------------ scene: engineering grid behind a transparent canvas */
+#fwo-app[data-theme="b"] .fwo-scene { padding: 10px 10px 12px; }
+#fwo-app[data-theme="b"] .fwo-scene > h2 { margin: 2px 4px 10px; }
+#fwo-app[data-theme="b"] .fwo-scene-host {
+  border-radius: 2px; border: 1px solid var(--fwo-border); height: clamp(300px, 36vw, 420px);
+  background:
+    repeating-linear-gradient(90deg, #2b3138 0 1px, transparent 1px 100px),
+    repeating-linear-gradient(0deg, #2b3138 0 1px, transparent 1px 100px),
+    repeating-linear-gradient(90deg, #22272d 0 1px, transparent 1px 20px),
+    repeating-linear-gradient(0deg, #22272d 0 1px, transparent 1px 20px),
+    #16191e;
+}
+/* viewfinder corners inside the scene frame */
+#fwo-app[data-theme="b"] .fwo-scene-host::after {
+  content: ""; position: absolute; inset: 6px; pointer-events: none; z-index: 2; --c: var(--b-tick-maj);
+  background:
+    linear-gradient(var(--c), var(--c)) 0 0 / 12px 1px, linear-gradient(var(--c), var(--c)) 0 0 / 1px 12px,
+    linear-gradient(var(--c), var(--c)) 100% 0 / 12px 1px, linear-gradient(var(--c), var(--c)) 100% 0 / 1px 12px,
+    linear-gradient(var(--c), var(--c)) 0 100% / 12px 1px, linear-gradient(var(--c), var(--c)) 0 100% / 1px 12px,
+    linear-gradient(var(--c), var(--c)) 100% 100% / 12px 1px, linear-gradient(var(--c), var(--c)) 100% 100% / 1px 12px;
+  background-repeat: no-repeat;
+}
+#fwo-app[data-theme="b"] .fwo-scene-label {
+  font: 500 11px/1.4 var(--b-mono); letter-spacing: 0.01em; border-radius: 2px; padding: 1px 6px; color: var(--b-text-2);
+}
+#fwo-app[data-theme="b"] .fwo-scene-label--self { color: var(--b-text-2); }
+#fwo-app[data-theme="b"] .fwo-scene-label--world { color: var(--fwo-world); }
+#fwo-app[data-theme="b"] .fwo-scene-label--g1, #fwo-app[data-theme="b"] .fwo-scene-label--g0 { color: var(--fwo-ghost); }
+#fwo-app[data-theme="b"] .fwo-scene-fallback { font: 400 12.5px/1.5 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-scene-caption { font: 400 11px/1.55 var(--b-mono); color: var(--fwo-muted); margin: 10px 4px 0; }
+#fwo-app[data-theme="b"] .fwo-motion { margin: 6px 4px 0; }
+
+/* ------------------------------------------------------------ futures */
+#fwo-app[data-theme="b"] .fwo-futures { gap: 12px; margin-top: 12px; }
+#fwo-app[data-theme="b"] .fwo-future { border: 1px solid var(--fwo-border); border-radius: 3px; background: var(--fwo-surface-2); padding: 12px 14px; }
+#fwo-app[data-theme="b"] .fwo-future-h { font: 600 12.5px/1.2 var(--b-mono); color: var(--fwo-self); margin-bottom: 4px; }
+#fwo-app[data-theme="b"] .fwo-future-p { font: 700 34px/1 var(--b-mono); color: var(--fwo-self); margin: 0 0 4px; font-variant-numeric: lining-nums tabular-nums; }
+#fwo-app[data-theme="b"] .fwo-future-p--empty { color: var(--fwo-muted); }
+#fwo-app[data-theme="b"] .fwo-future .fwo-small { font: 400 11px/1.5 var(--b-mono); color: var(--fwo-muted); margin: 0 0 4px; }
+#fwo-app[data-theme="b"] .fwo-future .fwo-meter {
+  height: 8px; border-radius: 2px; background: var(--b-well); border: 1px solid var(--fwo-border); margin: 8px 0 6px; overflow: hidden;
+}
+#fwo-app[data-theme="b"] .fwo-future .fwo-meter-fill { background: repeating-linear-gradient(90deg, var(--fwo-self) 0 4px, var(--b-dash) 4px 6px); }
+
+/* ------------------------------------------------------------ readings: precision scales */
+#fwo-app[data-theme="b"] .fwo-results > .fwo-small { font: 400 12px/1.5 var(--b-sans); color: var(--b-text-2); }
+#fwo-app[data-theme="b"] .fwo-readings { gap: 14px; }
+#fwo-app[data-theme="b"] .fwo-reading {
+  display: flex; flex-direction: column; border: 1px solid var(--fwo-border); border-radius: 3px; background: var(--fwo-surface-2); padding: 14px;
+}
+#fwo-app[data-theme="b"] .fwo-reading--resolved { border-color: var(--b-dash); }
+#fwo-app[data-theme="b"] .fwo-reading--unresolved { border: 1px dashed var(--fwo-world); }
+/* the scale sits between the title and the number, as on the instrument */
+#fwo-app[data-theme="b"] .fwo-reading-h { order: 0; font: 600 12px/1.3 var(--b-mono); color: var(--fwo-self); margin: 0 0 4px; }
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter { order: 1; }
+#fwo-app[data-theme="b"] .fwo-reading-value { order: 2; margin: 0 0 8px; }
+#fwo-app[data-theme="b"] .fwo-reading-line { order: 3; font: 400 11.5px/1.5 var(--b-mono); color: var(--b-text-3); margin: 0 0 4px; font-variant-numeric: tabular-nums; }
+#fwo-app[data-theme="b"] .fwo-reading-line:last-of-type { margin-bottom: 8px; }
+#fwo-app[data-theme="b"] .fwo-tech-line {
+  order: 4; margin: auto 0 0; padding-top: 7px; font: 400 11px/1.55 var(--b-mono); color: var(--fwo-muted); border-top: 1px solid var(--fwo-border);
+}
+#fwo-app[data-theme="b"] .fwo-reading-num { font: 700 30px/1 var(--b-mono); color: var(--fwo-text); font-variant-numeric: lining-nums tabular-nums; }
+#fwo-app[data-theme="b"] .fwo-reading-unit { font: 500 12px/1 var(--b-mono); color: var(--fwo-muted); margin-left: 2px; }
+
+/* the gauge box: 52 px tall, rail at 26 px */
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter {
+  position: relative; height: 52px; margin: 2px 0 6px; border: 0; border-radius: 0; background: none; overflow: visible;
+}
+/* rail, 21 minor ticks (every 5 %), 5 major ticks (every 25 %) */
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 36px;
+  background:
+    repeating-linear-gradient(90deg, var(--b-tick-maj) 0 1px, transparent 1px calc((100% - 1px) / 4)) 0 27px / 100% 9px no-repeat,
+    repeating-linear-gradient(90deg, var(--b-tick) 0 1px, transparent 1px calc((100% - 1px) / 20)) 0 27px / 100% 5px no-repeat,
+    linear-gradient(var(--fwo-border), var(--fwo-border)) 0 26px / 100% 1px no-repeat;
+}
+/* needle + flag at --fwo-v */
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter::after {
+  content: ""; position: absolute; top: 12px; width: 10px; height: 18px; left: calc(var(--fwo-v, 0) * (100% - 1px) - 4.5px);
+  background:
+    linear-gradient(var(--fwo-self), var(--fwo-self)) 2px 0 / 6px 5px no-repeat,
+    linear-gradient(var(--fwo-self), var(--fwo-self)) 4px 0 / 2px 18px no-repeat;
+  transition: left 600ms ease-out;
+}
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter--empty::after { display: none; }
+/* a reading of exactly zero gets the amber zero-stop ring around the needle */
+@container style(--fwo-v: 0.0000) {
+  #fwo-app[data-theme="b"] .fwo-reading .fwo-meter::after {
+    background:
+      radial-gradient(circle at 5px 10px, transparent 2.6px, var(--fwo-world) 3.1px 4.3px, transparent 4.8px) 0 0 / 10px 18px no-repeat,
+      linear-gradient(var(--fwo-self), var(--fwo-self)) 2px 0 / 6px 5px no-repeat,
+      linear-gradient(var(--fwo-self), var(--fwo-self)) 4px 0 / 2px 18px no-repeat;
+  }
+}
+/* the 95 % band: a bracket from --fwo-lo to --fwo-hi over the rail (inline left/width come from the page) */
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter-band {
+  top: 18px; bottom: auto; height: 8px; border: 1px solid var(--fwo-self); border-bottom: 0; border-radius: 0;
+  background: rgba(69, 200, 224, 0.22); z-index: 0;
+}
+/* the fill bar becomes the row of scale labels under the major ticks */
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter-fill {
+  position: absolute; left: -0.5ch; right: -0.5ch; top: 38px; bottom: auto; height: auto; width: auto !important;
+  background: none; transition: none; font: 400 9px/1 var(--b-mono); color: var(--fwo-muted); font-variant-numeric: tabular-nums;
+}
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter-fill::before {
+  content: "0 0.25 0.5 0.75 1"; display: block; text-align: justify; text-align-last: justify; white-space: normal;
+}
+#fwo-app[data-theme="b"] .fwo-honest { font: 400 12px/1.5 var(--b-sans); color: var(--fwo-muted); margin-top: 12px; }
+
+/* ------------------------------------------------------------ record, chart, baselines, chips */
+#fwo-app[data-theme="b"] .fwo-factual { font: 400 13px/1.6 var(--b-mono); color: var(--fwo-text); max-width: 1020px; font-variant-numeric: tabular-nums; }
+#fwo-app[data-theme="b"] .fwo-formula { font: 500 12.5px/1.5 var(--b-mono); color: var(--fwo-world); }
+#fwo-app[data-theme="b"] code, #fwo-app[data-theme="b"] pre { font-family: var(--b-mono); font-size: 12px; }
+#fwo-app[data-theme="b"] pre, #fwo-app[data-theme="b"] .fwo-pre { background: var(--b-well); border-radius: 2px; }
+#fwo-app[data-theme="b"] table { font: 400 12px/1.5 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-table-cap { font: 500 11px/1.4 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-caption { font: 400 12.5px/1.5 var(--b-sans); color: var(--b-text-2); }
+#fwo-app[data-theme="b"] .fwo-legend { font: 400 11.5px/1.5 var(--b-mono); color: var(--fwo-muted); gap: 6px 16px; }
+#fwo-app[data-theme="b"] .fwo-svg text { font-family: var(--b-mono); font-size: 10.5px; fill: var(--fwo-muted); }
+#fwo-app[data-theme="b"] .fwo-c-value { font-size: 11.5px; font-weight: 600; fill: var(--fwo-text); }
+#fwo-app[data-theme="b"] .fwo-c-cat { font-size: 12px; font-weight: 600; fill: var(--b-text-3); }
+#fwo-app[data-theme="b"] .fwo-svg .fwo-c-grid line.fwo-c-axis { stroke: var(--b-tick-maj); }
+#fwo-app[data-theme="b"] .fwo-c-bar--current { fill: var(--fwo-self); stroke: var(--fwo-self); }
+#fwo-app[data-theme="b"] .fwo-c-hatch { stroke: rgba(69, 200, 224, 0.45); }
+#fwo-app[data-theme="b"] .fwo-c-bar--previous { stroke: var(--fwo-ghost); }
+#fwo-app[data-theme="b"] .fwo-c-point { stroke: var(--fwo-surface); }
+#fwo-app[data-theme="b"] .fwo-steps-list li { font-size: 13px; }
+#fwo-app[data-theme="b"] .fwo-baselines { gap: 14px; }
+#fwo-app[data-theme="b"] .fwo-baseline { border: 1px dashed var(--b-tick); border-radius: 3px; padding: 12px 14px; }
+#fwo-app[data-theme="b"] .fwo-baseline .fwo-reading-h { color: var(--fwo-world); }
+#fwo-app[data-theme="b"] .fwo-baseline > p { font: 500 12.5px/1.5 var(--b-mono); margin: 0 0 4px; font-variant-numeric: tabular-nums; }
+#fwo-app[data-theme="b"] .fwo-baseline > p.fwo-small { font: 400 12px/1.5 var(--b-sans); color: var(--fwo-muted); }
+#fwo-app[data-theme="b"] .fwo-chip {
+  border: 1px solid var(--fwo-border); border-radius: 3px; padding: 4px 9px; font: 500 11px/1.4 var(--b-mono); color: var(--b-text-2); background: var(--fwo-surface);
+}
+#fwo-app[data-theme="b"] .fwo-chip--strong { border-color: var(--b-tick-maj); color: var(--fwo-text); }
+
+/* ------------------------------------------------------------ footer */
+#fwo-app[data-theme="b"] .fwo-footer { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--fwo-border); }
+#fwo-app[data-theme="b"] .fwo-attribution { font: 600 15px/1.4 var(--b-mono); color: var(--fwo-text); margin-bottom: 6px; }
+#fwo-app[data-theme="b"] .fwo-footer .fwo-small { font: 400 11px/1.55 var(--b-mono); color: var(--fwo-muted); max-width: 820px; }
+
+/* ------------------------------------------------------------ motion: the needle is the only thing this theme animates */
+@media (prefers-reduced-motion: reduce) {
+  #fwo-app[data-theme="b"] .fwo-reading .fwo-meter::after { transition: none; }
+}
+
+/* ------------------------------------------------------------ phones */
+@media (max-width: 480px) {
+  #fwo-app[data-theme="b"] { padding: 14px 12px 32px; }
+  #fwo-app[data-theme="b"] h1.fwo-title { font-size: 23px; }
+  #fwo-app[data-theme="b"] .fwo-hook { font-size: 13.5px; }
+  #fwo-app[data-theme="b"] .fwo-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #fwo-app[data-theme="b"] .fwo-tab { padding: 7px 5px; min-height: 48px; }
+  #fwo-app[data-theme="b"] .fwo-tab-name { font-size: 11px; }
+  #fwo-app[data-theme="b"] .fwo-tab-role { font-size: 9.5px; }
+  #fwo-app[data-theme="b"] .fwo-dialogue { padding: 10px; gap: 6px 10px; }
+  #fwo-app[data-theme="b"] .fwo-dialogue-text { font-size: 14px; min-height: 3.2em; }
+  #fwo-app[data-theme="b"] .fwo-scene-host { height: 300px; }
+  #fwo-app[data-theme="b"] .fwo-future { padding: 10px 10px; }
+  #fwo-app[data-theme="b"] .fwo-future-p { font-size: 28px; }
+  #fwo-app[data-theme="b"] .fwo-reading-num { font-size: 26px; }
+  #fwo-app[data-theme="b"] .fwo-panel { padding: 14px; }
+  #fwo-app[data-theme="b"] details.fwo-panel { padding: 4px 14px; }
+  #fwo-app[data-theme="b"] details.fwo-panel[open] { padding-bottom: 12px; }
+}
+
+/* ------------------------------------------------------------ the drawn scene (ui/plate.js) */
+#fwo-app[data-theme="b"] .fwo-plate text { font-family: var(--b-mono); }
+
+/* ==================================================================== style C, Luminous anatomy
+   near-black with a violet glow, Fraunces over Space Grotesk, 22 px radii, orb gauges. Every selector starts with #fwo-app[data-theme="c"]. */
+/* ------------------------------------------------------------ tokens */
+#fwo-app[data-theme="c"] {
+  --fwo-bg: #050507;
+  --fwo-surface: #0e0e13;
+  --fwo-surface-2: #15151d;
+  --fwo-border: #26262f;
+  --fwo-control: #7a7694;
+  --fwo-text: #f6f4f0;
+  --fwo-muted: #a7a4b0;
+  --fwo-self: #b79cff;
+  --fwo-self-strong: #d3c2ff;
+  --fwo-world: #63e6c4;
+  --fwo-on-accent: #17102b;
+  --fwo-focus: #e4d9ff;
+  --fwo-ok-fg: #6fe3a5;
+  --fwo-ok-bg: #0f2219;
+  --fwo-warn-fg: #efc65e;
+  --fwo-warn-bg: #272010;
+  --fwo-error-fg: #f27e8e;
+  --fwo-error-bg: #2a1217;
+  --fwo-info-bg: #14121e;
+  --fwo-ghost: #948fa6;
+  --fwo-chart-grid: #1e1e28;
+  --fwo-chart-forecast: #d3c2ff;
+  --fwo-chart-band: #a7a4b0;
+  --fwo-radius: 22px;
+  --fwo-font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --fwo-font-text: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* secondary tones used by the skin */
+  --fwo-c-soft: #c6c3ce;
+  --fwo-c-line: #d8d5de;
+  --fwo-c-panel: rgba(17, 17, 23, 0.72);
+  --fwo-c-tile: rgba(21, 21, 29, 0.6);
+  --fwo-c-track: #5e5e73;
+  --fwo-c-glow: rgba(183, 156, 255, 0.4);
+  /* 3D scene: violet Self, mint World, transparent canvas over the host gradient, halos on */
+  --fwo-scene-bg: #050507;
+  --fwo-scene-self: #b79cff;
+  --fwo-scene-self-light: #d3c2ff;
+  --fwo-scene-self-deep: #4a3a8c;
+  --fwo-scene-world: #63e6c4;
+  --fwo-scene-world-light: #a8f3df;
+  --fwo-scene-world-deep: #1d6a57;
+  --fwo-scene-ghost: #948fa6;
+  --fwo-scene-link: #b79cff;
+  --fwo-scene-label-bg: rgba(5, 5, 7, 0.8);
+  --fwo-scene-transparent: 1;
+  --fwo-scene-plate: c;   /* the scene is this direction's drawn plate (ui/plate.js) */
+  /* --fwo-scene-halo: 1 is the intended hook, but today ui/scene.js makeHaloTexture() does
+     hex.toString(16) on the "#rrggbb" string main.js reads from CSS ("##d3c2ff66"), which
+     throws and aborts the whole page start. Until that one-line fix lands, the glows behind
+     the spheres are painted by the scene host's backdrop (below). Flip this to 1 afterwards. */
+  --fwo-scene-halo: 1;
+
+  padding: 52px 32px 72px;
+  font-size: 15.5px;
+  line-height: 1.6;
+  /* near-black page with the violet glow at the top; the glow fades out inside the app box */
+  background: #050507 radial-gradient(860px 760px at 50% -120px, #1c1632 0%, #110e1e 40%, rgba(5, 5, 7, 0) 70%) no-repeat;
+}
+
+#fwo-app[data-theme="c"] h1, #fwo-app[data-theme="c"] h2, #fwo-app[data-theme="c"] h3, #fwo-app[data-theme="c"] h4 {
+  font-family: var(--fwo-font-display); font-weight: 400; letter-spacing: 0;
+}
+#fwo-app[data-theme="c"] h3 { font: 500 14px/1.3 var(--fwo-font-text); letter-spacing: 0.04em; color: var(--fwo-self-strong); }
+#fwo-app[data-theme="c"] h4 { font: 500 14px/1.3 var(--fwo-font-text); color: var(--fwo-text); }
+#fwo-app[data-theme="c"] strong { color: var(--fwo-text); font-weight: 700; }
+#fwo-app[data-theme="c"] .fwo-small { font-size: 13px; color: var(--fwo-muted); }
+#fwo-app[data-theme="c"] .fwo-help { font-size: 12.5px; color: var(--fwo-muted); }
+
+/* ------------------------------------------------------------ hero */
+#fwo-app[data-theme="c"] .fwo-hero { text-align: center; margin-bottom: 38px; }
+#fwo-app[data-theme="c"] .fwo-kicker {
+  font: 500 11.5px/1.6 var(--fwo-font-text); letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--fwo-world); margin-bottom: 16px;
+}
+#fwo-app[data-theme="c"] .fwo-title {
+  font: 300 clamp(42px, 5vw, 64px)/1.04 var(--fwo-font-display); font-variation-settings: "opsz" 144;
+  letter-spacing: 0.005em; color: #fbf9f5; margin-bottom: 18px;
+}
+#fwo-app[data-theme="c"] .fwo-hook { max-width: 720px; margin: 0 auto 22px; color: var(--fwo-c-soft); font-size: 16px; }
+#fwo-app[data-theme="c"] .fwo-steps { justify-content: center; gap: 10px 26px; font-weight: 500; color: var(--fwo-c-soft); margin-top: 4px; }
+#fwo-app[data-theme="c"] .fwo-step-n {
+  width: 24px; height: 24px; font: 700 12px/1 var(--fwo-font-text);
+  background: linear-gradient(135deg, #d3c2ff, #b79cff 60%, #9a7ef0); color: var(--fwo-on-accent);
+  box-shadow: 0 0 14px rgba(183, 156, 255, 0.45);
+}
+#fwo-app[data-theme="c"] h2 .fwo-step-n { width: 26px; height: 26px; font-size: 13px; margin-right: 10px; vertical-align: 0.22em; }
+
+/* ------------------------------------------------------------ panels + layout */
+#fwo-app[data-theme="c"] .fwo-layout { gap: 26px; margin-bottom: 26px; }
+#fwo-app[data-theme="c"] .fwo-col { gap: 26px; }
+#fwo-app[data-theme="c"] .fwo-panel {
+  background: var(--fwo-c-panel); border: 1px solid var(--fwo-border); border-radius: var(--fwo-radius);
+  padding: 28px; margin: 0 0 26px; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
+}
+#fwo-app[data-theme="c"] .fwo-panel > h2 {
+  font: 400 26px/1.15 var(--fwo-font-display); color: var(--fwo-text);
+  padding-bottom: 12px; margin: 0 0 16px; border-bottom: 1px solid var(--fwo-border);
+}
+#fwo-app[data-theme="c"] .fwo-more > h2 { font: 400 26px/1.15 var(--fwo-font-display); color: var(--fwo-text); margin: 34px 0 16px; }
+
+/* ------------------------------------------------------------ guide: tabs + dialogue */
+#fwo-app[data-theme="c"] .fwo-tabs { gap: 10px; margin-bottom: 16px; }
+#fwo-app[data-theme="c"] .fwo-tab {
+  align-items: center; text-align: center; gap: 2px; min-height: 56px; padding: 9px 12px;
+  border: 1px solid #33333f; border-radius: 999px; background: rgba(21, 21, 29, 0.55);
+  color: var(--fwo-muted); font-family: var(--fwo-font-text);
+}
+#fwo-app[data-theme="c"] .fwo-tab:hover { border-color: #4a4a58; color: var(--fwo-text); }
+#fwo-app[data-theme="c"] .fwo-tab-name { font-weight: 500; font-size: 14.5px; color: inherit; }
+#fwo-app[data-theme="c"] .fwo-tab-role { font-size: 12px; color: var(--fwo-muted); }
+#fwo-app[data-theme="c"] .fwo-tab[aria-selected="true"] {
+  color: var(--fwo-on-accent); background: var(--fwo-self); border-color: var(--fwo-self);
+  box-shadow: 0 0 26px var(--fwo-c-glow);
+}
+#fwo-app[data-theme="c"] .fwo-tab[aria-selected="true"] .fwo-tab-name { color: var(--fwo-on-accent); font-weight: 700; }
+#fwo-app[data-theme="c"] .fwo-tab[aria-selected="true"] .fwo-tab-role { color: #2a1f4a; }
+#fwo-app[data-theme="c"] .fwo-tip { font-size: 14.5px; color: var(--fwo-c-soft); margin: 12px 2px 0; }
+#fwo-app[data-theme="c"] .fwo-guide-foot { margin-top: 16px; padding-top: 12px; }
+
+#fwo-app[data-theme="c"] .fwo-dialogue {
+  gap: 6px 16px; padding: 16px; border: 1px solid var(--fwo-border); border-radius: 18px;
+  background: var(--fwo-c-tile); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+/* the portrait tile: a spotlight behind the pixel-art sprite; the sprite itself is never scaled or filtered */
+#fwo-app[data-theme="c"] .fwo-portrait {
+  border: 1px dashed var(--fwo-control); border-radius: 14px;
+  background: radial-gradient(circle at 50% 32%, #1b1631 0%, #0a0a10 74%);
+}
+#fwo-app[data-theme="c"] .fwo-portrait--sprite { border-style: solid; border-color: var(--fwo-border); }
+#fwo-app[data-theme="c"] .fwo-dialogue--self .fwo-portrait { border-color: rgba(183, 156, 255, 0.55); box-shadow: 0 0 24px rgba(183, 156, 255, 0.22); }
+#fwo-app[data-theme="c"] .fwo-dialogue--demon .fwo-portrait { border-color: rgba(99, 230, 196, 0.5); box-shadow: 0 0 24px rgba(99, 230, 196, 0.18); }
+#fwo-app[data-theme="c"] .fwo-dialogue--observer .fwo-portrait { border-color: rgba(167, 164, 176, 0.5); box-shadow: 0 0 24px rgba(167, 164, 176, 0.14); }
+#fwo-app[data-theme="c"] .fwo-portrait-who { font-family: var(--fwo-font-text); }
+#fwo-app[data-theme="c"] .fwo-dialogue-name { font: italic 400 19px/1.2 var(--fwo-font-display); letter-spacing: 0; }
+#fwo-app[data-theme="c"] .fwo-dialogue--self .fwo-dialogue-name { color: var(--fwo-self-strong); }
+#fwo-app[data-theme="c"] .fwo-dialogue--observer .fwo-dialogue-name { color: var(--fwo-c-soft); }
+#fwo-app[data-theme="c"] .fwo-dialogue-text { font: italic 400 19px/1.45 var(--fwo-font-display); color: var(--fwo-text); margin-top: 8px; min-height: 4.4em; }
+#fwo-app[data-theme="c"] .fwo-dialogue--done .fwo-dialogue-text::after { color: var(--fwo-self); }
+#fwo-app[data-theme="c"] .fwo-dialogue-skip {
+  border: 1px solid #33333f; border-radius: 999px; padding: 4px 14px; min-height: 36px;
+  font-family: var(--fwo-font-text); font-size: 12.5px; color: var(--fwo-muted); background: rgba(21, 21, 29, 0.55);
+}
+#fwo-app[data-theme="c"] .fwo-dialogue-skip:hover, #fwo-app[data-theme="c"] .fwo-dialogue-skip:focus-visible { color: var(--fwo-text); border-color: #4a4a58; }
+
+/* ------------------------------------------------------------ dials */
+#fwo-app[data-theme="c"] .fwo-field { margin: 20px 0; }
+#fwo-app[data-theme="c"] .fwo-range-head { margin-bottom: 2px; }
+#fwo-app[data-theme="c"] .fwo-range-head label { font: 500 14px/1.4 var(--fwo-font-text); color: var(--fwo-text); }
+#fwo-app[data-theme="c"] .fwo-tech { font-size: 12.5px; color: var(--fwo-muted); }
+#fwo-app[data-theme="c"] .fwo-out { font: 700 13.5px/1.4 var(--fwo-font-text); color: var(--fwo-self-strong); }
+#fwo-app[data-theme="c"] .fwo-field > label { font-weight: 500; }
+
+/* thin track + glowing orb thumb (Firefox also gets the lit portion) */
+#fwo-app[data-theme="c"] input[type="range"] {
+  -webkit-appearance: none; appearance: none; background: transparent; height: 40px; min-height: 40px;
+  margin: 0; padding: 0; cursor: pointer; border-radius: 8px;
+}
+#fwo-app[data-theme="c"] input[type="range"]::-webkit-slider-runnable-track { height: 2px; border-radius: 1px; background: var(--fwo-c-track); }
+#fwo-app[data-theme="c"] input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 19px; height: 19px; margin-top: -8.5px; border: 0; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #f0e9ff, #b79cff 60%, #6d4fc2);
+  box-shadow: 0 0 0 1px rgba(183, 156, 255, 0.5), 0 0 18px 3px rgba(183, 156, 255, 0.5);
+}
+#fwo-app[data-theme="c"] input[type="range"]::-moz-range-track { height: 2px; border-radius: 1px; background: var(--fwo-c-track); }
+#fwo-app[data-theme="c"] input[type="range"]::-moz-range-progress { height: 2px; border-radius: 1px; background: var(--fwo-self); box-shadow: 0 0 12px rgba(183, 156, 255, 0.8); }
+#fwo-app[data-theme="c"] input[type="range"]::-moz-range-thumb {
+  width: 19px; height: 19px; border: 0; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #f0e9ff, #b79cff 60%, #6d4fc2);
+  box-shadow: 0 0 0 1px rgba(183, 156, 255, 0.5), 0 0 18px 3px rgba(183, 156, 255, 0.5);
+}
+
+/* round luminous checkboxes */
+#fwo-app[data-theme="c"] input[type="checkbox"] {
+  -webkit-appearance: none; appearance: none; width: 20px; height: 20px; margin: 0; cursor: pointer;
+  border: 1.5px solid #6e6e84; border-radius: 50%; background: rgba(21, 21, 29, 0.6);
+  display: inline-grid; place-content: center;
+}
+#fwo-app[data-theme="c"] input[type="checkbox"]:checked {
+  border-color: var(--fwo-self); background: rgba(183, 156, 255, 0.14); box-shadow: 0 0 10px rgba(183, 156, 255, 0.35);
+}
+#fwo-app[data-theme="c"] input[type="checkbox"]:checked::after {
+  content: "\2713"; color: var(--fwo-self-strong); font: 700 12px/1 var(--fwo-font-text);
+}
+#fwo-app[data-theme="c"] .fwo-check > label { font-weight: 500; }
+
+#fwo-app[data-theme="c"] input[type="number"], #fwo-app[data-theme="c"] select {
+  background: #0a0a10; border: 1px solid var(--fwo-control); border-radius: 12px; padding: 8px 12px; font-family: var(--fwo-font-text);
+}
+
+#fwo-app[data-theme="c"] .fwo-actions { margin-top: 24px; }
+#fwo-app[data-theme="c"] .fwo-button {
+  border: 0; border-radius: 999px; min-height: 52px; padding: 12px 22px;
+  background: linear-gradient(135deg, #d3c2ff, #b79cff 55%, #9a7ef0); color: var(--fwo-on-accent);
+  font: 700 15.5px/1.2 var(--fwo-font-text); letter-spacing: 0.02em;
+  box-shadow: 0 6px 30px rgba(183, 156, 255, 0.38);
+}
+#fwo-app[data-theme="c"] .fwo-button:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: linear-gradient(135deg, #e4d9ff, #c4acff 55%, #a88ef5); border-color: transparent;
+  box-shadow: 0 8px 36px rgba(183, 156, 255, 0.5);
+}
+#fwo-app[data-theme="c"] .fwo-button .fwo-step-n { background: var(--fwo-on-accent); color: var(--fwo-self-strong); box-shadow: none; }
+#fwo-app[data-theme="c"] .fwo-button:disabled, #fwo-app[data-theme="c"] .fwo-button[aria-disabled="true"] {
+  color: var(--fwo-muted); background: rgba(21, 21, 29, 0.7); border: 1px dashed #4a4a58; box-shadow: none;
+}
+#fwo-app[data-theme="c"] .fwo-button:disabled .fwo-step-n, #fwo-app[data-theme="c"] .fwo-button[aria-disabled="true"] .fwo-step-n {
+  background: #2a2a36; color: var(--fwo-muted);
+}
+#fwo-app[data-theme="c"] #fwo-run-policy { margin: 11px 0 0; font-size: 12.5px; }
+
+/* status pill with a glowing mark */
+#fwo-app[data-theme="c"] .fwo-status {
+  position: relative; margin: 16px 0 0; padding: 12px 20px 12px 42px;
+  border: 1px solid var(--fwo-border); border-left: 1px solid var(--fwo-border); border-radius: 22px;
+  background: rgba(21, 21, 29, 0.55); color: #d9e6de; font-size: 13.5px; line-height: 1.55;
+}
+#fwo-app[data-theme="c"] .fwo-status::before {
+  content: ""; position: absolute; left: 20px; top: 18px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--fwo-ok-fg); box-shadow: 0 0 12px 2px rgba(111, 227, 165, 0.55);
+}
+#fwo-app[data-theme="c"] .fwo-status--error { color: var(--fwo-error-fg); background: var(--fwo-error-bg); border-color: rgba(242, 126, 142, 0.4); }
+#fwo-app[data-theme="c"] .fwo-status--error::before { background: var(--fwo-error-fg); box-shadow: 0 0 12px 2px rgba(242, 126, 142, 0.5); }
+#fwo-app[data-theme="c"] .fwo-progress { border-radius: 999px; padding: 8px 18px; background: rgba(21, 21, 29, 0.55); border: 1px solid var(--fwo-border); font-size: 13.5px; }
+#fwo-app[data-theme="c"] .fwo-note { border-radius: 14px; padding: 10px 14px; font-size: 13px; }
+#fwo-app[data-theme="c"] .fwo-draft { font-size: 12.5px; border-top: 1px dashed #2a2a36; padding-top: 12px; margin-top: 12px; }
+
+/* ------------------------------------------------------------ details / summaries */
+#fwo-app[data-theme="c"] .fwo-details > summary {
+  font: 500 15px/1.4 var(--fwo-font-text); color: var(--fwo-self-strong); min-height: 44px; padding: 8px 0;
+}
+#fwo-app[data-theme="c"] .fwo-details > summary::before { color: var(--fwo-self); font-size: 0.9em; }
+#fwo-app[data-theme="c"] details.fwo-panel { padding: 6px 28px; margin: 0 0 14px; }
+#fwo-app[data-theme="c"] details.fwo-panel[open] { padding-bottom: 24px; }
+#fwo-app[data-theme="c"] details.fwo-panel > summary { font-size: 16px; min-height: 52px; }
+#fwo-app[data-theme="c"] .fwo-factual { font-weight: 400; font-size: 15.5px; color: var(--fwo-text); max-width: 1000px; }
+
+/* ------------------------------------------------------------ scene */
+#fwo-app[data-theme="c"] .fwo-scene { padding: 24px; }
+#fwo-app[data-theme="c"] .fwo-scene-host {
+  height: clamp(300px, 40vw, 420px); border-radius: 16px; border: 1px solid #1d1d27;
+  /* The glowing organism's backdrop, seen through the transparent WebGL canvas: soft violet
+     halos where the two future spheres sit (the scene's camera keeps them at fixed positions),
+     a mint halo under the World, a "tissue" bloom behind the Self, and the dark radial field. */
+  background:
+    radial-gradient(17% 25% at 74% 27%, rgba(183, 156, 255, 0.34) 0%, rgba(183, 156, 255, 0.12) 50%, rgba(183, 156, 255, 0) 76%),
+    radial-gradient(17% 25% at 74% 66%, rgba(183, 156, 255, 0.34) 0%, rgba(183, 156, 255, 0.12) 50%, rgba(183, 156, 255, 0) 76%),
+    radial-gradient(10% 14% at 28% 83%, rgba(99, 230, 196, 0.32) 0%, rgba(99, 230, 196, 0.1) 55%, rgba(99, 230, 196, 0) 80%),
+    radial-gradient(32% 42% at 28% 44%, rgba(142, 111, 232, 0.22) 0%, rgba(142, 111, 232, 0.09) 48%, rgba(142, 111, 232, 0) 74%),
+    radial-gradient(85% 85% at 42% 40%, #14101f 0%, #0a0a10 55%, #050507 100%);
+}
+#fwo-app[data-theme="c"] .fwo-scene-label { font: 500 12.5px/1.4 var(--fwo-font-text); color: var(--fwo-c-soft); padding: 2px 9px; }
+#fwo-app[data-theme="c"] .fwo-scene-label--self { color: var(--fwo-c-soft); }
+#fwo-app[data-theme="c"] .fwo-scene-label--world { color: var(--fwo-world); }
+#fwo-app[data-theme="c"] .fwo-scene-fallback { padding: 28px 20px; }
+#fwo-app[data-theme="c"] .fwo-scene-caption { font-size: 12.5px; margin: 14px 4px 0; }
+#fwo-app[data-theme="c"] .fwo-motion { margin: 10px 4px 0; }
+#fwo-app[data-theme="c"] .fwo-motion > label { font-size: 13px; }
+
+/* ------------------------------------------------------------ futures */
+#fwo-app[data-theme="c"] .fwo-futures { gap: 16px; margin-top: 18px; }
+#fwo-app[data-theme="c"] .fwo-future { background: var(--fwo-c-tile); border: 1px solid var(--fwo-border); border-radius: 18px; padding: 18px 20px; }
+#fwo-app[data-theme="c"] .fwo-future-h { margin-bottom: 6px; }
+#fwo-app[data-theme="c"] .fwo-future-p {
+  font: 300 54px/1 var(--fwo-font-display); color: var(--fwo-self-strong); margin: 0 0 8px; letter-spacing: -0.01em;
+}
+#fwo-app[data-theme="c"] .fwo-future-p--empty { color: var(--fwo-muted); }
+#fwo-app[data-theme="c"] .fwo-future .fwo-meter { height: 4px; border: 0; border-radius: 2px; background: #2a2a36; margin: 10px 0 10px; overflow: hidden; }
+#fwo-app[data-theme="c"] .fwo-future .fwo-meter-fill { background: linear-gradient(90deg, #6d4fc2, var(--fwo-self-strong)); box-shadow: 0 0 10px rgba(183, 156, 255, 0.7); }
+#fwo-app[data-theme="c"] .fwo-future .fwo-small { font-size: 12.5px; margin-bottom: 4px; }
+
+/* ------------------------------------------------------------ readings: orb gauges */
+#fwo-app[data-theme="c"] .fwo-readings { gap: 22px; margin-top: 18px; }
+#fwo-app[data-theme="c"] .fwo-reading {
+  display: flex; flex-direction: column; background: var(--fwo-c-tile); border: 1px solid var(--fwo-border);
+  border-radius: 18px; padding: 22px;
+}
+#fwo-app[data-theme="c"] .fwo-reading--resolved { border-color: #3a2f66; box-shadow: 0 0 34px rgba(183, 156, 255, 0.12); }
+#fwo-app[data-theme="c"] .fwo-reading--unresolved { border-style: dashed; border-color: rgba(99, 230, 196, 0.6); }
+#fwo-app[data-theme="c"] .fwo-reading-h { order: 0; font-size: 14px; margin-bottom: 8px; }
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter { order: 1; }
+#fwo-app[data-theme="c"] .fwo-reading-value { order: 2; margin: 0 0 10px; }
+#fwo-app[data-theme="c"] .fwo-reading-line, #fwo-app[data-theme="c"] .fwo-tech-line { order: 3; }
+#fwo-app[data-theme="c"] .fwo-reading-num { font: 300 46px/1 var(--fwo-font-display); color: var(--fwo-text); }
+#fwo-app[data-theme="c"] .fwo-reading-unit { font: 500 14px/1 var(--fwo-font-text); color: var(--fwo-muted); margin-left: 4px; }
+#fwo-app[data-theme="c"] .fwo-reading-line { font-size: 13px; color: var(--fwo-c-line); margin-bottom: 6px; }
+#fwo-app[data-theme="c"] .fwo-tech-line { font-size: 12px; padding-top: 11px; margin-top: 8px; }
+
+/* The gauge is a 140 x 88 field with the orb centred at (70, 42): a faint rim ring (the full
+   scale), the core disc whose diameter and glow follow --fwo-v, the 95 % band as an arc of a
+   ring between core and rim (conic gradient under a ring mask), and a dashed mint ring when
+   the value is exactly zero. The bar children are hidden or repurposed. */
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter {
+  position: relative; width: 140px; height: 88px; margin: 0 0 6px -6px; border: 0; border-radius: 0; overflow: visible;
+  background: radial-gradient(circle at 70px 42px, rgba(0, 0, 0, 0) 38.9px, #2f2f3b 39.4px, #2f2f3b 40.6px, rgba(0, 0, 0, 0) 41.1px);
+}
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter-fill { display: none; }
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter::before {
+  content: ""; position: absolute; left: 70px; top: 42px; z-index: 1;
+  width: calc(20px + 34px * var(--fwo-v, 0)); height: calc(20px + 34px * var(--fwo-v, 0));
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: radial-gradient(circle at 42% 36%, #f0e9ff 0%, #c9b4ff 40%, #9a7ef0 85%, #8468d8 100%);
+  box-shadow:
+    0 0 calc(8px + 14px * var(--fwo-v, 0)) calc(1px + 3px * var(--fwo-v, 0)) rgba(183, 156, 255, 0.55),
+    0 0 calc(22px + 40px * var(--fwo-v, 0)) calc(4px + 16px * var(--fwo-v, 0)) rgba(183, 156, 255, 0.22);
+}
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter::after {
+  content: ""; position: absolute; left: 70px; top: 42px; z-index: 2; width: 30px; height: 30px;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: repeating-conic-gradient(var(--fwo-world) 0 14deg, rgba(0, 0, 0, 0) 14deg 30deg);
+  -webkit-mask: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 12.3px, #000 12.9px, #000 14.1px, rgba(0, 0, 0, 0) 14.7px);
+  mask: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 12.3px, #000 12.9px, #000 14.1px, rgba(0, 0, 0, 0) 14.7px);
+  opacity: clamp(0, 1 - var(--fwo-v, 1) * 1000, 1);
+}
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter-band {
+  position: absolute; inset: 0 !important; width: auto !important; border: 0; border-radius: 0; z-index: 0;
+  background: conic-gradient(from calc(var(--fwo-lo, 0) * 360deg) at 70px 42px,
+    rgba(211, 194, 255, 0.6) 0deg, rgba(211, 194, 255, 0.6) calc((var(--fwo-hi, 0) - var(--fwo-lo, 0)) * 360deg), rgba(0, 0, 0, 0) 0deg);
+  -webkit-mask: radial-gradient(circle at 70px 42px, rgba(0, 0, 0, 0) 29px, #000 29.6px, #000 33.4px, rgba(0, 0, 0, 0) 34px);
+  mask: radial-gradient(circle at 70px 42px, rgba(0, 0, 0, 0) 29px, #000 29.6px, #000 33.4px, rgba(0, 0, 0, 0) 34px);
+}
+/* before any run: a dim unlit core, no glow, no zero ring */
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter--empty::before { opacity: 0.35; box-shadow: none; background: #6d5fa0; }
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter--empty::after { opacity: 0; }
+#fwo-app[data-theme="c"] .fwo-honest { font-size: 13px; margin-top: 18px; }
+
+/* ------------------------------------------------------------ chips, baselines, tables, chart */
+#fwo-app[data-theme="c"] .fwo-chips { gap: 9px; margin: 6px 0 12px; }
+#fwo-app[data-theme="c"] .fwo-chip {
+  border: 1px solid var(--fwo-border); border-radius: 999px; padding: 6px 15px; font-size: 12.5px;
+  color: var(--fwo-c-soft); background: var(--fwo-c-tile);
+}
+#fwo-app[data-theme="c"] .fwo-chip--strong { font-weight: 600; border-color: rgba(183, 156, 255, 0.6); color: var(--fwo-self-strong); }
+#fwo-app[data-theme="c"] .fwo-baselines { gap: 22px; }
+#fwo-app[data-theme="c"] .fwo-baseline { border: 1px dashed #33333f; border-radius: 18px; padding: 18px 22px; }
+#fwo-app[data-theme="c"] .fwo-baseline .fwo-reading-h { color: var(--fwo-world); }
+#fwo-app[data-theme="c"] pre, #fwo-app[data-theme="c"] .fwo-pre { background: #050507; border-radius: 14px; padding: 12px 14px; }
+#fwo-app[data-theme="c"] table { font-size: 13px; }
+#fwo-app[data-theme="c"] thead th { background: #15151d; }
+#fwo-app[data-theme="c"] .fwo-formula { color: var(--fwo-world); }
+#fwo-app[data-theme="c"] .fwo-figure { margin-top: 12px; }
+#fwo-app[data-theme="c"] .fwo-svg text { font-family: var(--fwo-font-text); font-size: 12px; }
+#fwo-app[data-theme="c"] .fwo-svg .fwo-c-grid line.fwo-c-axis { stroke: #2a2a36; }
+#fwo-app[data-theme="c"] .fwo-c-hatch { stroke: rgba(183, 156, 255, 0.45); }
+#fwo-app[data-theme="c"] .fwo-c-bar--previous { stroke: var(--fwo-ghost); }
+#fwo-app[data-theme="c"] .fwo-c-bar--current { fill: var(--fwo-self); stroke: var(--fwo-self); }
+#fwo-app[data-theme="c"] .fwo-c-bar--forecast { fill: rgba(183, 156, 255, 0.05); stroke: var(--fwo-self-strong); stroke-width: 2; }
+#fwo-app[data-theme="c"] .fwo-c-value { font-weight: 700; }
+#fwo-app[data-theme="c"] .fwo-c-cat { fill: var(--fwo-c-soft); font-weight: 500; }
+#fwo-app[data-theme="c"] .fwo-caption { font-size: 13.5px; color: var(--fwo-c-soft); margin-top: 10px; }
+#fwo-app[data-theme="c"] .fwo-legend { gap: 6px 20px; margin: 14px 0 6px; font-size: 12.5px; color: var(--fwo-muted); }
+
+/* ------------------------------------------------------------ footer */
+#fwo-app[data-theme="c"] .fwo-footer { text-align: center; margin-top: 34px; padding-top: 26px; }
+#fwo-app[data-theme="c"] .fwo-attribution { font: 400 24px/1.3 var(--fwo-font-display); color: var(--fwo-text); margin-bottom: 10px; }
+#fwo-app[data-theme="c"] .fwo-footer .fwo-small { max-width: 760px; margin: 0 auto; }
+
+/* ------------------------------------------------------------ narrow screens */
+@media (max-width: 760px) {
+  #fwo-app[data-theme="c"] .fwo-hero { text-align: left; margin-bottom: 28px; }
+  #fwo-app[data-theme="c"] .fwo-kicker { letter-spacing: 0.22em; }
+  #fwo-app[data-theme="c"] .fwo-hook { margin-left: 0; }
+  #fwo-app[data-theme="c"] .fwo-steps { justify-content: flex-start; gap: 8px 18px; }
+  #fwo-app[data-theme="c"] .fwo-future-p { font-size: 46px; }
+}
+@media (max-width: 480px) {
+  #fwo-app[data-theme="c"] { padding: 32px 16px 48px; }
+  #fwo-app[data-theme="c"] .fwo-layout, #fwo-app[data-theme="c"] .fwo-col { gap: 18px; }
+  #fwo-app[data-theme="c"] .fwo-panel { padding: 20px; margin-bottom: 18px; border-radius: 20px; }
+  #fwo-app[data-theme="c"] .fwo-panel > h2 { font-size: 23px; }
+  #fwo-app[data-theme="c"] .fwo-scene { padding: 16px; }
+  #fwo-app[data-theme="c"] .fwo-tabs { gap: 8px; }
+  #fwo-app[data-theme="c"] .fwo-tab { min-height: 48px; padding: 7px 14px; }
+  #fwo-app[data-theme="c"] .fwo-dialogue { padding: 12px; border-radius: 16px; }
+  #fwo-app[data-theme="c"] .fwo-portrait { border-radius: 10px; }
+  #fwo-app[data-theme="c"] .fwo-dialogue-text { font-size: 17px; min-height: 3.2em; }
+  #fwo-app[data-theme="c"] .fwo-futures { gap: 10px; }
+  #fwo-app[data-theme="c"] .fwo-future { padding: 14px 14px; border-radius: 16px; }
+  #fwo-app[data-theme="c"] .fwo-future-p { font-size: 38px; }
+  #fwo-app[data-theme="c"] .fwo-reading { padding: 18px; }
+  #fwo-app[data-theme="c"] .fwo-reading-num { font-size: 42px; }
+  #fwo-app[data-theme="c"] details.fwo-panel { padding: 4px 20px; }
+  #fwo-app[data-theme="c"] details.fwo-panel[open] { padding-bottom: 18px; }
+  #fwo-app[data-theme="c"] .fwo-footer { text-align: left; }
+}
+
+/* ------------------------------------------------------------ the drawn scene (ui/plate.js) */
+#fwo-app[data-theme="c"] .fwo-plate text { font-family: var(--fwo-font-text); }
+
+/* ==================================================================== style D, Blueprint (light)
+   pale graph paper, ink-blue line work, brick-red Self, Barlow Condensed over IBM Plex Mono, ruler gauges. Every selector starts with #fwo-app[data-theme="d"]. */
+/* ------------------------------------------------------------ tokens + paper */
+#fwo-app[data-theme="d"] {
+  color-scheme: light;
+  --fwo-bg: #edf2f7; --fwo-surface: #f8fafc; --fwo-surface-2: #ffffff; --fwo-border: #9fb4cc; --fwo-control: #17355e;
+  --fwo-text: #17355e; --fwo-muted: #44597a; --fwo-self: #b23a1f; --fwo-self-strong: #8f2e18; --fwo-world: #0e6e8c;
+  --fwo-on-accent: #ffffff; --fwo-focus: #b23a1f; --fwo-ok-fg: #1e7b34; --fwo-ok-bg: #e3f3e6; --fwo-warn-fg: #8a5a00;
+  --fwo-warn-bg: #fbf0d9; --fwo-error-fg: #b3261e; --fwo-error-bg: #fbe4e2; --fwo-info-bg: #dfe9f4; --fwo-ghost: #44597a;
+  --fwo-chart-grid: #d5e0ec; --fwo-chart-forecast: #17355e; --fwo-chart-band: #44597a; --fwo-radius: 2px;
+  --fwo-font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --fwo-font-text: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fwo-ink: #17355e; --fwo-ink-soft: rgba(23, 53, 94, 0.10); --fwo-ink-line: #d9e3ef; --fwo-hatch-soft: #d98a76;
+  /* 3D scene: ink line work, brick-red futures, teal World, drafted paper behind a transparent canvas */
+  --fwo-scene-bg: #f8fafc; --fwo-scene-self: #b23a1f; --fwo-scene-self-light: #d9735b; --fwo-scene-self-deep: #5e1d0e;
+  --fwo-scene-world: #0e6e8c; --fwo-scene-world-light: #5fa9c2; --fwo-scene-world-deep: #0a4558; --fwo-scene-ghost: #7c90ac;
+  --fwo-scene-link: #17355e; --fwo-scene-label-bg: rgba(255, 255, 255, 0.88);
+  --fwo-scene-transparent: 1;
+  --fwo-scene-plate: d;   /* the scene is this direction's drawn plate (ui/plate.js) */
+
+  font-size: 14px;
+  line-height: 1.55;
+  background-color: var(--fwo-bg);
+  /* graph paper: one dot every 24 px */
+  background-image: radial-gradient(#d5e0ec 1px, transparent 1.4px);
+  background-size: 24px 24px;
+  background-position: 12px 12px;
+}
+
+#fwo-app[data-theme="d"] strong { color: var(--fwo-ink); font-weight: 700; }
+#fwo-app[data-theme="d"] h1, #fwo-app[data-theme="d"] h2, #fwo-app[data-theme="d"] h3, #fwo-app[data-theme="d"] h4 {
+  font-family: var(--fwo-font-display); color: var(--fwo-ink);
+}
+#fwo-app[data-theme="d"] h3 { font-size: 17px; letter-spacing: 0.04em; }
+#fwo-app[data-theme="d"] code, #fwo-app[data-theme="d"] pre { font-family: var(--fwo-font-text); font-size: 12.5px; }
+
+/* ------------------------------------------------------------ hero: the title block */
+#fwo-app[data-theme="d"] .fwo-hero {
+  margin-bottom: 16px; padding: 18px 22px; position: relative;
+  border: 1.5px solid var(--fwo-ink); border-radius: var(--fwo-radius); background: var(--fwo-surface);
+  box-shadow: 3px 3px 0 var(--fwo-ink-soft);
+}
+#fwo-app[data-theme="d"] .fwo-kicker {
+  font: 500 11px/1.5 var(--fwo-font-text); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--fwo-world); margin-bottom: 6px;
+}
+#fwo-app[data-theme="d"] .fwo-title {
+  font: 700 40px/1.05 var(--fwo-font-display); letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--fwo-ink); margin-bottom: 10px;
+}
+#fwo-app[data-theme="d"] .fwo-hook { font-size: 14px; max-width: 920px; color: var(--fwo-muted); margin-bottom: 0; }
+#fwo-app[data-theme="d"] .fwo-steps {
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--fwo-border); gap: 8px 22px;
+  font: 600 12px/1.4 var(--fwo-font-text); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fwo-ink);
+}
+#fwo-app[data-theme="d"] .fwo-step-n {
+  border-radius: var(--fwo-radius); background: var(--fwo-ink); color: var(--fwo-on-accent);
+  font: 700 0.9em/1 var(--fwo-font-display); width: 1.6em; height: 1.6em; letter-spacing: 0;
+}
+
+/* ------------------------------------------------------------ panels: drafted frames */
+#fwo-app[data-theme="d"] .fwo-panel {
+  border: 1.5px solid var(--fwo-ink); border-radius: var(--fwo-radius); background: var(--fwo-surface);
+  box-shadow: 3px 3px 0 var(--fwo-ink-soft); padding: 16px;
+}
+#fwo-app[data-theme="d"] .fwo-panel > h2 {
+  font: 700 21px/1.15 var(--fwo-font-display); letter-spacing: 0.07em; color: var(--fwo-ink);
+  padding-bottom: 7px; margin-bottom: 11px; border-bottom: 1.5px solid var(--fwo-ink);
+}
+#fwo-app[data-theme="d"] h2 .fwo-step-n { font-size: 0.78em; margin-right: 8px; vertical-align: 0.08em; }
+#fwo-app[data-theme="d"] .fwo-layout { gap: 16px; margin-bottom: 16px; }
+#fwo-app[data-theme="d"] .fwo-col { gap: 16px; }
+#fwo-app[data-theme="d"] .fwo-small, #fwo-app[data-theme="d"] .fwo-help { font-size: 12.5px; color: var(--fwo-muted); line-height: 1.5; }
+#fwo-app[data-theme="d"] .fwo-tip { font-size: 13px; color: var(--fwo-muted); }
+
+/* ------------------------------------------------------------ guides: folder tabs over the dialogue sheet */
+#fwo-app[data-theme="d"] .fwo-tabs { gap: 0; margin-bottom: 12px; border-bottom: 1.5px solid var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-tab {
+  background: var(--fwo-surface); color: var(--fwo-muted);
+  border: 1.5px solid var(--fwo-ink); border-bottom: 0; border-right: 0; border-radius: 2px 2px 0 0;
+  padding: 8px 12px; min-height: 54px; gap: 2px;
+}
+#fwo-app[data-theme="d"] .fwo-tab:last-child { border-right: 1.5px solid var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-tab:hover { background: var(--fwo-info-bg); color: var(--fwo-ink); border-color: var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-tab[aria-selected="true"] { background: var(--fwo-ink); border-color: var(--fwo-ink); color: var(--fwo-on-accent); box-shadow: none; }
+#fwo-app[data-theme="d"] .fwo-tab-name { font: 600 15px/1.2 var(--fwo-font-display); letter-spacing: 0.06em; color: var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-tab[aria-selected="true"] .fwo-tab-name { color: var(--fwo-on-accent); font-weight: 700; }
+#fwo-app[data-theme="d"] .fwo-tab-role { font: 400 11px/1.3 var(--fwo-font-text); color: var(--fwo-muted); }
+#fwo-app[data-theme="d"] .fwo-tab[aria-selected="true"] .fwo-tab-role { color: #dfe9f4; }
+#fwo-app[data-theme="d"] .fwo-guide-foot { border-top: 1px dashed var(--fwo-border); margin-top: 12px; padding-top: 10px; }
+
+#fwo-app[data-theme="d"] .fwo-dialogue {
+  border: 1.5px solid var(--fwo-ink); border-radius: var(--fwo-radius); background: var(--fwo-surface-2);
+  box-shadow: 3px 3px 0 var(--fwo-ink-soft); padding: 12px;
+}
+/* the portrait tile: only the frame around the pixel art changes, never its scale */
+#fwo-app[data-theme="d"] .fwo-portrait { border: 1.5px dashed var(--fwo-ink); border-radius: var(--fwo-radius); background: var(--fwo-surface); }
+#fwo-app[data-theme="d"] .fwo-portrait--sprite { border-style: solid; border-color: var(--fwo-ink); background: var(--fwo-surface-2); }
+#fwo-app[data-theme="d"] .fwo-dialogue--self .fwo-portrait { border-color: var(--fwo-self); }
+#fwo-app[data-theme="d"] .fwo-dialogue--demon .fwo-portrait { border-color: var(--fwo-world); }
+#fwo-app[data-theme="d"] .fwo-portrait-ph { font: 500 10px/1.3 var(--fwo-font-text); letter-spacing: 0.12em; }
+#fwo-app[data-theme="d"] .fwo-portrait-who { font: 700 13px/1.2 var(--fwo-font-display); letter-spacing: 0.06em; }
+#fwo-app[data-theme="d"] .fwo-dialogue-name { font: 700 16px/1.2 var(--fwo-font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+#fwo-app[data-theme="d"] .fwo-dialogue-text { font: italic 500 16.5px/1.45 var(--fwo-font-display); }   /* the persona line, as designed */
+#fwo-app[data-theme="d"] .fwo-dialogue-skip {
+  border: 1px solid var(--fwo-ink); border-radius: var(--fwo-radius); color: var(--fwo-ink);
+  font: 600 13px/1 var(--fwo-font-display); letter-spacing: 0.08em; text-transform: uppercase; background: var(--fwo-surface-2);
+}
+#fwo-app[data-theme="d"] .fwo-dialogue-skip:hover, #fwo-app[data-theme="d"] .fwo-dialogue-skip:focus-visible { background: var(--fwo-info-bg); border-color: var(--fwo-ink); color: var(--fwo-ink); }
+
+/* ------------------------------------------------------------ dials: ink tracks, diamond thumbs, square checks */
+#fwo-app[data-theme="d"] .fwo-field > label { font: 500 13px/1.4 var(--fwo-font-text); color: var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-range-head label { font: 500 13px/1.4 var(--fwo-font-text); color: var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-tech { font-size: 11px; color: var(--fwo-muted); }
+#fwo-app[data-theme="d"] .fwo-out { font: 600 13px/1.4 var(--fwo-font-text); color: var(--fwo-self); }
+#fwo-app[data-theme="d"] .fwo-check > label { font: 600 13px/1.4 var(--fwo-font-text); }
+
+#fwo-app[data-theme="d"] input[type="range"] {
+  -webkit-appearance: none; appearance: none; background: transparent; min-height: 36px; margin: 2px 0 0; cursor: pointer;
+}
+#fwo-app[data-theme="d"] input[type="range"]::-webkit-slider-runnable-track { height: 2px; background: var(--fwo-ink); border: 0; border-radius: 0; }
+#fwo-app[data-theme="d"] input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; box-sizing: border-box; width: 16px; height: 16px; margin-top: -7px;
+  background: var(--fwo-surface-2); border: 2px solid var(--fwo-self); border-radius: 0; transform: rotate(45deg);
+}
+#fwo-app[data-theme="d"] input[type="range"]::-moz-range-track { height: 2px; background: var(--fwo-ink); border: 0; border-radius: 0; }
+#fwo-app[data-theme="d"] input[type="range"]::-moz-range-progress { height: 2px; background: var(--fwo-self); }
+#fwo-app[data-theme="d"] input[type="range"]::-moz-range-thumb {
+  box-sizing: border-box; width: 16px; height: 16px; background: var(--fwo-surface-2);
+  border: 2px solid var(--fwo-self); border-radius: 0; transform: rotate(45deg);
+}
+
+#fwo-app[data-theme="d"] input[type="checkbox"] {
+  -webkit-appearance: none; appearance: none; width: 18px; height: 18px; margin: 0; cursor: pointer;
+  border: 1.5px solid var(--fwo-self); border-radius: var(--fwo-radius); background: var(--fwo-surface-2);
+}
+/* the check mark is two gradient strokes (short down-stroke, long up-stroke), no glyph or image */
+#fwo-app[data-theme="d"] input[type="checkbox"]:checked {
+  background-color: var(--fwo-surface-2);
+  background-image:
+    linear-gradient(to top right, transparent calc(50% - 1.4px), var(--fwo-self) calc(50% - 1.4px) calc(50% + 1.4px), transparent calc(50% + 1.4px)),
+    linear-gradient(to bottom right, transparent calc(50% - 1.4px), var(--fwo-self) calc(50% - 1.4px) calc(50% + 1.4px), transparent calc(50% + 1.4px));
+  background-size: 5px 5px, 8px 9px;
+  background-position: 2px 6px, 5.5px 2px;
+  background-repeat: no-repeat;
+}
+
+#fwo-app[data-theme="d"] input[type="number"], #fwo-app[data-theme="d"] select {
+  background: var(--fwo-surface-2); color: var(--fwo-ink); border: 1.5px solid var(--fwo-ink); border-radius: var(--fwo-radius);
+  font: 500 13px/1.4 var(--fwo-font-text);
+}
+#fwo-app[data-theme="d"] input[aria-invalid="true"] { border: 2px solid var(--fwo-error-fg); }
+
+#fwo-app[data-theme="d"] .fwo-button {
+  font: 700 16px/1.2 var(--fwo-font-display); letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--fwo-on-accent); background: var(--fwo-ink); border: 1.5px solid var(--fwo-ink); border-radius: var(--fwo-radius);
+  min-height: 48px; box-shadow: 3px 3px 0 rgba(23, 53, 94, 0.25);
+}
+#fwo-app[data-theme="d"] .fwo-button .fwo-step-n { background: var(--fwo-on-accent); color: var(--fwo-ink); font-size: 0.8em; }
+#fwo-app[data-theme="d"] .fwo-button:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--fwo-self-strong); border-color: var(--fwo-self-strong); }
+#fwo-app[data-theme="d"] .fwo-button:disabled, #fwo-app[data-theme="d"] .fwo-button[aria-disabled="true"] {
+  color: var(--fwo-muted); background: var(--fwo-surface-2); border: 1.5px dashed var(--fwo-ink); box-shadow: none;
+}
+#fwo-app[data-theme="d"] .fwo-button:disabled .fwo-step-n, #fwo-app[data-theme="d"] .fwo-button[aria-disabled="true"] .fwo-step-n { background: var(--fwo-ink); color: var(--fwo-on-accent); }
+
+/* status: a drafted note with a green (or red) tab and a square mark */
+#fwo-app[data-theme="d"] .fwo-status {
+  border: 1.5px solid var(--fwo-ink); border-left: 6px solid var(--fwo-ok-fg); border-radius: var(--fwo-radius);
+  background: var(--fwo-surface); color: var(--fwo-ink); padding: 10px 14px; font-size: 13px;
+  box-shadow: 3px 3px 0 var(--fwo-ink-soft);
+}
+#fwo-app[data-theme="d"] .fwo-status::before {
+  content: ""; display: inline-block; width: 10px; height: 10px; margin: 0 10px 0 0; vertical-align: 0;
+  background: var(--fwo-ok-fg); outline: 1px solid var(--fwo-ink);
+}
+#fwo-app[data-theme="d"] .fwo-status--error { border-left-color: var(--fwo-error-fg); background: var(--fwo-error-bg); color: var(--fwo-error-fg); }
+#fwo-app[data-theme="d"] .fwo-status--error::before { background: var(--fwo-error-fg); }
+#fwo-app[data-theme="d"] .fwo-progress { border: 1px solid var(--fwo-ink); border-radius: var(--fwo-radius); background: var(--fwo-surface-2); font-size: 13px; }
+#fwo-app[data-theme="d"] .fwo-note { border-radius: var(--fwo-radius); font-size: 12.5px; }
+#fwo-app[data-theme="d"] .fwo-draft { border-top: 1px dashed var(--fwo-border); padding-top: 10px; font-variant-numeric: tabular-nums; }
+
+#fwo-app[data-theme="d"] .fwo-details > summary {
+  font: 600 15px/1.3 var(--fwo-font-display); letter-spacing: 0.06em; color: var(--fwo-world); padding: 6px 0;
+}
+#fwo-app[data-theme="d"] .fwo-details > summary::before { color: var(--fwo-ink); }
+#fwo-app[data-theme="d"] details.fwo-panel > summary { font-size: 17px; }
+
+/* ------------------------------------------------------------ scene: drafted grid behind the transparent canvas */
+#fwo-app[data-theme="d"] .fwo-scene { padding: 12px; }
+#fwo-app[data-theme="d"] .fwo-scene-host {
+  border: 1.5px solid var(--fwo-ink); border-radius: 0; background-color: #f8fafc;
+  background-image: linear-gradient(to right, var(--fwo-ink-line) 1px, transparent 1px),
+                    linear-gradient(to bottom, var(--fwo-ink-line) 1px, transparent 1px);
+  background-size: 24px 24px; background-position: -1px -1px;
+}
+/* corner marks, as on a drawing sheet (above the canvas and the labels, never catching the pointer) */
+#fwo-app[data-theme="d"] .fwo-scene-host::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background-image:
+    linear-gradient(var(--fwo-ink), var(--fwo-ink)), linear-gradient(var(--fwo-ink), var(--fwo-ink)),
+    linear-gradient(var(--fwo-ink), var(--fwo-ink)), linear-gradient(var(--fwo-ink), var(--fwo-ink)),
+    linear-gradient(var(--fwo-ink), var(--fwo-ink)), linear-gradient(var(--fwo-ink), var(--fwo-ink)),
+    linear-gradient(var(--fwo-ink), var(--fwo-ink)), linear-gradient(var(--fwo-ink), var(--fwo-ink));
+  background-size: 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px;
+  background-position:
+    8px 8px, 8px 8px,
+    calc(100% - 8px) 8px, calc(100% - 8px) 8px,
+    8px calc(100% - 8px), 8px calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) calc(100% - 8px);
+  background-repeat: no-repeat;
+}
+#fwo-app[data-theme="d"] .fwo-scene-label {
+  font: 600 11px/1.5 var(--fwo-font-text); letter-spacing: 0.02em; color: var(--fwo-ink);
+  border-radius: var(--fwo-radius); padding: 1px 6px;
+}
+#fwo-app[data-theme="d"] .fwo-scene-label--self { color: var(--fwo-ink); font-weight: 600; }
+#fwo-app[data-theme="d"] .fwo-scene-label--world { color: var(--fwo-world); }
+#fwo-app[data-theme="d"] .fwo-scene-label--g1, #fwo-app[data-theme="d"] .fwo-scene-label--g0 { color: var(--fwo-muted); font-weight: 500; }
+#fwo-app[data-theme="d"] .fwo-scene-caption { font-size: 12.5px; }
+
+/* futures: white cards, condensed percentages, a hatched bar */
+#fwo-app[data-theme="d"] .fwo-futures { gap: 12px; margin-top: 12px; }
+#fwo-app[data-theme="d"] .fwo-future {
+  border: 1.5px solid var(--fwo-ink); border-radius: var(--fwo-radius); background: var(--fwo-surface-2);
+  padding: 12px 14px; box-shadow: 2px 2px 0 rgba(23, 53, 94, 0.08);
+}
+#fwo-app[data-theme="d"] .fwo-future-h { font: 600 12.5px/1.3 var(--fwo-font-text); color: var(--fwo-self); margin-bottom: 4px; letter-spacing: 0; }
+#fwo-app[data-theme="d"] .fwo-future-p { font: 700 38px/1 var(--fwo-font-display); color: var(--fwo-self); margin-bottom: 4px; }
+#fwo-app[data-theme="d"] .fwo-future-p--empty { color: var(--fwo-muted); }
+#fwo-app[data-theme="d"] .fwo-future .fwo-meter {
+  height: 10px; border: 1.5px solid var(--fwo-ink); border-radius: 0; background: var(--fwo-surface);
+  margin: 8px 0 6px; overflow: hidden;
+}
+#fwo-app[data-theme="d"] .fwo-future .fwo-meter-fill {
+  display: block; background: repeating-linear-gradient(-45deg, var(--fwo-self) 0 4px, var(--fwo-hatch-soft) 4px 6px);
+}
+
+/* ------------------------------------------------------------ readings: ruler gauges */
+#fwo-app[data-theme="d"] .fwo-reading {
+  border: 1.5px solid var(--fwo-ink); border-radius: var(--fwo-radius); background: var(--fwo-surface-2); padding: 14px;
+}
+#fwo-app[data-theme="d"] .fwo-reading--resolved { border-color: var(--fwo-ink); box-shadow: 3px 3px 0 rgba(178, 58, 31, 0.25); }
+#fwo-app[data-theme="d"] .fwo-reading--unresolved { border: 1.5px dashed var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-reading-h { font: 600 12.5px/1.35 var(--fwo-font-text); color: var(--fwo-self); margin-bottom: 6px; letter-spacing: 0; }
+#fwo-app[data-theme="d"] .fwo-reading-num { font: 700 32px/1 var(--fwo-font-display); color: var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-reading-unit { font: 500 12px/1 var(--fwo-font-text); color: var(--fwo-muted); }
+#fwo-app[data-theme="d"] .fwo-reading-line { font-size: 13px; }
+#fwo-app[data-theme="d"] .fwo-tech-line { border-top: 1px solid var(--fwo-border); font-size: 12px; }
+#fwo-app[data-theme="d"] .fwo-honest { font-size: 12.5px; }
+
+/* The gauge is drawn on the meter element itself: a white scale frame, a 45-degree hatched fill
+   up to --fwo-v, eleven ticks, a dimension line with arrowheads (gradients), the tick labels
+   (::before, justified mono text) and the 95% bracket from --fwo-lo to --fwo-hi (::after).
+   The base fill/band children are hidden; the numbers next to the gauge stay the record. */
+#fwo-app[data-theme="d"] .fwo-meter {
+  --gi: 8px;
+  --inner: calc(100% - 16px);
+  position: relative; height: 58px; margin: 8px 0 10px; border: 0; border-radius: 0; overflow: visible;
+  background-color: transparent;
+  background-image:
+    linear-gradient(var(--fwo-ink), var(--fwo-ink)),
+    linear-gradient(var(--fwo-ink), var(--fwo-ink)),
+    linear-gradient(var(--fwo-ink), var(--fwo-ink)),
+    linear-gradient(var(--fwo-ink), var(--fwo-ink)),
+    repeating-linear-gradient(45deg, var(--fwo-self) 0 2.5px, transparent 2.5px 6px),
+    linear-gradient(var(--fwo-surface-2), var(--fwo-surface-2)),
+    repeating-linear-gradient(90deg, var(--fwo-ink) 0 1px, transparent 1px calc((100% - 1px) / 10)),
+    linear-gradient(var(--fwo-muted), var(--fwo-muted)),
+    conic-gradient(from 67deg at 0 50%, var(--fwo-muted) 0 46deg, transparent 0),
+    conic-gradient(from 247deg at 100% 50%, var(--fwo-muted) 0 46deg, transparent 0);
+  background-size:
+    var(--inner) 2px, var(--inner) 2px, 2px 14px, 2px 14px,
+    calc(var(--fwo-v, 0) * var(--inner)) 14px,
+    var(--inner) 14px,
+    var(--inner) 5px,
+    var(--inner) 1px,
+    7px 5px, 7px 5px;
+  background-position:
+    var(--gi) 14px, var(--gi) 26px, var(--gi) 14px, calc(100% - var(--gi)) 14px,
+    var(--gi) 14px,
+    var(--gi) 14px,
+    var(--gi) 28px,
+    var(--gi) 50px,
+    var(--gi) 48px, calc(100% - var(--gi)) 48px;
+  background-repeat: no-repeat;
+}
+#fwo-app[data-theme="d"] .fwo-meter-fill, #fwo-app[data-theme="d"] .fwo-meter-band { display: none; }
+/* tick labels: justified mono text, so each label's centre sits over its tick (half a label in
+   from each end, which is the --gi inset of the scale). Narrow cards (the three-up desktop grid)
+   label every second tick; from 300 px of card width every tick is labelled, as in the mockup. */
+#fwo-app[data-theme="d"] .fwo-reading { container-type: inline-size; }
+#fwo-app[data-theme="d"] .fwo-meter::before {
+  content: "0.0 0.2 0.4 0.6 0.8 1.0";
+  position: absolute; left: 0; right: 0; top: 33px;
+  font: 400 9px/12px var(--fwo-font-text); color: var(--fwo-muted); letter-spacing: 0;
+  text-align: justify; text-align-last: justify; white-space: nowrap;
+}
+@container (min-width: 300px) {
+  #fwo-app[data-theme="d"] .fwo-meter::before { content: "0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0"; }
+}
+#fwo-app[data-theme="d"] .fwo-meter::after {
+  content: "CI"; display: none; position: absolute; top: 0; height: 12px; box-sizing: border-box;
+  left: calc(var(--gi) + var(--fwo-lo, 0) * var(--inner));
+  width: calc((var(--fwo-hi, 0) - var(--fwo-lo, 0)) * var(--inner));
+  border: 1px solid var(--fwo-muted); border-top: 0;
+  font: 400 8.5px/9px var(--fwo-font-text); color: var(--fwo-muted); letter-spacing: 0.04em; white-space: nowrap;
+  justify-content: center; align-items: flex-start;
+}
+#fwo-app[data-theme="d"] .fwo-meter--band::after { display: flex; }
+#fwo-app[data-theme="d"] .fwo-meter--empty { opacity: 0.8; }
+
+/* ------------------------------------------------------------ detail panels, chart, tables */
+#fwo-app[data-theme="d"] .fwo-more > h2 {
+  font: 700 24px/1.15 var(--fwo-font-display); letter-spacing: 0.06em; color: var(--fwo-ink);
+  margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1.5px dashed var(--fwo-ink);
+}
+#fwo-app[data-theme="d"] details.fwo-panel { padding: 8px 16px; margin: 0 0 10px; }
+#fwo-app[data-theme="d"] details.fwo-panel[open] { padding-bottom: 16px; }
+#fwo-app[data-theme="d"] .fwo-factual { font-size: 14px; color: var(--fwo-ink); font-variant-numeric: tabular-nums; }
+#fwo-app[data-theme="d"] .fwo-formula { font-family: var(--fwo-font-text); color: var(--fwo-world); font-size: 12.5px; }
+#fwo-app[data-theme="d"] .fwo-chip {
+  border: 1px solid var(--fwo-ink); border-radius: var(--fwo-radius); padding: 3px 8px;
+  font: 500 12px/1.4 var(--fwo-font-text); background: var(--fwo-surface-2); color: var(--fwo-ink);
+}
+#fwo-app[data-theme="d"] .fwo-chip--strong { font-weight: 600; border-width: 1.5px; }
+#fwo-app[data-theme="d"] .fwo-baseline {
+  border: 1.5px dashed var(--fwo-ink); border-radius: var(--fwo-radius); background: var(--fwo-surface-2); padding: 12px 14px;
+}
+#fwo-app[data-theme="d"] .fwo-baseline .fwo-reading-h { color: var(--fwo-world); }
+#fwo-app[data-theme="d"] pre, #fwo-app[data-theme="d"] .fwo-pre {
+  background: var(--fwo-surface-2); border: 1px solid var(--fwo-ink); border-radius: var(--fwo-radius); color: var(--fwo-ink);
+}
+#fwo-app[data-theme="d"] table { font-size: 12.5px; }
+#fwo-app[data-theme="d"] th, #fwo-app[data-theme="d"] td { border-bottom: 1px solid var(--fwo-border); }
+#fwo-app[data-theme="d"] thead th { background: var(--fwo-surface-2); border-bottom: 1.5px solid var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-table-cap { font-size: 12px; }
+
+#fwo-app[data-theme="d"] .fwo-chart { background: var(--fwo-surface-2); border: 1px solid var(--fwo-border); }
+#fwo-app[data-theme="d"] .fwo-svg text { font-family: var(--fwo-font-text); font-size: 11.5px; fill: var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-svg .fwo-axis-label { fill: var(--fwo-muted); }
+#fwo-app[data-theme="d"] .fwo-c-hatch { stroke: rgba(23, 53, 94, 0.55); stroke-width: 2; }
+#fwo-app[data-theme="d"] .fwo-c-bar--previous { stroke: var(--fwo-ink); stroke-width: 1.5; }
+#fwo-app[data-theme="d"] .fwo-c-bar--current { fill: var(--fwo-self); stroke: var(--fwo-ink); stroke-width: 1; }
+#fwo-app[data-theme="d"] .fwo-c-bar--forecast { fill: none; stroke: var(--fwo-ink); stroke-width: 2; }
+#fwo-app[data-theme="d"] .fwo-c-cat { font-weight: 600; }
+#fwo-app[data-theme="d"] .fwo-c-line--capacity { stroke: var(--fwo-self); }
+#fwo-app[data-theme="d"] .fwo-c-line--band { stroke: var(--fwo-chart-band); }
+#fwo-app[data-theme="d"] .fwo-c-line--connection { stroke: var(--fwo-world); }
+#fwo-app[data-theme="d"] .fwo-c-point { fill: var(--fwo-ink); stroke: var(--fwo-surface-2); }
+#fwo-app[data-theme="d"] .fwo-caption { font-size: 12.5px; color: var(--fwo-ink); }
+#fwo-app[data-theme="d"] .fwo-legend { font-size: 12px; color: var(--fwo-muted); gap: 6px 16px; }
+
+/* ------------------------------------------------------------ footer: the drawing's title strip */
+#fwo-app[data-theme="d"] .fwo-footer {
+  margin-top: 20px; padding: 14px 16px; border: 1.5px solid var(--fwo-ink); border-radius: var(--fwo-radius);
+  background: var(--fwo-surface); box-shadow: 3px 3px 0 var(--fwo-ink-soft);
+  display: flex; flex-wrap: wrap; gap: 6px 24px; align-items: baseline; justify-content: space-between;
+}
+#fwo-app[data-theme="d"] .fwo-attribution { font: 700 17px/1.3 var(--fwo-font-display); letter-spacing: 0.06em; margin: 0; }
+#fwo-app[data-theme="d"] .fwo-footer .fwo-small { max-width: 660px; margin: 0; font-size: 12px; }
+
+/* ------------------------------------------------------------ narrow screens */
+@media (max-width: 760px) {
+  #fwo-app[data-theme="d"] .fwo-title { font-size: 32px; }
+  #fwo-app[data-theme="d"] .fwo-hero { padding: 16px 16px; }
+}
+@media (max-width: 480px) {
+  #fwo-app[data-theme="d"] { padding: 12px; }
+  #fwo-app[data-theme="d"] .fwo-title { font-size: 28px; letter-spacing: 0.03em; }
+  #fwo-app[data-theme="d"] .fwo-hero { padding: 14px; }
+  #fwo-app[data-theme="d"] .fwo-kicker { letter-spacing: 0.14em; }
+  #fwo-app[data-theme="d"] .fwo-steps { gap: 6px 14px; font-size: 11px; }
+  #fwo-app[data-theme="d"] .fwo-panel { padding: 14px; }
+  #fwo-app[data-theme="d"] .fwo-panel > h2 { font-size: 20px; }
+  /* stacked tabs become one joined list */
+  #fwo-app[data-theme="d"] .fwo-tab { border-right: 1.5px solid var(--fwo-ink); border-radius: 0; min-height: 48px; }
+  #fwo-app[data-theme="d"] .fwo-tab:first-child { border-radius: 2px 2px 0 0; }
+  #fwo-app[data-theme="d"] .fwo-dialogue { padding: 10px; }
+  #fwo-app[data-theme="d"] .fwo-scene { padding: 10px; }
+  #fwo-app[data-theme="d"] .fwo-future { padding: 10px 12px; }
+  #fwo-app[data-theme="d"] .fwo-future-p { font-size: 30px; }
+  #fwo-app[data-theme="d"] .fwo-reading-num { font-size: 28px; }
+  #fwo-app[data-theme="d"] .fwo-more > h2 { font-size: 22px; }
+  #fwo-app[data-theme="d"] .fwo-footer { padding: 12px 14px; }
+}
+
+/* ------------------------------------------------------------ the drawn scene (ui/plate.js) */
+#fwo-app[data-theme="d"] .fwo-plate text { font-family: var(--fwo-font-text); }

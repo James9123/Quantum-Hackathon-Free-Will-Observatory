@@ -39,25 +39,17 @@ for (const a of document.querySelectorAll("[data-scenario]")) {
 // main.js never settles (it ends with `await new Promise(() => {})`), so do not await it.
 import("../qollab_project/main.js").catch((err) => console.error("main.js failed: " + err));
 
-// ?theme=a|b|c|d: one of the four design directions as a dev-only stylesheet (never uploaded),
-// loaded BEFORE the page mounts so main.js reads the themed scene colours.
+// ?theme=a|b|c|d: open in that page style (the styles ship in main.css; index.html defaults to
+// a and the page's Style switch changes it); ?theme=none: no style, the unthemed 3D view.
+// Set as the fragment mounts, before main.js reads it.
 // ?clean=1 hides the stub banner and paints the page in the app's background (for screenshots).
 const theme = params.get("theme");
-if (theme && /^[abcd]$/.test(theme)) {
-  await new Promise((resolve) => {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "./themes/theme-" + theme + ".css";
-    link.onload = resolve;
-    link.onerror = resolve;
-    document.head.appendChild(link);
-  });
-}
 const html = await (await fetch("../qollab_project/index.html", { cache: "no-store" })).text();
 setTimeout(() => {
   document.getElementById("qollab-root").innerHTML = html;
   const app = document.getElementById("fwo-app");
   if (theme && /^[abcd]$/.test(theme)) app.dataset.theme = theme;
+  else if (theme === "none") delete app.dataset.theme;
   if (params.get("clean") === "1") {
     const bar = document.querySelector(".stub-bar");
     if (bar) bar.hidden = true;

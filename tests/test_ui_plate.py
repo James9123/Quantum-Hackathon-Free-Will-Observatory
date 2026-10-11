@@ -55,7 +55,7 @@ def test_the_four_styles_exist_and_each_theme_selects_its_own():
     code = _read(PLATE)
     for t in "abcd":
         assert re.search(r"(?m)^  %s\(c\) \{$" % t, code), t
-        css = _read("dev/themes/theme-%s.css" % t)
+        css = _read("qollab_project/main.css")
         assert "--fwo-scene-plate: %s;" % t in css, t
         assert '#fwo-app[data-theme="%s"] .fwo-plate text' % t in css, t
 
@@ -64,7 +64,7 @@ def test_main_picks_the_plate_from_the_theme_variable():
     main = _read("qollab_project/main.js")
     assert 'import { createPlate } from "./ui/plate.js";' in main
     assert 'getPropertyValue("--fwo-scene-plate")' in main and "/^[abcd]$/.test(v)" in main
-    assert "const scene = plateStyle\n    ? createPlate(dom, el.sceneHost, " in main
+    assert "return plateStyle\n      ? createPlate(dom, el.sceneHost, " in main
     assert ": createScene(THREE, dom, el.sceneHost, " in main            # no theme: the 3D view
 
 
@@ -113,7 +113,20 @@ def test_ports_from_the_design_review():
     assert '"\\u00d8 = 104 \\u00b7 \\u221bp"' in code                          # diameter, not radius
     a = code[code.index("  a(c) {"):code.index("  b(c) {")]
     assert a.count("c.tag(") == 2 and "bridgeTagText(v.I, narrow)" in a           # printed labels on A
+    css = _read("qollab_project/main.css")
     for t in "abd":
-        css = _read("dev/themes/theme-%s.css" % t)
         line = [ln for ln in css.splitlines() if ln.startswith('#fwo-app[data-theme="%s"] .fwo-dialogue-text {' % t)][0]
         assert "italic" in line, t
+
+
+def test_four_styles_ship_with_a_as_the_default_and_a_switch():
+    css = _read("qollab_project/main.css")
+    html = _read("qollab_project/index.html")
+    main = _read("qollab_project/main.js")
+    for t in "abcd":
+        assert '#fwo-app[data-theme="%s"] {' % t in css, t
+        assert 'name="fwo-style" value="%s"' % t in html, t
+    assert '<div id="fwo-app" class="fwo-app" lang="en" data-theme="a">' in html
+    assert 'name="fwo-style" value="a" checked' in html
+    assert "function setStyle(key)" in main and "scene = makeScene();" in main
+    assert 'if (current) scene.setResult(current, previous, futureLabels(current, previous));' in main

@@ -46,7 +46,7 @@ This effort is supported by Qollab & IonQ
 | File | Uploaded? | Role |
 |---|---|---|
 | `qollab_project/index.html` | yes | Body fragment (no scripts, no `on*` attributes, no inline styles): header + backend badge, status line, persona tabs, controls, scene host, futures, readings, chart, explanation, baselines, the "How this works" drawer, footer with the attribution line. |
-| `qollab_project/main.css` | yes | The only stylesheet. Scoped under `#fwo-app`; colours are CSS variables (navy, teal = Self, amber = World). |
+| `qollab_project/main.css` | yes | The only stylesheet. Scoped under `#fwo-app`; colours are CSS variables. Carries the four page styles (A night observatory, B instrument console, C luminous anatomy, D blueprint), each scoped by `data-theme` on `#fwo-app`, and one Google Fonts import for their typefaces. Every style's text and control colours are contrast-tested. |
 | `qollab_project/main.js` | yes | Entry: waits for the DOM, wires everything, calls Python, ends with `await new Promise(() => {})`. |
 | `qollab_project/ui/dom.js` | yes | `whenMounted`, `h`/`svg` builders (text only, never `innerHTML`), number formatting, a `setTimeout`-only debounce, accessible tables. |
 | `qollab_project/ui/text.js` | yes | Every sentence the page shows or announces (honesty note, probe texts, capacity sentence, scene label, chart and curve summaries). |
@@ -102,7 +102,7 @@ Colour is never the only signal: labels, hatching, dash patterns and text carry 
 
 ## Drawn scenes for the design themes (`ui/plate.js`)
 
-Each design theme (`dev/themes/theme-a..d.css`, `?theme=a|b|c|d`) sets `--fwo-scene-plate`
+Each page style (A to D, shipped in `main.css`, A by default; the Style switch at the top of the page changes it, and `?theme=a|b|c|d|none` picks one in stub mode) sets `--fwo-scene-plate`
 to its letter, and `main.js` then draws the scene with `ui/plate.js` instead of the three.js
 view. Without the variable the 3D view runs, unchanged.
 

@@ -322,10 +322,15 @@ async function start() {
       console.warn("[observatory] dialogue box unavailable: " + err);
     }
   }
-  const plateStyle = scenePlate(el.app);
-  const scene = plateStyle
-    ? createPlate(dom, el.sceneHost, { style: plateStyle, reducedMotion: reduced, setTimeoutFn: setTimeout })
-    : createScene(THREE, dom, el.sceneHost, Object.assign({ reducedMotion: reduced, setTimeoutFn: setTimeout, colors: sceneColors(el.app) }, sceneFlags(el.app)));
+  // The scene follows the page style: each style draws its own plate (ui/plate.js); with no
+  // style set, the 3D view.
+  function makeScene() {
+    const plateStyle = scenePlate(el.app);
+    return plateStyle
+      ? createPlate(dom, el.sceneHost, { style: plateStyle, reducedMotion: reduced, setTimeoutFn: setTimeout })
+      : createScene(THREE, dom, el.sceneHost, Object.assign({ reducedMotion: reduced, setTimeoutFn: setTimeout, colors: sceneColors(el.app) }, sceneFlags(el.app)));
+  }
+  let scene = makeScene();
   el.motion.checked = !reduced;
   if (reduced) el.motionHelp.textContent = "Your system asks for reduced motion, so animation is off; tick to allow it anyway.";
   el.motion.addEventListener("change", () => { if (scene.available) scene.setMotion(el.motion.checked); });
@@ -352,6 +357,27 @@ async function start() {
       });
     }
   } catch (err) { /* older browsers: the initial preference still applies */ }
+
+  // ---------------------------------------------------------------- page style (A to D)
+  // The four design directions ship in main.css, scoped by data-theme on #fwo-app (A by
+  // default in index.html). The Style switch changes the attribute and redraws the scene in
+  // the new style with the current result; nothing else is recomputed.
+  function setStyle(key) {
+    if (!/^[abcd]$/.test(key) || el.app.dataset.theme === key) return;
+    el.app.dataset.theme = key;
+    if (scene && scene.dispose) scene.dispose();
+    scene = makeScene();
+    if (scene.available) {
+      scene.setMotion(el.motion.checked);
+      scene.setLabel(txt.sceneLabel(dom, current, previous));
+      if (current) scene.setResult(current, previous, futureLabels(current, previous));
+    }
+    if (dialogue) dialogue.refresh();
+  }
+  for (const radio of el.app.querySelectorAll('input[name="fwo-style"]')) {
+    radio.checked = radio.value === (el.app.dataset.theme || "");
+    radio.addEventListener("change", () => { if (radio.checked) setStyle(radio.value); });
+  }
 
   function futureLabels(run, prev) {
     const p1 = run.metrics.p_self_1;

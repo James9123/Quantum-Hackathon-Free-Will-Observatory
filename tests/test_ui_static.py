@@ -233,9 +233,20 @@ def test_css_honours_reduced_motion_and_scopes_everything():
 
 # ------------------------------------------------------------------ contrast
 
-def _css_vars():
+_VAR = r"--(fwo-[\w-]+):\s*(#[0-9a-fA-F]{6})\s*;"
+
+
+def _css_vars(style=None):
+    """The colour tokens in effect: the base #fwo-app block, overlaid by a page style's own
+    token block (#fwo-app[data-theme="x"] {...}) when style is given."""
     css = _read("qollab_project/main.css")
-    return dict(re.findall(r"--(fwo-[\w-]+):\s*(#[0-9a-fA-F]{6})\s*;", css))
+    base = css[css.index("#fwo-app {"):]
+    base = base[:base.index("\n}")]
+    out = dict(re.findall(_VAR, base))
+    if style:
+        block = css[css.index('#fwo-app[data-theme="%s"] {' % style):]
+        out.update(re.findall(_VAR, block[:block.index("\n}")]))
+    return out
 
 
 def _lum(hex_color):
@@ -267,15 +278,17 @@ NON_TEXT_PAIRS = [  # focus ring, control borders, chart strokes: >= 3:1
 ]
 
 
+@pytest.mark.parametrize("style", [None, "a", "b", "c", "d"])      # the base tokens and each page style
 @pytest.mark.parametrize("fg,bg", TEXT_PAIRS)
-def test_text_contrast_at_least_4_5(fg, bg):
-    v = _css_vars()
+def test_text_contrast_at_least_4_5(fg, bg, style):
+    v = _css_vars(style)
     assert contrast(v[fg], v[bg]) >= 4.5, "%s on %s: %.2f" % (fg, bg, contrast(v[fg], v[bg]))
 
 
+@pytest.mark.parametrize("style", [None, "a", "b", "c", "d"])
 @pytest.mark.parametrize("fg,bg", NON_TEXT_PAIRS)
-def test_non_text_contrast_at_least_3(fg, bg):
-    v = _css_vars()
+def test_non_text_contrast_at_least_3(fg, bg, style):
+    v = _css_vars(style)
     assert contrast(v[fg], v[bg]) >= 3.0, "%s on %s: %.2f" % (fg, bg, contrast(v[fg], v[bg]))
 
 
