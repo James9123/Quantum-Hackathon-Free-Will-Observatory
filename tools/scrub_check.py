@@ -423,6 +423,8 @@ def scan_paths(paths, patterns):
             # Each file's whole path below `base` is scanned, which covers directory
             # names too (empty directories are never committed or zipped).
             for name in sorted(filenames):
+                if name in SKIP_DIRS:      # a linked git worktree keeps its ".git" as a pointer file
+                    continue
                 p = d / name
                 _scan_file(p, p.relative_to(base).as_posix(), patterns, report)
     return report

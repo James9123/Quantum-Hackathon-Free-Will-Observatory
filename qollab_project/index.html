@@ -154,7 +154,22 @@
   <section class="fwo-panel" aria-labelledby="fwo-explain-h">
     <h2 id="fwo-explain-h">Explanation</h2>
     <p id="fwo-factual" class="fwo-factual">No run yet. The factual sentence appears here, built only from the submitted settings and the measured statistics.</p>
+    <div id="fwo-dialogue" class="fwo-dialogue" role="group" aria-labelledby="fwo-dialogue-name" tabindex="0" hidden>
+      <svg id="fwo-dialogue-portrait" class="fwo-dialogue-portrait" viewBox="0 0 48 48" aria-hidden="true" focusable="false"></svg>
+      <div class="fwo-dialogue-body">
+        <div class="fwo-dialogue-head">
+          <span id="fwo-dialogue-name" class="fwo-dialogue-name"></span>
+          <button id="fwo-dialogue-skip" type="button" class="fwo-dialogue-skip">Show the whole line</button>
+        </div>
+        <p id="fwo-dialogue-text" class="fwo-dialogue-text" aria-hidden="true"></p>
+      </div>
+    </div>
     <p id="fwo-poetic" class="fwo-poetic" aria-live="polite" aria-atomic="true"></p>
+    <div class="fwo-field fwo-check fwo-sound">
+      <input id="fwo-sound" type="checkbox" checked aria-describedby="fwo-sound-help">
+      <label for="fwo-sound">Dialogue sound (soft blips while the line types out)</label>
+      <p id="fwo-sound-help" class="fwo-help">Plays only after you press Run or switch persona. The numbers never make a sound.</p>
+    </div>
     <p id="fwo-persona-note" class="fwo-small">Persona lines are artistic interpretation of a designed model; the factual sentence and the counts are the record. Switching persona changes the interpretation only, never the data.</p>
   </section>
 

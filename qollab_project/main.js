@@ -22,6 +22,7 @@ import * as txt from "./ui/text.js";
 import { renderBadge } from "./ui/badge.js";
 import { createTabs } from "./ui/tabs.js";
 import { createScene } from "./ui/scene.js";
+import { createDialogue } from "./ui/dialogue.js";
 import { renderBars, renderBarLegend, renderLines, renderLineLegend } from "./ui/chart.js";
 import { renderFutures, renderReadings, renderRunError, renderDemonForecast, renderDemonCompare, renderBaselines, renderDrawer, renderCoverage, personaName } from "./ui/readings.js";
 
@@ -99,6 +100,8 @@ async function start() {
     future0: byId("fwo-future-0"), future1: byId("fwo-future-1"), readings: byId("fwo-readings"),
     chart: byId("fwo-chart"), chartSummary: byId("fwo-chart-summary"), chartLegend: byId("fwo-chart-legend"), chartTable: byId("fwo-chart-table"),
     factual: byId("fwo-factual"), poetic: byId("fwo-poetic"), personaNote: byId("fwo-persona-note"), baselines: byId("fwo-baselines"),
+    dialogue: byId("fwo-dialogue"), dialoguePortrait: byId("fwo-dialogue-portrait"), dialogueName: byId("fwo-dialogue-name"),
+    dialogueText: byId("fwo-dialogue-text"), dialogueSkip: byId("fwo-dialogue-skip"), sound: byId("fwo-sound"), soundHelp: byId("fwo-sound-help"),
     howBody: byId("fwo-how-body"), curve: byId("fwo-curve"), curveSummary: byId("fwo-curve-summary"), curveLegend: byId("fwo-curve-legend"),
     curveTable: byId("fwo-curve-table"), coverage: byId("fwo-coverage"), curveProv: byId("fwo-curve-prov"),
     selfText: byId("fwo-persona-self"), observerText: byId("fwo-observer-text"),
@@ -117,20 +120,22 @@ async function start() {
   let forecastSeq = 0;
   let curves = null;
   let persona = "self";
+  let dialogue = null;       // the RPG-style box; created once the reduced-motion preference is known
 
   // ---------------------------------------------------------------- persona tabs
   const tabs = createTabs(dom, PERSONAS.map((key) => ({ key, tab: byId("fwo-tab-" + key), panel: byId("fwo-panel-" + key) })),
-    (key) => { persona = key; schedulePoetic(); });
+    (key) => { if (dialogue) dialogue.unlock(); persona = key; schedulePoetic(); });
 
   // The persona line is a polite live region: written once per completed run, and
   // (debounced) when the persona changes, so arrowing through the tabs announces
   // one line, not three. The data never changes with the persona.
   function writePoetic() {
-    if (!current || !current.explanation || !current.explanation.poetic) {
-      el.poetic.textContent = "";
+    const have = current && current.explanation && current.explanation.poetic;
+    const line = have ? current.explanation.poetic[persona] : "";
+    if (dialogue) {
+      dialogue.show(persona, personaName(persona), line || "");   // writes the live region once
       return;
     }
-    const line = current.explanation.poetic[persona];
     el.poetic.textContent = line ? personaName(persona) + ": " + line : "";
   }
   const schedulePoetic = dom.debounce(writePoetic, 600, setTimeout);
@@ -204,6 +209,17 @@ async function start() {
 
   // ---------------------------------------------------------------- the scene
   const reduced = prefersReducedMotion();
+  if (el.dialogue && el.dialoguePortrait && el.dialogueName && el.dialogueText) {
+    try {
+      dialogue = createDialogue(dom, {
+        box: el.dialogue, portrait: el.dialoguePortrait, name: el.dialogueName, text: el.dialogueText,
+        skip: el.dialogueSkip, live: el.poetic, sound: el.sound, soundHelp: el.soundHelp,
+      }, { reducedMotion: reduced, setTimeoutFn: setTimeout, seed: 20261011 });
+    } catch (err) {
+      dialogue = null;   // the plain live-region line still works
+      console.warn("[observatory] dialogue box unavailable: " + err);
+    }
+  }
   const scene = createScene(THREE, dom, el.sceneHost, { reducedMotion: reduced, setTimeoutFn: setTimeout });
   el.motion.checked = !reduced;
   if (reduced) el.motionHelp.textContent = "Your system asks for reduced motion, so animation is off; tick to allow the particle flow anyway.";
@@ -392,6 +408,7 @@ async function start() {
   }
 
   el.run.addEventListener("click", async () => {
+    if (dialogue) dialogue.unlock();   // the gesture that allows audio later
     if (running || el.run.disabled || (oneJob && jobsUsed >= 1)) return;
     const shots = readShots();
     if (shots === null) {
