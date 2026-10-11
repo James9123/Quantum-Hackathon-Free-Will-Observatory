@@ -85,12 +85,14 @@ def strip_scaled(path, src_px, cell):
 
 
 BUCKET_PX = 62          # 0.65 x 96
+ANGRY_FPS = 10.0        # the angry Self plays at twice the GIF's 5 fps (team request)
 
 
 def main():
     if len(sys.argv) != 3:
         raise SystemExit(__doc__)
     data = {"angry": strip(sys.argv[1], 256, 1, pin_feet=True), "bucket": strip_scaled(sys.argv[2], 384, BUCKET_PX)}
+    data["angry"]["fps"] = ANGRY_FPS
     text = "\n".join([
         "// The side panel's easter egg: a bucket of water tips onto the Self, who frowns. GENERATED",
         "// by tools/build_eggs.py from the team's GIFs; do not edit by hand. Each is one strip of 8",

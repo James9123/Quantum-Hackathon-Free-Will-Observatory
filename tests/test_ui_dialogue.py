@@ -198,7 +198,7 @@ def test_opening_cutscene_controls():
 def test_easter_egg_stage_in_the_style_panel():
     eggs = _read("qollab_project/ui/eggs.js")
     data = json.loads(eggs[eggs.index("export const EGGS = ") + len("export const EGGS = "):eggs.rindex(";")])
-    assert data["angry"]["frames"] == 8 and data["angry"]["cell"] == 128
+    assert data["angry"]["frames"] == 8 and data["angry"]["cell"] == 128 and data["angry"]["fps"] == 10
     assert data["bucket"]["frames"] == 8 and data["bucket"]["cell"] == 62     # 0.65 x 96
     assert all(v["src"].startswith("data:image/png;base64,") for v in data.values())
     assert all(ord(ch) < 128 for ch in eggs) and ("/" + "Users" + "/") not in eggs and "Downloads" not in eggs   # no paths
