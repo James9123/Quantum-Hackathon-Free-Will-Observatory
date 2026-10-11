@@ -1,4 +1,5 @@
 """The persona dialogue box (qollab_project/ui/dialogue.js): static contract checks."""
+import json
 import os
 import re
 import shutil
@@ -192,3 +193,18 @@ def test_opening_cutscene_controls():
     assert 'document.removeEventListener("keydown", onDocKey)' in play
     assert "fwo-slide-in" in CSS and "fwo-dialogue--enter" in DIALOGUE
     assert "dialogue.refresh()" in MAIN
+
+
+def test_easter_egg_bucket_splashes_the_self():
+    eggs = _read("qollab_project/ui/eggs.js")
+    data = json.loads(eggs[eggs.index("export const EGGS = ") + len("export const EGGS = "):eggs.rindex(";")])
+    assert len(data["self"]) == 2
+    for sheet in data["self"]:
+        assert sheet["frames"] == 8 and set(sheet["src"]) == {"128", "64"}
+        assert all(v.startswith("data:image/png;base64,") for v in sheet["src"].values())
+    assert all(ord(ch) < 128 for ch in eggs) and ("/" + "Users" + "/") not in eggs and "Downloads" not in eggs   # no paths
+    assert re.search(r'<button type="button" id="fwo-egg" class="fwo-egg"[^>]*aria-label="Splash the Self with a bucket of water">', HTML)
+    assert HTML.index('id="fwo-egg"') < HTML.index("</aside>")                       # inside the style panel
+    assert 'dialogue.playOnce("self", EGGS.self[eggPick() < 0.5 ? 0 : 1]' in MAIN    # 50/50, seeded, no Math.random
+    once = DIALOGUE[DIALOGUE.index("function playOnce("):DIALOGUE.index("function setAction(")]
+    assert "opt.freezeMs" in once and "if (reduced) {" in once and "playAction(persona, actionFor(persona), true)" in once

@@ -203,6 +203,14 @@
 #fwo-app .fwo-style-panel .fwo-style-opt:hover { color: var(--fwo-text); border-color: var(--fwo-muted); }
 #fwo-app .fwo-style-panel .fwo-style-opt[aria-pressed="true"] { color: var(--fwo-text); border-color: var(--fwo-self); background: var(--fwo-surface-2); font-weight: 600; }
 #fwo-app .fwo-style-panel .fwo-style-opt:focus-visible, #fwo-app .fwo-style-panel .fwo-style-close:focus-visible { outline: 3px solid var(--fwo-focus); outline-offset: 2px; }
+/* the easter egg: a small, faint bucket at the foot of the panel */
+#fwo-app .fwo-style-panel .fwo-egg {
+  margin-top: auto; align-self: flex-start; width: 40px; height: 40px; min-height: 0; padding: 0; cursor: pointer;
+  font-size: 1.25rem; line-height: 1; background: transparent; border: 1px dashed var(--fwo-border); border-radius: 8px;
+  opacity: 0.6; box-shadow: none;
+}
+#fwo-app .fwo-style-panel .fwo-egg:hover, #fwo-app .fwo-style-panel .fwo-egg:focus-visible { opacity: 1; }
+#fwo-app .fwo-style-panel .fwo-egg:focus-visible { outline: 3px solid var(--fwo-focus); outline-offset: 2px; }
 
 /* ------------------------------------------------------------ dials + run */
 #fwo-app .fwo-field { margin: 12px 0; }
