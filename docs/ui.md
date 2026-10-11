@@ -102,7 +102,7 @@ Colour is never the only signal: labels, hatching, dash patterns and text carry 
 
 ## Drawn scenes for the design themes (`ui/plate.js`)
 
-Each page style (A to D, shipped in `main.css`, D by default; the small Style button at the end of the kicker line opens a side panel with the four styles, and `?theme=a|b|c|d|none` picks one in stub mode) sets `--fwo-scene-plate`
+Each page style (A to D, shipped in `main.css`, A by default; the small Style button at the end of the kicker line opens a side panel with the four styles, and `?theme=a|b|c|d|none` picks one in stub mode) sets `--fwo-scene-plate`
 to its letter, and `main.js` then draws the scene with `ui/plate.js` instead of the three.js
 view. Without the variable the 3D view runs, unchanged.
 

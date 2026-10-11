@@ -45,9 +45,9 @@ picture's sizes and weights change only when a fresh job returns; the slow drift
 flow and the bridge's shimmer are decoration, off under reduced motion or with the Motion box
 unticked.
 
-**Four page styles.** The page opens in style D (blueprint, light); the Style button at the end
-of the hackathon line opens a side panel to switch to A (night observatory), B (instrument
-console) or C (luminous anatomy). Each style draws the same data in its own way.
+**Four page styles.** The page opens in style A (night observatory); the Style button at the end
+of the hackathon line opens a side panel to switch to B (instrument console), C (luminous
+anatomy) or D (blueprint, light). Each style draws the same data in its own way.
 
 **Three personas, one data set.** Switching persona changes the explanation, never the data.
 Each guide speaks in an RPG-style dialogue box, and only about what it can see; a short

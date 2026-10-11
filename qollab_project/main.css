@@ -4,7 +4,7 @@
    contrast on their backgrounds (tests/test_ui_static.py computes the ratios).
    The page reads as three steps, then plain-word results, then detail panels.
    It also carries the four design directions as page styles, A to D, each scoped by
-   data-theme on #fwo-app: D is the default (index.html), and the Style button at the end of
+   data-theme on #fwo-app: A is the default (index.html), and the Style button at the end of
    the kicker line opens a side panel that changes it. The one external resource is the Google Fonts stylesheet for the
    four styles' typefaces (team decision, 2026-10-11); without it each style falls back to
    system fonts. */

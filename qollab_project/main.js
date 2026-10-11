@@ -362,7 +362,7 @@ async function start() {
   } catch (err) { /* older browsers: the initial preference still applies */ }
 
   // ---------------------------------------------------------------- page style (A to D)
-  // The four design directions ship in main.css, scoped by data-theme on #fwo-app (D by
+  // The four design directions ship in main.css, scoped by data-theme on #fwo-app (A by
   // default in index.html). The Style panel changes the attribute and redraws the scene in
   // the new style with the current result; nothing else is recomputed.
   function setStyle(key) {
