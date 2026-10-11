@@ -91,7 +91,7 @@ ES modules in stub mode.
 |---|---|
 | Future 1 / Future 0 spheres | radius = `RMAX · cbrt(p)`, p = P(Self = 1) and 1 − p from the display probe (volume follows probability) |
 | Branch tubes | thickness 2 + 10 p **pixels**, converted to world units at the branch depth (`unitsPerPx`), so it is really that many pixels |
-| World bridge | thickness 4 + 6 I px (at most 10 px) and opacity 0.15 + 0.85 I, I = connection bits from the separate connection probe |
+| World bridge | thickness 4 + 4.5 I px (at most 8.5 px) and opacity 0.15 + 0.85 I, I = connection bits from the separate connection probe |
 | Ghost | the previous completed distribution as wireframe spheres and faint tubes labelled "previous"; the live geometry animates from it over about 1 s (eased); replaced when the next result arrives |
 | Particles | 520 points, a fixed number, routed to the two branches in proportions p0 / p1; they drift along the branches when motion is on; never shot chronology |
 | Brain graph | two ellipsoid lobes, 100 nodes, 3 nearest-neighbour links each, generated once from a seeded PRNG (`mulberry32`, seed 20261010); it never changes with the data |
@@ -114,7 +114,7 @@ view. Without the variable the 3D view runs, unchanged.
 | d, blueprint | graph paper, ink lines, brick-red discs with a hatched quadrant and centre lines, dimension line `Ø = 52 · ∛p`, annotated widths |
 
 The plate keeps the 3D view's mappings: radius `52 · cbrt(p)` scene units, branch width
-2 + 10 p screen pixels (non-scaling strokes), bridge 4 + 6 I px (at most 10) at opacity 0.15 + 0.85 I, rising from the World into the Self, where the Self's body (the lobes filled with the scene's background) is layered over it, as if it enters the mind,
+2 + 10 p screen pixels (non-scaling strokes), bridge 4 + 4.5 I px (at most 8.5) at opacity 0.15 + 0.85 I, rising from the World into the Self, where the Self's body (the lobes filled with the scene's background) is layered over it, as if it enters the mind,
 dashed outlines for the previous run, and a fixed 40 particles split p1 / p0 that flow evenly
 when motion is on. Annotations always show the run's own numbers, never the in-between frames
 of the one-second transition. The Self is the 3D view's own brain (the same seed: two lobes with a fissure, 100 nodes, three nearest-neighbour links each), turned by the 3D view's tilt and projected flat, inside two overlapping translucent lobe shells, the two graphs a narrow fissure apart. The nodes use each design direction's own style as a glowing point cloud (a point with a soft glow at every node, thin links), and with motion on the constellation drifts: the 3D view's slow sway, re-projected with real depth, nearer nodes a little larger and brighter. The brain layout and the stars are fixed constants, so a change

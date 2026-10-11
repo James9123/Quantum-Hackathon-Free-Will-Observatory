@@ -8,7 +8,7 @@
 // The same visual mappings as the 3D view (build guide p.10), from the completed display run:
 //   future radius        = 52 * cbrt(p) scene units            (volume follows probability)
 //   branch thickness     = 2 + 10 p screen pixels              (non-scaling strokes)
-//   World bridge         = 4 + 6 I px (at most 10), opacity 0.15 + 0.85 I   (I in bits,
+//   World bridge         = 4 + 4.5 I px (at most 8.5), opacity 0.15 + 0.85 I   (I in bits,
 //                          connection probe); it rises from the World into the Self, under
 //                          the Self's body, as if entering the mind
 //   shimmer              = 1 to 4 pulses climbing the bridge from the World into the Self,
@@ -206,7 +206,7 @@ function projectBrain(ry, ox, oy, oz) {
 // width it sets.
 function bridgeTagText(I, narrow) {
   return "I = " + I.toFixed(3) + " bits" + (narrow ? "" : " \u2192 " +
-    (I < 0.0005 ? "bridge at floor" : "bridge " + (4 + 6 * I).toFixed(1) + " px"));
+    (I < 0.0005 ? "bridge at floor" : "bridge " + (4 + 4.5 * I).toFixed(1) + " px"));
 }
 
 function tTag(p, long) {
@@ -353,7 +353,7 @@ const STYLES = {
     c.add("path", { d: bd.heads, fill: "#44597a" }, bdim);
     const bridgeTag = c.text("fwo-s-tag", 210, 334, 9.5, 9, { fill: "#44597a" });
     c.tag((v, narrow) => {
-      bridgeTag.textContent = "bridge " + (4 + 6 * v.I).toFixed(1) + " px" + (narrow ? "" : " \u00b7 op. " +
+      bridgeTag.textContent = "bridge " + (4 + 4.5 * v.I).toFixed(1) + " px" + (narrow ? "" : " \u00b7 op. " +
         (0.15 + 0.85 * v.I).toFixed(2) + " (I = " + v.I.toFixed(3) + ")");
     }, [bridgeTag, bdim]);
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R, fill: "#0e6e8c", stroke: "#17355e", "stroke-width": 1.6 });
@@ -625,7 +625,7 @@ export function createPlate(lib, host, opts) {
       }
     }
     const I = state.placeholder ? 0 : state.I;
-    const bw = 4 + 6 * I;
+    const bw = 4 + 4.5 * I;
     set(dyn.bridge, { "stroke-width": bw.toFixed(2), opacity: (0.15 + 0.85 * I).toFixed(3) });
     shimmer(I, bw);
     placeParticles(r);
