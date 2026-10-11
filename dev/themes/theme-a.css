@@ -141,7 +141,7 @@
 #fwo-app[data-theme="a"] .fwo-dialogue--self .fwo-dialogue-name { color: var(--fwo-self-strong); }
 #fwo-app[data-theme="a"] .fwo-dialogue--demon .fwo-dialogue-name { color: var(--fwo-world); }
 #fwo-app[data-theme="a"] .fwo-dialogue--observer .fwo-dialogue-name { color: #c8d2ec; }
-#fwo-app[data-theme="a"] .fwo-dialogue-text { font-size: 1.0625rem; line-height: 1.55; }
+#fwo-app[data-theme="a"] .fwo-dialogue-text { font: italic 500 1.25rem/1.45 var(--fwo-font-display); }   /* the persona line, as designed */
 #fwo-app[data-theme="a"] .fwo-dialogue-skip { border: 1px solid #33447a; border-radius: 999px; color: var(--fwo-muted); padding: 4px 14px; }
 #fwo-app[data-theme="a"] .fwo-dialogue-skip:hover, #fwo-app[data-theme="a"] .fwo-dialogue-skip:focus-visible { color: var(--fwo-text); border-color: var(--fwo-self); }
 #fwo-app[data-theme="a"] .fwo-portrait-who { color: var(--fwo-text); }
@@ -614,7 +614,7 @@
   #fwo-app[data-theme="a"] .fwo-tab-role { font-size: 11px; }
   #fwo-app[data-theme="a"] .fwo-dialogue { padding: 10px; }
   #fwo-app[data-theme="a"] .fwo-dialogue-name { font-size: 1.15rem; }
-  #fwo-app[data-theme="a"] .fwo-dialogue-text { font-size: 1rem; }
+  #fwo-app[data-theme="a"] .fwo-dialogue-text { font-size: 1.125rem; }
   #fwo-app[data-theme="a"] .fwo-future-p { font-size: 34px; }
 }
 
@@ -626,3 +626,4 @@
 
 /* ------------------------------------------------------------ the drawn scene (ui/plate.js) */
 #fwo-app[data-theme="a"] .fwo-plate text { font-family: var(--fwo-font-text); }
+#fwo-app[data-theme="a"] .fwo-plate .fwo-s-tag { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.02em; }

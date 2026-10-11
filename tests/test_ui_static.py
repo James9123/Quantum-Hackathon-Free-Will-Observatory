@@ -220,7 +220,11 @@ def test_scene_exposes_text_alternatives_and_mappings():
 def test_css_honours_reduced_motion_and_scopes_everything():
     css = _read("qollab_project/main.css")
     assert "@media (prefers-reduced-motion: reduce)" in css
-    assert "@import" not in css and "url(" not in css
+    # one Google Fonts stylesheet may be imported (team decision, 2026-10-11); nothing else external
+    fonts = re.compile(r'(?m)^@import (?:url\()?"https://fonts\.googleapis\.com/css2\?[^"\s]+"\)?;$')
+    assert len(fonts.findall(css)) <= 1
+    rest = fonts.sub("", css)
+    assert "@import" not in rest and "url(" not in rest
     for line in css.splitlines():
         s = line.strip()
         if s.endswith("{") and not s.startswith(("@", "#fwo-app", "}")) and s != "{":

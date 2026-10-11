@@ -36,34 +36,49 @@ const BRANCH = [[[271, 212], [384, 216], [430, 300]], [[275, 152], [384, 150], [
 const BRIDGE = "M 156,300 C 172,272 185,250 185,226 L 185,206";
 const SHIMMER_S = 2.2;                             // seconds for one pulse to climb the bridge
 const SELF_X = 184;                                // centre of the Self (label, glow)
+const SELF_Y = 176;
+const BRAIN_TILT = [0.12, -0.42, 0.04];             // the 3D view's brain rotation (rad, XYZ order)
+const BRAIN_K = 92;                                 // scene units per 3D unit
+const BRAIN_PULL = 17;                              // each lobe drawn this much nearer the middle
+const DRIFT = 0.07;                                 // the sway about the vertical axis (rad), as in 3D
+const DRIFT_MS = 2600;                              // sin(t / DRIFT_MS): one sway takes about 16 s
 const N_PART = 40;
 const FLOW = 0.05;                                 // particle speed: branch lengths per second
 const NARROW = 480;                                // px: shorter labels below this width
 const BG = { x: -330, y: -210, width: 1320, height: 840 };   // covers any letterbox margin
 
 // The Self: the 3D view's own brain (ui/scene.js brainGraph, seed 20261010: two ellipsoid lobes
-// with a fissure, 100 nodes, three nearest-neighbour links each), turned by the 3D view's tilt
-// (0.12, -0.42, 0.04 rad) and projected flat. NODES holds x, y and a ball radius per node,
-// far to near (nearer nodes are larger and drawn on top); LOBES holds each lobe shell's
-// projected ellipse (cx, cy, rx, ry, rotation in degrees). Then 110 stars (x, y, r, opacity).
-const NODES = [
-  137.6, 161.7, 3.4, 154.1, 198.5, 3.44, 171.1, 175.5, 3.45, 157.7, 169.2, 3.48, 154.5, 171.5, 3.48, 156.6, 170.9, 3.51,
-  155.4, 169.2, 3.51, 149, 218.7, 3.53, 114.7, 193.8, 3.54, 151.7, 132.5, 3.54, 163, 176.7, 3.55, 167.4, 156.1, 3.55,
-  133.4, 194.9, 3.55, 120, 140.5, 3.57, 127.8, 202.9, 3.57, 118.4, 201.8, 3.58, 152.3, 225.4, 3.65, 120.2, 189.8, 3.67,
-  139.1, 143.6, 3.67, 125.3, 158.4, 3.67, 128.2, 193.4, 3.68, 125.6, 135.4, 3.73, 126.2, 219.5, 3.75, 140.5, 228.8, 3.8,
-  123.7, 238.9, 3.81, 101.7, 217.5, 3.83, 153.4, 240.4, 3.85, 96.8, 207.8, 3.88, 152.1, 119.7, 3.88, 112.2, 158.6, 3.89,
-  120.7, 228.3, 3.9, 246.7, 169, 3.93, 86.8, 186, 3.95, 109.3, 180.2, 3.97, 140, 118.3, 3.98, 253.2, 181.7, 3.99,
-  91.3, 181.3, 4.03, 104.1, 184.8, 4.04, 254.8, 178.4, 4.07, 258.8, 198.5, 4.07, 245.5, 207.4, 4.08, 93.2, 145.9, 4.08,
-  249.9, 196.1, 4.09, 245.4, 131, 4.09, 110.5, 138.6, 4.1, 108.8, 142, 4.1, 123.9, 125.1, 4.16, 105.6, 178, 4.2,
-  272, 152, 4.24, 241.2, 234.4, 4.24, 133.7, 115.8, 4.25, 118.1, 198.7, 4.27, 115.2, 132.2, 4.3, 260.5, 209.8, 4.32,
-  100.2, 180.1, 4.32, 232.5, 235.2, 4.33, 118.6, 132.4, 4.34, 111, 163.6, 4.36, 229.8, 231.4, 4.37, 123.3, 208.2, 4.39,
-  128.2, 172.2, 4.4, 130.7, 189.5, 4.41, 250.1, 227.5, 4.42, 236.5, 113.5, 4.44, 251.1, 232, 4.45, 277.8, 166.3, 4.46,
-  275.2, 169.5, 4.5, 231.4, 118.2, 4.51, 221.3, 111.7, 4.53, 254.9, 176.7, 4.54, 253.6, 224.4, 4.55, 271.9, 211.7, 4.57,
-  253.8, 162, 4.57, 260.1, 125.6, 4.58, 253.9, 155.6, 4.59, 267.3, 201.2, 4.6, 207.6, 222.8, 4.68, 239.5, 234.7, 4.69,
-  235, 122, 4.69, 253.5, 147.2, 4.69, 244.2, 197.4, 4.74, 235, 124.2, 4.79, 224.3, 231.2, 4.8, 236.2, 221.8, 4.8,
-  205.4, 126.8, 4.83, 251.9, 151.2, 4.83, 220.4, 225.8, 4.84, 264.3, 205, 4.84, 215.8, 143.9, 4.85, 216, 199.7, 4.85,
-  277.3, 156.3, 4.86, 198.8, 202.3, 4.87, 203.9, 171.6, 4.91, 211, 131.4, 4.92, 243.3, 148.6, 4.96, 229.8, 177.2, 4.97,
-  224.4, 177.5, 4.97, 251.3, 169.7, 4.99, 267.4, 164.5, 4.99, 244.4, 143.2, 5,
+// with a fissure, 100 nodes, three nearest-neighbour links each). BRAIN3D holds each node's
+// brain-local x, y, z and its lobe (-1 left, 1 right), in draw order (far to near at rest);
+// projectBrain() turns it by the 3D view's tilt and projects it flat every frame, so the
+// constellation can drift with real depth. LOBES holds each lobe shell's projected ellipse
+// (cx, cy, rx, ry, rotation in degrees). Then 110 stars (x, y, r, opacity).
+const BRAIN3D = [
+  -0.9963, 0.0872, -0.5468, -1, -0.8114, -0.3123, -0.537, -1, -0.6389, -0.0689, -0.6252, -1, -0.7616, 0.007, -0.5517, -1,
+  -0.7922, -0.0163, -0.5305, -1, -0.7583, -0.0073, -0.5117, -1, -0.7688, 0.0115, -0.5051, -1, -0.8175, -0.5182, -0.3967, -1,
+  -1.158, -0.2354, -0.2707, -1, -0.7966, 0.4132, -0.5049, -1, -0.6778, -0.0684, -0.4981, -1, -0.6346, 0.1521, -0.5391, -1,
+  -0.9671, -0.2525, -0.3386, -1, -1.0952, 0.3429, -0.3225, -1, -1.0117, -0.3342, -0.2821, -1, -1.1024, -0.3178, -0.236, -1,
+  -0.7316, -0.5785, -0.2864, -1, -1.0474, -0.1796, -0.1739, -1, -0.8641, 0.3121, -0.3124, -1, -0.9979, 0.158, -0.2281, -1,
+  -0.9611, -0.2195, -0.1902, -1, -0.972, 0.4134, -0.202, -1, -0.9454, -0.4934, -0.078, -1, -0.782, -0.5938, -0.0827, -1,
+  -0.9436, -0.6951, 0.011, -1, -1.1536, -0.4529, 0.1057, -1, -0.6302, -0.7186, -0.0762, -1, -1.1848, -0.3411, 0.1585, -1,
+  -0.6408, 0.5902, -0.1826, -1, -1.0317, 0.1857, 0.0414, -1, -0.9329, -0.5684, 0.1045, -1, 0.6598, 0.0109, -0.6487, 1,
+  -1.2531, -0.0935, 0.2499, -1, -1.0198, -0.0372, 0.1657, -1, -0.7199, 0.6197, -0.0406, -1, 0.7507, -0.1221, -0.6065, 1,
+  -1.1721, -0.0352, 0.3048, -1, -1.0424, -0.0779, 0.2578, -1, 0.8024, -0.0784, -0.5392, 1, 0.8458, -0.2967, -0.5288, 1,
+  0.7174, -0.386, -0.4516, 1, -1.1339, 0.3519, 0.3048, -1, 0.7673, -0.2649, -0.4692, 1, 0.7164, 0.441, -0.5264, 1,
+  -0.9565, 0.4263, 0.2334, -1, -0.9721, 0.3904, 0.2488, -1, -0.7978, 0.5739, 0.2198, -1, -0.9535, 0.0142, 0.4095, -1,
+  1.0469, 0.2196, -0.4767, 1, 0.7498, -0.6578, -0.2405, 1, -0.6628, 0.6802, 0.2507, -1, -0.7994, -0.2074, 0.4398, -1,
+  -0.8218, 0.5159, 0.4013, -1, 0.9738, -0.3911, -0.2781, 1, -0.9554, 0.0065, 0.5493, -1, 0.7034, -0.6539, -0.1132, 1,
+  -0.7664, 0.5175, 0.4349, -1, -0.8319, 0.1856, 0.5208, -1, 0.6958, -0.6066, -0.0628, 1, -0.6901, -0.2978, 0.5542, -1,
+  -0.6432, 0.0905, 0.4941, -1, -0.6121, -0.0964, 0.5119, -1, 0.917, -0.5671, -0.1137, 1, 0.7793, 0.6719, -0.168, 1,
+  0.9428, -0.6119, -0.0768, 1, 1.2031, 0.0875, -0.2682, 1, 1.1969, 0.0588, -0.2122, 1, 0.7634, 0.6313, -0.0656, 1,
+  0.6695, 0.7077, -0.0139, 1, 1.0146, -0.0068, -0.0733, 1, 1.0106, -0.5203, -0.0012, 1, 1.1987, -0.3886, -0.0797, 1,
+  1.0165, 0.1565, -0.0537, 1, 1.078, 0.5483, -0.1195, 1, 1.026, 0.2275, -0.04, 1, 1.1676, -0.2691, -0.0361, 1,
+  0.6122, -0.47, 0.33, 1, 0.9323, -0.6109, 0.2075, 1, 0.877, 0.6084, 0.0945, 1, 1.0647, 0.33, 0.0478, 1,
+  0.9993, -0.2036, 0.1958, 1, 0.9214, 0.597, 0.1965, 1, 0.833, -0.5532, 0.3848, 1, 0.9499, -0.4563, 0.3228, 1,
+  0.6488, 0.5851, 0.3751, 1, 1.1132, 0.3032, 0.1991, 1, 0.8098, -0.4891, 0.4335, 1, 1.2438, -0.2819, 0.2155, 1,
+  0.7594, 0.3979, 0.3631, 1, 0.7709, -0.2036, 0.4362, 1, 1.377, 0.2409, 0.1183, 1, 0.6054, -0.2239, 0.5259, 1,
+  0.674, 0.1112, 0.515, 1, 0.7433, 0.5428, 0.4405, 1, 1.0849, 0.3498, 0.3618, 1, 0.958, 0.0468, 0.4651, 1,
+  0.9051, 0.0461, 0.4914, 1, 1.1766, 0.1212, 0.3737, 1, 1.3389, 0.1712, 0.3039, 1, 1.1111, 0.411, 0.3874, 1,
 ];
 const LINKS = [
   30, 24, 30, 22, 30, 23, 1, 7, 1, 12, 1, 10, 8, 15, 8, 17, 8, 14, 10, 5, 10, 6, 10, 3,
@@ -169,6 +184,31 @@ const TEXT = {
   previous: "previous",
 };
 
+const N_BRAIN = BRAIN3D.length / 4;
+
+// Project the brain at yaw ry (the 3D view's tilt, plus the drift) into scene units: ox, oy get
+// each node's position and oz its depth (larger is nearer).
+function projectBrain(ry, ox, oy, oz) {
+  const ax = BRAIN_TILT[0], az = BRAIN_TILT[2];
+  const ca = Math.cos(ax), sa = Math.sin(ax), cb = Math.cos(ry), sb = Math.sin(ry), cc = Math.cos(az), sc = Math.sin(az);
+  const r00 = cb * cc, r01 = -cb * sc, r02 = sb;                     // R = Rx(ax) Ry(ry) Rz(az)
+  const r10 = ca * sc + sa * sb * cc, r11 = ca * cc - sa * sb * sc, r12 = -sa * cb;
+  const r20 = sa * sc - ca * sb * cc, r21 = sa * cc + ca * sb * sc, r22 = ca * cb;
+  for (let i = 0; i < N_BRAIN; i++) {
+    const x = BRAIN3D[4 * i], y = BRAIN3D[4 * i + 1], z = BRAIN3D[4 * i + 2], side = BRAIN3D[4 * i + 3];
+    ox[i] = SELF_X + BRAIN_K * (r00 * x + r01 * y + r02 * z) - side * BRAIN_PULL;
+    oy[i] = SELF_Y - BRAIN_K * (r10 * x + r11 * y + r12 * z);
+    oz[i] = r20 * x + r21 * y + r22 * z;
+  }
+}
+
+// The printed connection label (console and observatory styles): the run's I and the bridge
+// width it sets.
+function bridgeTagText(I, narrow) {
+  return "I = " + I.toFixed(3) + " bits" + (narrow ? "" : " \u2192 " +
+    (I < 0.0005 ? "bridge at floor" : "bridge " + (4 + 6 * I).toFixed(1) + " px"));
+}
+
 function tTag(p, long) {
   return "t = " + (long ? "2 + 10 p = " : "") + (2 + 10 * p).toFixed(2) + " px";
 }
@@ -192,9 +232,9 @@ const STYLES = {
       c.add("circle", { cx: STARS[i], cy: STARS[i + 1], r: STARS[i + 2], opacity: STARS[i + 3] }, i % 12 === 0 ? twinkle : stars);
     }
     c.bridge({ stroke: "#8fd8cb" }, "#f0fffb");
-    c.brain({ body: ["#0c1636", 0.4], glow: { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("brainhalo") },
-      shell: { fill: "#e5b45a", "fill-opacity": 0.07 }, link: { stroke: "#e5b45a", "stroke-opacity": 0.5, "stroke-width": 0.9 },
-      ball: [[0, "#fdf0cc"], [0.5, "#e8bd6a"], [1, "#8a6424"]] });
+    c.brain({ body: ["#0c1636", 0.4], aura: { cx: SELF_X, cy: SELF_Y, rx: 150, ry: 112, fill: c.ref("brainhalo") },
+      shell: { fill: "#e5b45a", "fill-opacity": 0.07 }, link: { stroke: "#e5b45a", "stroke-opacity": 0.28, "stroke-width": 1 },
+      node: { core: { fill: "#f7d089" }, r: [1.8, 2.7], glow: [[0, "#f7d089", 0.5], [1, "#f7d089", 0]], glowR: [4.5, 7.5] } });
     c.selfLabel(72, 12.5, { fill: "#c8d2ec", "font-weight": 500 });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R + 10, fill: c.ref("halo"), opacity: 0.35 });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R, fill: c.ref("world") });
@@ -203,6 +243,12 @@ const STYLES = {
     c.worldLabel(34, 12.5, { fill: "#8fd8cb", "font-weight": 500 });
     c.branches({ stroke: "#e5b45a", opacity: 0.14 }, (t) => 2 * t, { stroke: "#efc87e", opacity: 0.92 });
     c.particles("circle", { fill: "#f9e2ae", opacity: 0.9 }, 1.7);
+    // printed mapping labels (borrowed from the console direction), small brass mono
+    const t1 = c.text("fwo-s-tag", 296, 122, 10, 9, { fill: "#d9b46a" });
+    const t0 = c.text("fwo-s-tag", 288, 282, 10, 9, { fill: "#d9b46a" });
+    c.tag((v) => { t1.textContent = tTag(v.p1, false); t0.textContent = tTag(1 - v.p1, false); }, [t1, t0]);
+    const bridgeTag = c.text("fwo-s-tag", 204, 314, 10, 9, { fill: "#d9b46a" });
+    c.tag((v, narrow) => { bridgeTag.textContent = bridgeTagText(v.I, narrow); }, [bridgeTag]);
     c.ghosts({ stroke: "#8090b8", "stroke-width": 1.4, "stroke-dasharray": "4 4", opacity: 0.38 }, 11.5,
       { fill: "#93a3cc", "font-weight": 500 });
     for (const i of [1, 0]) {
@@ -221,14 +267,12 @@ const STYLES = {
     c.add("rect", Object.assign({ fill: c.ref("grid") }, BG));
     c.add("rect", Object.assign({ fill: c.ref("major") }, BG));
     c.bridge({ stroke: "#f0a44a", "stroke-dasharray": "3 4" }, "#ffe6c2");
-    c.brain({ body: ["#16191e", 0.41], shell: { fill: "#45c8e0", "fill-opacity": 0.06 }, link: { stroke: "#45c8e0", "stroke-opacity": 0.5, "stroke-width": 0.9 },
-      ball: [[0, "#d2f6fc"], [0.5, "#5fd0e6"], [1, "#17606e"]] });
+    c.brain({ body: ["#16191e", 0.41], shell: { fill: "#45c8e0", "fill-opacity": 0.06 }, link: { stroke: "#45c8e0", "stroke-opacity": 0.3, "stroke-width": 0.9 },
+      node: { core: { fill: "none", stroke: "#45c8e0", "stroke-width": 1.2 }, r: [2, 2.8],
+        glow: [[0, "#45c8e0", 0.32], [1, "#45c8e0", 0]], glowR: [4.5, 7] } });
     c.selfLabel(72, 11, { fill: "#b9c0c7", "font-weight": 500 });
     const bridgeTag = c.text("fwo-s-tag", 204, 314, 10, 9, { fill: "#8b96a1" });
-    c.tag((v, narrow) => {
-      bridgeTag.textContent = "I = " + v.I.toFixed(3) + " bits" + (narrow ? "" : " \u2192 " +
-        (v.I < 0.0005 ? "bridge at floor" : "bridge " + (4 + 6 * v.I).toFixed(1) + " px"));
-    }, [bridgeTag]);
+    c.tag((v, narrow) => { bridgeTag.textContent = bridgeTagText(v.I, narrow); }, [bridgeTag]);
     const wg = c.add("g", { stroke: "#f0a44a", fill: "none" });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R, "stroke-width": 1.6 }, wg);
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R - 6, "stroke-width": 0.8, "stroke-dasharray": "2 3" }, wg);
@@ -272,9 +316,9 @@ const STYLES = {
     c.gradient("world", [[0, "#d9fff4"], [0.4, "#63e6c4"], [1, "#144d40"]], { cx: "42%", cy: "38%", r: "70%" });
     c.add("rect", Object.assign({ fill: c.ref("bg") }, BG));
     c.bridge({ stroke: "#63e6c4" }, "#eafff9");
-    c.brain({ body: ["#110f1b", 0.4], glow: { cx: SELF_X, cy: 176, rx: 150, ry: 112, fill: c.ref("tissue") },
-      shell: { fill: "#b79cff", "fill-opacity": 0.08 }, link: { stroke: "#b79cff", "stroke-opacity": 0.5, "stroke-width": 0.9 },
-      ball: [[0, "#f5f0ff"], [0.5, "#c9b4ff"], [1, "#6d4fc2"]] });
+    c.brain({ body: ["#110f1b", 0.4], aura: { cx: SELF_X, cy: SELF_Y, rx: 150, ry: 112, fill: c.ref("tissue") },
+      shell: { fill: "#b79cff", "fill-opacity": 0.08 }, link: { stroke: "#b79cff", "stroke-opacity": 0.22, "stroke-width": 1 },
+      node: { core: { fill: "#e4d9ff" }, r: [2, 2.9], glow: [[0, "#d3c2ff", 0.9], [1, "#d3c2ff", 0]], glowR: [5.5, 8] } });
     c.selfLabel(70, 12.5, { fill: "#c6c3ce", "font-weight": 500 });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R + 16, fill: c.ref("orbglow"), opacity: 0.35 });
     c.add("circle", { cx: WORLD[0], cy: WORLD[1], r: WORLD_R, fill: c.ref("world"), opacity: 0.92 });
@@ -299,8 +343,8 @@ const STYLES = {
     c.add("rect", Object.assign({ fill: "#f8fafc" }, BG));
     c.add("rect", Object.assign({ fill: c.ref("grid") }, BG));
     c.bridge({ stroke: "#0e6e8c", "stroke-dasharray": "4 3" }, "#7fe3ff");
-    c.brain({ body: ["#f8fafc", 0.43], shell: { fill: "#b23a1f", "fill-opacity": 0.08 }, link: { stroke: "#17355e", "stroke-opacity": 0.5, "stroke-width": 0.8 },
-      ball: [[0, "#f0a08a"], [0.5, "#bf4a2c"], [1, "#6b1f0f"]] });
+    c.brain({ body: ["#f8fafc", 0.43], shell: { fill: "#b23a1f", "fill-opacity": 0.08 }, link: { stroke: "#17355e", "stroke-opacity": 0.38, "stroke-width": 0.9 },
+      node: { core: { fill: "#17355e" }, r: [2, 2.9], glow: [[0, "#17355e", 0.16], [1, "#17355e", 0]], glowR: [4.5, 7] } });
     c.selfLabel(64, 11, { fill: "#17355e", "font-weight": 600 });
     c.add("line", { x1: SELF_X, y1: 70, x2: SELF_X, y2: 88, stroke: "#17355e", "stroke-width": 1 });
     const bd = dimension(206, 324, 170, 290);
@@ -336,7 +380,7 @@ const STYLES = {
         dim = c.add("path", { stroke: "#44597a", "stroke-width": 1, fill: "none" }, dg);
         dimHeads = c.add("path", { fill: "#44597a" }, dg);
         dimTag = c.text("fwo-s-tag", 512, 185, 9.5, 9, { fill: "#44597a" }, dg);
-        dimTag.textContent = "\u00d8 = 52 \u00b7 \u221bp";
+        dimTag.textContent = "\u00d8 = 104 \u00b7 \u221bp";
       }
       c.future(i, (cx, cy, r) => {
         set(disc, { cx, cy, r });
@@ -370,7 +414,7 @@ export function createPlate(lib, host, opts) {
   root.appendChild(defs);
 
   // ---------------------------------------------------------------- parts that follow the data
-  const dyn = { under: [null, null], underWidth: null, branch: [null, null], bridge: null, parts: [], partKind: "circle",
+  const dyn = { brainLinks: null, brainStyle: null, brainHalo: [], brainCore: [], under: [null, null], underWidth: null, branch: [null, null], bridge: null, parts: [], partKind: "circle",
     partSize: 1.8, ghost: [null, null], ghostLabel: null, groups: [null, null], future: [null, null], label: [null, null],
     labelTop: 12, labelBottom: (fs) => 10 + 0.95 * fs, self: null, world: null, worldGap: 34, tags: [], tagNodes: [],
     fonts: [] };
@@ -403,29 +447,27 @@ export function createPlate(lib, host, opts) {
       return t;
     },
     fontSize: (node) => Number(node.getAttribute("font-size")) || 11,
-    links(attrs) {
-      let d = "";
-      for (let k = 0; k < LINKS.length; k += 2) {
-        const a = LINKS[k] * 3, b = LINKS[k + 1] * 3;
-        d += "M " + NODES[a] + "," + NODES[a + 1] + " L " + NODES[b] + "," + NODES[b + 1] + " ";
-      }
-      c.add("path", Object.assign({ d, fill: "none" }, attrs));
-    },
-    // The Self as in the 3D view: first its body (the two lobe outlines filled with the scene's
-    // own background colour, laid over the World bridge so the bridge enters the mind), an
-    // optional glow, the two translucent lobe shells (overlapping in the middle), the links,
-    // then the nodes as shaded balls, far to near: two graphs with a narrow fissure.
+    // The Self, on the 3D view's two-lobe layout: first its body (the two lobe outlines filled
+    // with the scene's own background colour, laid over the World bridge so the bridge enters
+    // the mind), an optional aura, the two translucent lobe shells, then the constellation in
+    // the design directions' own node style: thin links and, at each node, a point with a soft
+    // glow (a glowing point cloud). drawBrain() places them; with motion on they drift.
     brain(o) {
-      c.gradient("ball", o.ball, { cx: "36%", cy: "32%", r: "72%" });
       const lobe = (L, attrs) => Object.assign({ cx: L[0], cy: L[1], rx: L[2], ry: L[3],
         transform: "rotate(" + L[4] + " " + L[0] + " " + L[1] + ")" }, attrs);
       const body = c.add("g", { opacity: o.body[1] });            // one opacity for the union
       for (const L of LOBES) c.add("ellipse", lobe(L, { fill: o.body[0] }), body);
-      if (o.glow) c.add("ellipse", o.glow);
+      if (o.aura) c.add("ellipse", o.aura);
       for (const L of LOBES) c.add("ellipse", lobe(L, o.shell));
-      c.links(o.link);
-      const g = c.add("g", { fill: c.ref("ball") });
-      for (let k = 0; k < NODES.length; k += 3) c.add("circle", { cx: NODES[k], cy: NODES[k + 1], r: NODES[k + 2] }, g);
+      dyn.brainLinks = c.add("path", Object.assign({ fill: "none" }, o.link));
+      dyn.brainStyle = o.node;
+      if (o.node.glow) {
+        c.gradient("nodeglow", o.node.glow, {});
+        const halos = c.add("g", { fill: c.ref("nodeglow") });
+        for (let i = 0; i < N_BRAIN; i++) dyn.brainHalo.push(c.add("circle", {}, halos));
+      }
+      const cores = c.add("g", o.node.core);
+      for (let i = 0; i < N_BRAIN; i++) dyn.brainCore.push(c.add("circle", {}, cores));
     },
     selfLabel(y, base, attrs) {
       dyn.self = c.text("fwo-s-lab fwo-s-lab--self", SELF_X, y, base, 10.5, Object.assign({ "text-anchor": "middle" }, attrs));
@@ -505,6 +547,34 @@ export function createPlate(lib, host, opts) {
   let shimmerLen = 0, shimmerAt = 0;                     // bridge length (scene units), dash offset
   let split = N_PART / 2;                                // particles on Future 1's branch
   const u = new Float64Array(N_PART);                    // position along the branch, 0..1
+
+  // ---------------------------------------------------------------- the constellation
+  const bx = new Float64Array(N_BRAIN), by = new Float64Array(N_BRAIN), bz = new Float64Array(N_BRAIN);
+  projectBrain(BRAIN_TILT[1], bx, by, bz);
+  let zLo = Infinity, zHi = -Infinity;
+  for (let i = 0; i < N_BRAIN; i++) { zLo = Math.min(zLo, bz[i]); zHi = Math.max(zHi, bz[i]); }
+  let brainAt = 0;                                       // time of the last drift redraw (ms)
+
+  // Place the links and the glowing points for yaw ry; nearer nodes are a little larger and
+  // brighter. Decoration only: the layout never follows the data.
+  function drawBrain(ry) {
+    projectBrain(ry, bx, by, bz);
+    let d = "";
+    for (let k = 0; k < LINKS.length; k += 2) {
+      const a = LINKS[k], b = LINKS[k + 1];
+      d += "M" + n1(bx[a]) + "," + n1(by[a]) + "L" + n1(bx[b]) + "," + n1(by[b]);
+    }
+    dyn.brainLinks.setAttribute("d", d);
+    const st = dyn.brainStyle;
+    for (let i = 0; i < N_BRAIN; i++) {
+      const zn = Math.max(0, Math.min(1, (bz[i] - zLo) / ((zHi - zLo) || 1)));
+      const op = (0.6 + 0.4 * zn).toFixed(2);
+      set(dyn.brainCore[i], { cx: bx[i], cy: by[i], r: st.r[0] + (st.r[1] - st.r[0]) * zn, opacity: op });
+      if (dyn.brainHalo.length) {
+        set(dyn.brainHalo[i], { cx: bx[i], cy: by[i], r: st.glowR[0] + (st.glowR[1] - st.glowR[0]) * zn, opacity: op });
+      }
+    }
+  }
 
   // The still layout: evenly spaced along each branch, as in the design drawings.
   function evenParticles() {
@@ -622,6 +692,8 @@ export function createPlate(lib, host, opts) {
     }
     if (motion) {
       for (let k = 0; k < N_PART; k++) u[k] = frac(u[k] + FLOW * dt);
+      // the drifting constellation: the 3D view's slow sway, redrawn at most 20 times a second
+      if (now - brainAt >= 50) { brainAt = now; drawBrain(BRAIN_TILT[1] + DRIFT * Math.sin(now / DRIFT_MS)); }
       // a falling dash offset moves the pulses forward along the bridge: World to Self
       shimmerAt = (shimmerAt - ((shimmerLen || 196) / SHIMMER_S) * dt) % 100000;
       busy = true;
@@ -675,10 +747,10 @@ export function createPlate(lib, host, opts) {
     kick();
   };
   api.setLabel = (label) => { root.setAttribute("aria-label", label); };
-  api.setMotion = (on) => { motion = !!on; still(!motion); kick(); };
+  api.setMotion = (on) => { motion = !!on; still(!motion); if (!motion) drawBrain(BRAIN_TILT[1]); kick(); };
   api.setReducedMotion = (flag) => {
     reduced = !!flag;
-    if (reduced) { motion = false; anim = null; state.p1 = target.p1; state.I = target.I; still(true); }
+    if (reduced) { motion = false; anim = null; state.p1 = target.p1; state.I = target.I; still(true); drawBrain(BRAIN_TILT[1]); }
     kick();
   };
   api.motion = () => motion;
@@ -688,6 +760,7 @@ export function createPlate(lib, host, opts) {
   api.style = style;
 
   still(!motion);
+  drawBrain(BRAIN_TILT[1]);
   evenParticles();
   resize();
   apply();

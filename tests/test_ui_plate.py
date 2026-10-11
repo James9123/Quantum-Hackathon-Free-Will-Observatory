@@ -94,3 +94,26 @@ def test_the_self_body_is_layered_over_the_bridge():
     for t in "abcd":
         style = code[code.index("  %s(c) {" % t):]
         assert style.index("c.bridge(") < style.index("c.brain({ body: ["), t
+
+
+def test_the_constellation_is_a_glowing_point_cloud_that_drifts_only_with_motion():
+    code = _read(PLATE)
+    assert "const DRIFT = 0.07;" in code and "const DRIFT_MS = 2600;" in code       # the 3D view's sway
+    step = code[code.index("  function step(now) {"):]
+    assert step.index("if (motion) {") < step.index("drawBrain(BRAIN_TILT[1] + DRIFT * Math.sin(now / DRIFT_MS))")
+    assert "if (!motion) drawBrain(BRAIN_TILT[1]);" in code                         # still: the resting layout
+    for t in "abcd":
+        style = code[code.index("  %s(c) {" % t):]
+        assert "node: { core: {" in style[:style.index("c.selfLabel(")], t
+        assert "glow: [[0," in style[:style.index("c.selfLabel(")], t
+
+
+def test_ports_from_the_design_review():
+    code = _read(PLATE)
+    assert '"\\u00d8 = 104 \\u00b7 \\u221bp"' in code                          # diameter, not radius
+    a = code[code.index("  a(c) {"):code.index("  b(c) {")]
+    assert a.count("c.tag(") == 2 and "bridgeTagText(v.I, narrow)" in a           # printed labels on A
+    for t in "abd":
+        css = _read("dev/themes/theme-%s.css" % t)
+        line = [ln for ln in css.splitlines() if ln.startswith('#fwo-app[data-theme="%s"] .fwo-dialogue-text {' % t)][0]
+        assert "italic" in line, t
