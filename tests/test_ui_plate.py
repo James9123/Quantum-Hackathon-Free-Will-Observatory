@@ -119,15 +119,15 @@ def test_ports_from_the_design_review():
         assert "italic" in line, t
 
 
-def test_four_styles_ship_with_a_as_the_default_and_a_style_panel():
+def test_four_styles_ship_with_d_as_the_default_and_a_style_panel():
     css = _read("qollab_project/main.css")
     html = _read("qollab_project/index.html")
     main = _read("qollab_project/main.js")
     for t in "abcd":
         assert '#fwo-app[data-theme="%s"] {' % t in css, t
         assert 'class="fwo-style-opt" data-style="%s"' % t in html, t
-    assert '<div id="fwo-app" class="fwo-app" lang="en" data-theme="a">' in html
-    assert 'data-style="a" aria-pressed="true"' in html and 'data-style="d" aria-pressed="false"' in html and "<select" not in html.split("</header>")[0]
+    assert '<div id="fwo-app" class="fwo-app" lang="en" data-theme="d">' in html
+    assert 'data-style="d" aria-pressed="true"' in html and 'data-style="a" aria-pressed="false"' in html and "<select" not in html.split("</header>")[0]
     kicker = html[html.index('<p class="fwo-kicker">'):html.index('<h1 class="fwo-title">')]
     assert '<span class="fwo-kicker-end">simulator<button type="button" id="fwo-style-btn"' in kicker   # tied to the last word
     assert 'aria-expanded="false" aria-controls="fwo-style-panel">Style</button>' in kicker

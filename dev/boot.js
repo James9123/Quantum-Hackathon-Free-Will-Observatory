@@ -40,7 +40,7 @@ for (const a of document.querySelectorAll("[data-scenario]")) {
 import("../qollab_project/main.js").catch((err) => console.error("main.js failed: " + err));
 
 // ?theme=a|b|c|d: open in that page style (the styles ship in main.css; index.html defaults to
-// a and the page's Style menu changes it); ?theme=none: no style, the unthemed 3D view.
+// d and the page's Style menu changes it); ?theme=none: no style, the unthemed 3D view.
 // Set as the fragment mounts, before main.js reads it.
 // ?clean=1 hides the stub banner and paints the page in the app's background (for screenshots).
 const theme = params.get("theme");
