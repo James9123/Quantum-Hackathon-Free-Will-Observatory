@@ -147,7 +147,8 @@ async function start() {
     baselines: byId("fwo-baselines"),
     dialogue: byId("fwo-dialogue"), dialoguePortrait: byId("fwo-dialogue-portrait"), portraitWho: byId("fwo-portrait-who"),
     dialogueName: byId("fwo-dialogue-name"), dialogueText: byId("fwo-dialogue-text"), dialogueSkip: byId("fwo-dialogue-skip"),
-    sceneSkip: byId("fwo-scene-skip"), sceneHint: byId("fwo-scene-hint"), styleMenu: byId("fwo-style"),
+    sceneSkip: byId("fwo-scene-skip"), sceneHint: byId("fwo-scene-hint"),
+    styleButton: byId("fwo-style-btn"), stylePanel: byId("fwo-style-panel"), styleClose: byId("fwo-style-close"),
     sound: byId("fwo-sound"), soundHelp: byId("fwo-sound-help"),
     howBody: byId("fwo-how-body"), sureBody: byId("fwo-sure-body"), honesty: byId("fwo-honesty"),
     curve: byId("fwo-curve"), curveSummary: byId("fwo-curve-summary"), curveLegend: byId("fwo-curve-legend"),
@@ -360,7 +361,7 @@ async function start() {
 
   // ---------------------------------------------------------------- page style (A to D)
   // The four design directions ship in main.css, scoped by data-theme on #fwo-app (D by
-  // default in index.html). The Style menu changes the attribute and redraws the scene in
+  // default in index.html). The Style panel changes the attribute and redraws the scene in
   // the new style with the current result; nothing else is recomputed.
   function setStyle(key) {
     if (!/^[abcd]$/.test(key) || el.app.dataset.theme === key) return;
@@ -374,8 +375,28 @@ async function start() {
     }
     if (dialogue) dialogue.refresh();
   }
-  el.styleMenu.value = el.app.dataset.theme || "";
-  el.styleMenu.addEventListener("change", () => setStyle(el.styleMenu.value));
+  // The Style button opens a side panel with the four style buttons; the pressed one is the
+  // page's style. Escape, the close button or the Style button again closes it, and focus
+  // returns to the Style button.
+  const styleOptions = Array.from(el.stylePanel.querySelectorAll("[data-style]"));
+  function markStyle() {
+    for (const b of styleOptions) b.setAttribute("aria-pressed", b.dataset.style === el.app.dataset.theme ? "true" : "false");
+  }
+  function showStyles(open) {
+    el.stylePanel.hidden = !open;
+    el.styleButton.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) (styleOptions.find((b) => b.getAttribute("aria-pressed") === "true") || el.styleClose).focus();
+    else el.styleButton.focus();
+  }
+  el.styleButton.addEventListener("click", () => showStyles(el.stylePanel.hidden));
+  el.styleClose.addEventListener("click", () => showStyles(false));
+  el.stylePanel.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Escape") return;
+    ev.stopPropagation();          // the opening cutscene's Escape is not this one
+    showStyles(false);
+  });
+  for (const b of styleOptions) b.addEventListener("click", () => { setStyle(b.dataset.style); markStyle(); });
+  markStyle();
 
   function futureLabels(run, prev) {
     const p1 = run.metrics.p_self_1;

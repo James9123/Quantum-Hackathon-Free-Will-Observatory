@@ -1,12 +1,6 @@
 <div id="fwo-app" class="fwo-app" lang="en" data-theme="d">
   <header class="fwo-hero">
-    <p class="fwo-kicker">Qollab x IonQ hackathon &middot; a fictional instrument, run on a live quantum <span class="fwo-kicker-end">simulator<span class="fwo-style"><label for="fwo-style">Style</label>
-      <select id="fwo-style">
-        <option value="a">A &middot; Night</option>
-        <option value="b">B &middot; Console</option>
-        <option value="c">C &middot; Luminous</option>
-        <option value="d" selected>D &middot; Blueprint</option>
-      </select></span></span></p>
+    <p class="fwo-kicker">Qollab x IonQ hackathon &middot; a fictional instrument, run on a live quantum <span class="fwo-kicker-end">simulator<button type="button" id="fwo-style-btn" class="fwo-style-btn" aria-expanded="false" aria-controls="fwo-style-panel">Style</button></span></p>
     <h1 class="fwo-title">The Free Will Observatory</h1>
     <p class="fwo-hook">Can a choice change what happens next? Pick a guide, set three dials, and run one tiny
       quantum experiment to watch the odds of two possible futures move.</p>
@@ -16,6 +10,18 @@
       <li><span class="fwo-step-n" aria-hidden="true">3</span> Press Run</li>
     </ol>
   </header>
+  <aside id="fwo-style-panel" class="fwo-style-panel" aria-label="Page style" hidden>
+    <div class="fwo-style-panel-head">
+      <p class="fwo-style-panel-title">Page style</p>
+      <button type="button" id="fwo-style-close" class="fwo-style-close" aria-label="Close the style panel">&times;</button>
+    </div>
+    <div class="fwo-style-options" role="group" aria-label="Choose a page style">
+      <button type="button" class="fwo-style-opt" data-style="a" aria-pressed="false">A &middot; Night observatory</button>
+      <button type="button" class="fwo-style-opt" data-style="b" aria-pressed="false">B &middot; Instrument console</button>
+      <button type="button" class="fwo-style-opt" data-style="c" aria-pressed="false">C &middot; Luminous anatomy</button>
+      <button type="button" class="fwo-style-opt" data-style="d" aria-pressed="true">D &middot; Blueprint</button>
+    </div>
+  </aside>
 
   <div class="fwo-layout">
     <div class="fwo-col fwo-col--act">

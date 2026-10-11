@@ -119,18 +119,20 @@ def test_ports_from_the_design_review():
         assert "italic" in line, t
 
 
-def test_four_styles_ship_with_d_as_the_default_and_a_menu():
+def test_four_styles_ship_with_d_as_the_default_and_a_style_panel():
     css = _read("qollab_project/main.css")
     html = _read("qollab_project/index.html")
     main = _read("qollab_project/main.js")
     for t in "abcd":
         assert '#fwo-app[data-theme="%s"] {' % t in css, t
-        assert '<option value="%s"' % t in html, t
+        assert 'class="fwo-style-opt" data-style="%s"' % t in html, t
     assert '<div id="fwo-app" class="fwo-app" lang="en" data-theme="d">' in html
-    assert '<option value="d" selected>' in html and '<label for="fwo-style">Style</label>' in html
+    assert 'data-style="d" aria-pressed="true"' in html and "<select" not in html.split("</header>")[0]
     kicker = html[html.index('<p class="fwo-kicker">'):html.index('<h1 class="fwo-title">')]
-    assert kicker.index("live quantum") < kicker.index('<span class="fwo-kicker-end">simulator<span class="fwo-style">') \
-        < kicker.index('<select id="fwo-style">') < kicker.index("</p>")      # inline after the text, tied to its last word
+    assert '<span class="fwo-kicker-end">simulator<button type="button" id="fwo-style-btn"' in kicker   # tied to the last word
+    assert 'aria-expanded="false" aria-controls="fwo-style-panel">Style</button>' in kicker
+    assert '<aside id="fwo-style-panel" class="fwo-style-panel" aria-label="Page style" hidden>' in html
     assert "function setStyle(key)" in main and "scene = makeScene();" in main
-    assert 'el.styleMenu.addEventListener("change", () => setStyle(el.styleMenu.value));' in main
+    assert 'if (ev.key !== "Escape") return;' in main and "ev.stopPropagation();" in main
+    assert "setStyle(b.dataset.style); markStyle();" in main
     assert 'if (current) scene.setResult(current, previous, futureLabels(current, previous));' in main
