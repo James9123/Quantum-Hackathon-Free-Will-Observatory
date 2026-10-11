@@ -457,6 +457,7 @@ RUN_FIELDS_READ_BY_THE_UI = [
     "metrics.resolved", "metrics.shots_seen.display",
     "prediction.p_self_1", "prediction.capacity", "prediction.openness_bits", "prediction.connection_bits",
     "explanation.factual", "explanation.poetic.self", "explanation.poetic.demon", "explanation.poetic.observer",
+    "explanation.animation.self", "explanation.animation.demon", "explanation.animation.observer",
     "explanation.note",
     "baselines.fixed_output.capacity", "baselines.fixed_output.openness_bits", "baselines.fixed_output.label",
     "baselines.fixed_output.description", "baselines.fair_coin.capacity", "baselines.fair_coin.openness_bits",

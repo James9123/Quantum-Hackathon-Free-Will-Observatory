@@ -47,9 +47,14 @@ export function createTabs(lib, items, onChange) {
 
   return {
     current: () => items[current].key,
-    select(key, focus) {
+    // quiet: move the selection without the change callback (the opening cutscene's speaker)
+    select(key, focus, quiet) {
       const i = items.findIndex((it) => it.key === key);
-      if (i >= 0) show(i, !!focus);
+      if (i < 0) return;
+      const saved = onChange;
+      if (quiet) onChange = null;
+      show(i, !!focus);
+      onChange = saved;
     },
   };
 }

@@ -153,6 +153,13 @@
 #fwo-app .fwo-dialogue--typing .fwo-dialogue-text::after { content: "\2588"; margin-left: 2px; opacity: 0.6; animation: fwo-caret 0.8s steps(2) infinite; }
 #fwo-app .fwo-dialogue--done .fwo-dialogue-text::after { content: "\25BC"; margin-left: 8px; font-size: 0.7em; color: var(--fwo-muted); animation: fwo-cue 1.2s steps(2) infinite; }
 @keyframes fwo-caret { to { opacity: 0.1; } }
+/* a new speaker slides in (the opening cutscene, a tab switch, the end of the scene) */
+#fwo-app .fwo-dialogue--enter .fwo-portrait { animation: fwo-slide-in 0.28s ease-out both; }
+#fwo-app .fwo-dialogue--enter .fwo-dialogue-body { animation: fwo-slide-in 0.28s ease-out 0.05s both; }
+@keyframes fwo-slide-in { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+#fwo-app .fwo-dialogue-hint { margin: 6px 0 0; font-size: 0.8125rem; color: var(--fwo-muted); }
+#fwo-app .fwo-dialogue-hint[hidden] { display: none; }
+#fwo-app .fwo-dialogue-head .fwo-scene-skip { margin-left: auto; }
 @keyframes fwo-cue { to { transform: translateY(2px); opacity: 0.4; } }
 
 /* ------------------------------------------------------------ dials + run */

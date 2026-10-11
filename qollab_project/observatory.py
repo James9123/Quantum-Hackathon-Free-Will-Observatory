@@ -456,72 +456,126 @@ def _future(p):
     return "Future 1" if p >= 0.5 else "Future 0"
 
 
+# Persona lines after a run (design/persona-dialogue.md): each guide speaks only about what
+# it can see. The Self sees its own intention dial; it feels World coupling only as a shorter
+# reach and perspective only as an aim that lands elsewhere. Laplace's Demon knows the law and
+# the World's record, not the dials. The Observer sees all three inputs. Each function returns
+# (line, animation); the animation names are the persona sprite actions.
 _LAW_ZERO = 0.05        # below this ideal capacity the model itself says the dial moves nothing
+_W_LOW = 0.05           # World coupling below this: no record (band W0)
+_W_STRONG = 0.65        # from here the World records most of the Self (band W2)
+_BETA_TILT = math.radians(6.0)   # perspective from here on: the Observer reads at a tilt
+_THIN_RANGE = 0.15      # an unresolved range below this: the odds stay where they are
+_FULL_REACH = 0.85      # a resolved range below this: the Self notices a shorter reach
 
 
-def _self_line(m, resolved, strong_world, law_capacity=0.0):
-    """law_capacity is the Demon's ideal C: an unresolved sample only licenses the
-    strong "no longer reshape" line when the model itself puts C at zero."""
+def _aim(phi):
+    """The Self's aim, read straight on: "F0", "F1" or "both"."""
+    d = math.degrees(phi) % 360.0
+    if d <= 60.0 or d >= 300.0:
+        return "F0"
+    if 120.0 <= d <= 240.0:
+        return "F1"
+    return "both"
+
+
+def _aim_matched(s, m):
+    aim = _aim(s["intention_rad"])
+    p, o = m["p_self_1"], m["openness_bits"]
+    return (aim == "F0" and p < 0.5) or (aim == "F1" and p > 0.5) or (aim == "both" and o >= 0.9)
+
+
+def _world_band(w, law_capacity):
+    if law_capacity < _LAW_ZERO:
+        return "W3"
+    if w < _W_LOW:
+        return "W0"
+    return "W1" if w < _W_STRONG else "W2"
+
+
+def _self_line(s, m, resolved):
     p, o, c = m["p_self_1"], m["openness_bits"], m["capacity"]
+    aim = _aim(s["intention_rad"])
+    target = {"F0": "Future 0", "F1": "Future 1"}.get(aim)
     if not resolved:
-        if o >= 0.9 and law_capacity < _LAW_ZERO:
-            line = ("My future is wide open, yet whichever way I lean the odds stay where "
-                    "they are: these intention controls no longer reshape them. In our "
-                    "model, uncertainty alone is not freedom.")
-        elif o >= 0.9:
-            line = ("My future is wide open, and this run is too small to show whether my "
-                    "intention reshapes the odds: nothing I intend here is resolved yet.")
+        if c < _THIN_RANGE and o >= 0.9:
+            line = ("My futures are wide open, P(Future 1) = %.3f, yet whichever way I lean the "
+                    "odds stay where they are. In this model, uncertainty alone is not freedom." % p)
+        elif c < _THIN_RANGE:
+            line = ("The odds sit at P(Future 1) = %.3f, and whichever way I lean they stay there. "
+                    "Nothing I intend is shown to move them." % p)
         else:
-            line = ("The odds already tilt toward %s, and nothing I intend here is shown "
-                    "to move them." % _future(p))
-        if strong_world:
-            line += " The World remembers which way I went, and that memory dims my interference."
-        return line + " " + NO_RESOLVED
-    if o >= 0.9:
-        line = ("Both futures are open to me right now, and opposite intentions can swing "
-                "the odds across a range of %.2f: in this model, that range is my freedom."
-                % c)
-    elif o <= 0.35:
-        line = ("This future is nearly settled, and settled because I set it: opposite "
-                "intentions could still swing the odds by %.2f. Predictability and "
-                "capacity can coexist." % c)
+            line = ("%s; the odds came out P(Future 1) = %.3f, and this run is too small to show "
+                    "whether my intention moved them."
+                    % ("I aimed for " + target if target else "I tried to keep both open", p))
+        return line + " " + NO_RESOLVED, "angry"
+    if _aim_matched(s, m):
+        if aim == "both":
+            line = ("I tried to keep both futures open, and they stayed open: P(Future 1) = %.3f. "
+                    "Opposite intentions swing the odds by %.2f: in this model, that range is my "
+                    "freedom." % (p, c))
+        elif o <= 0.35:
+            line = ("I aimed for %s, and it came: P(Future 1) = %.3f. This future is nearly "
+                    "settled, and settled because I set it; opposite intentions could still swing "
+                    "the odds by %.2f. Predictability and capacity can coexist." % (target, p, c))
+        else:
+            line = ("I aimed for %s, and the odds lean that way: P(Future 1) = %.3f. I can still "
+                    "swing them by %.2f: a future that is tilted, not fixed." % (target, p, c))
+        action = "happy"
     else:
-        line = ("The odds lean toward %s, and I can still swing them by %.2f: a future "
-                "that is tilted, not fixed." % (_future(p), c))
-    if strong_world:
-        line += " The World keeps a record of which way I went, and my range is smaller for it."
-    return line
+        line = ("%s, but the odds came out P(Future 1) = %.3f. Something I can't see turned my "
+                "aim. My range is still %.2f."
+                % ("I aimed for " + target if target else "I tried to keep both futures open", p, c))
+        action = "idle"
+    if c < _FULL_REACH:
+        line += " My reach is shorter than it should be, and I can't see what's holding it."
+    return line, action
 
 
-def _demon_line(m, pred, resolved, n_display):
+def _demon_line(s, m, pred, resolved, n_display):
     p, p_hat = float(pred["p_self_1"]), m["p_self_1"]
+    law, c, bits = float(pred["capacity"]), m["capacity"], m["connection_bits"]
     sigma = math.sqrt(max(p * (1.0 - p), 1e-12) / max(float(n_display), 1.0))
-    gap = abs(p_hat - p)
-    fit = ("within" if gap <= 2.0 * sigma else "outside") if sigma > 0 else "at"
-    line = ("Before a single shot was drawn I wrote P(Self=1) = %.3f; the sample read "
-            "%.3f, %s the shot noise I expected from %d shots. I know the law, not the "
-            "controls: whoever turns the intention dial moves these odds, not me"
-            % (p, p_hat, fit, int(n_display)))
-    if resolved:
-        line += ", and here that dial moves them by %.2f." % m["capacity"]
-    elif float(pred["capacity"]) < _LAW_ZERO:
-        line += ", and at this coupling the law says the dial moves nothing. " + NO_RESOLVED
-    else:
-        line += (", and the law says the dial moves them by %.2f; this sample did not "
-                 "resolve it. " % float(pred["capacity"])) + NO_RESOLVED
-    return line
+    outside = abs(p_hat - p) > 2.0 * sigma
+    nr = "" if resolved else " " + NO_RESOLVED
+    line = ("I wrote P(Self=1) = %.3f; the sample read %.3f, %s the shot noise of %d shots. "
+            % (p, p_hat, "outside" if outside else "within", int(n_display)))
+    band = _world_band(s["world_coupling"], law)
+    if outside:
+        return line + "The law stands; this sample strayed." + nr, "anger"
+    if band == "W0":
+        if resolved:
+            return line + ("The World kept no record, so the dial moved the odds by %.2f. A blank "
+                           "ledger is the only place a dial reaches that far." % c), "anger"
+        return line + ("The World kept no record; the law allows the dial %.2f, but this sample "
+                       "did not resolve it." % law) + nr, "idle"
+    if band == "W1":
+        return line + ("The World recorded %.3f bits of the Self; the dial moved the odds by %.2f, "
+                       "of the %.2f the law allows." % (bits, c, law)) + nr, "idle"
+    if band == "W2":
+        return line + ("The World recorded %.3f bits of the Self, and the dial's reach shrank to "
+                       "%.2f. The record holds." % (bits, c)) + nr, "gesture"
+    return line + ("The World recorded %.3f bits: the whole Self. The law said the dial moves "
+                   "nothing." % bits) + nr, "gesture"
 
 
 def _observer_line(s, m, resolved):
-    line = ("I asked the prepared state a question at perspective beta = %.2f rad and it "
-            "answered P(Self=1) = %.3f. Turn my perspective and the answer changes, though "
-            "the state does not. The capacity probes use my readout too, so capacity %.2f "
-            "stays comparable across perspectives; the reference probe, read in a fixed "
-            "basis, shares %.2f bits with the World."
-            % (s["perspective_rad"], m["p_self_1"], m["capacity"], m["connection_bits"]))
+    beta, w = s["perspective_rad"], s["world_coupling"]
+    c, bits = m["capacity"], m["connection_bits"]
+    line = ("The whole picture: the Self's intention %.0f\u00b0, World coupling %.2f, my perspective "
+            "beta = %.2f rad. I read P(Self=1) = %.3f; the Self's range is %.2f; the World holds "
+            "%.3f bits." % (math.degrees(s["intention_rad"]), w, beta, m["p_self_1"], c, bits))
+    tilted = beta >= _BETA_TILT
+    if tilted and not _aim_matched(s, m):
+        line += (" The Self's aim reached me turned by %.0f\u00b0: I changed the question, not the "
+                 "state." % math.degrees(beta))
+    if tilted:
+        line += " The range probes use my readout too, so %.2f stays comparable at any angle." % c
+    if w >= _W_LOW and c < _FULL_REACH:
+        line += " Its range is %.2f, not 1, because the World is holding %.3f bits of it." % (c, bits)
     if not resolved:
         line += " " + NO_RESOLVED
-    return line
+    return line, ("dance" if bits >= 0.5 else ("stare" if tilted else "idle"))
 
 
 def explanation(settings, m, pred):
@@ -540,14 +594,13 @@ def explanation(settings, m, pred):
                   m["openness_bits"], m["connection_bits"]))
     if not resolved:
         factual += " " + NO_RESOLVED
-    strong_world = m["connection_bits"] >= 0.5
+    self_line, self_act = _self_line(s, m, resolved)
+    demon_line, demon_act = _demon_line(s, m, pred, resolved, n_display)
+    observer_line, observer_act = _observer_line(s, m, resolved)
     return {
         "factual": factual,
-        "poetic": {
-            "self": _self_line(m, resolved, strong_world, float(pred["capacity"])),
-            "demon": _demon_line(m, pred, resolved, n_display),
-            "observer": _observer_line(s, m, resolved),
-        },
+        "poetic": {"self": self_line, "demon": demon_line, "observer": observer_line},
+        "animation": {"self": self_act, "demon": demon_act, "observer": observer_act},
         "resolved": resolved,
         "note": PERSONA_NOTE,
     }

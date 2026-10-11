@@ -173,6 +173,128 @@ export const INTRO = {
   observer: "I'm the Observer. I don't change the Self; I choose the question we ask it. Turn the point of view and run again to see the answer change.",
 };
 
+// ---------------------------------------------------------------- the guides' dialogue
+// design/persona-dialogue.md and design/persona-cutscene.md. Each guide speaks only about what
+// it can see: the Self sees its own intention dial and feels World coupling only as a shorter
+// reach, perspective only as an aim that lands elsewhere; Laplace's Demon knows the law and the
+// World's record, never the dials; the Observer sees all three. Run-result lines come from the
+// engine (explanation.poetic and explanation.animation); the lines here need no run. Every
+// line comes with the sprite action its guide plays.
+
+const W_LOW = 0.05;            // World coupling below this: no record
+const W_STRONG = 0.65;         // from here the World records most of the Self
+const LAW_ZERO = 0.05;         // ideal capacity below this: the dial moves nothing
+const TILT_DEG = 6;            // perspective from here on: the Observer reads at a tilt
+
+// The Demon's law for a draft, the model's closed form (as observatory.prediction):
+// P(Self=1) = [1 - cos(gamma) cos(phi - beta)] / 2 and ideal capacity cos(gamma), gamma = w pi / 2.
+export function idealFor(d) {
+  const g = Number(d.world_coupling) * Math.PI / 2;
+  const p = (1 - Math.cos(g) * Math.cos(Number(d.intention_rad) - Number(d.perspective_rad))) / 2;
+  return { p: Math.min(1, Math.max(0, p)), C: Math.max(0, Math.cos(g)) };
+}
+
+function degOf(rad) {
+  return (((rad * 180) / Math.PI) % 360 + 360) % 360;
+}
+
+// The Self's aim, read straight on: Future 0, Future 1 or both open.
+export function aimBand(phi) {
+  const d = degOf(phi);
+  if (d <= 60 || d >= 300) return "F0";
+  if (d >= 120 && d <= 240) return "F1";
+  return "both";
+}
+
+export function worldBand(w, C) {
+  if (C < LAW_ZERO) return "W3";
+  if (w < W_LOW) return "W0";
+  return w < W_STRONG ? "W1" : "W2";
+}
+
+export function viewBand(beta) {
+  const d = (beta * 180) / Math.PI;
+  if (d < TILT_DEG) return "B0";
+  if (d < 84) return "B1";
+  return d <= 96 ? "B2" : "B3";
+}
+
+function demonRest(band) {
+  return band === "W2" || band === "W3" ? "gesture" : "idle";
+}
+
+function observerRest(beta) {
+  return viewBand(beta) === "B0" ? "idle" : "stare";
+}
+
+// A dial was released: what each guide that can see that dial now says, as
+// { self?, demon?, observer? } of { line, action }. A guide that cannot see the dial is
+// absent and keeps its line. f is the Demon's law for the new draft (idealFor).
+export function inputReactions(lib, input, d, f) {
+  const phi = lib.fmtDeg(d.intention_rad), beta = lib.fmtDeg(d.perspective_rad);
+  const p = lib.fmt(f.p, 3), C = lib.fmt(f.C, 2), w = lib.fmt(d.world_coupling, 2);
+  const band = worldBand(d.world_coupling, f.C);
+  const dialMoved = { line: "A dial moved; I don't watch hands. The law now reads P(Self=1) = " + p + ".", action: demonRest(band) };
+  const out = {};
+  if (input === "intention") {
+    const aim = aimBand(d.intention_rad);
+    out.self = { action: "idle", line: "My intention is set to " + phi + ": " +
+      (aim === "F0" ? "I'm aiming for Future 0." : aim === "F1" ? "I'm aiming for Future 1." : "I'm keeping both futures open.") };
+    out.demon = dialMoved;
+    out.observer = { action: observerRest(d.perspective_rad),
+      line: "The Self's intention is " + phi + ". Read at my angle, beta = " + beta + ", that aim lands at P(Self=1) = " + p + "." };
+  } else if (input === "coupling") {
+    out.demon = {
+      W0: { action: "idle", line: "The World keeps no record of the Self. A blank ledger: the law leaves the dial its full reach, " + C + "." },
+      W1: { action: "idle", line: "The World records part of the Self: coupling " + w + ". The law trims the dial's reach to " + C + "." },
+      W2: { action: "gesture", line: "The World records most of the Self: coupling " + w + ". The dial's reach is down to " + C + "." },
+      W3: { action: "gesture", line: "The World has the Self written down: coupling " + w + ". The law leaves the dial nothing to move." },
+    }[band];
+    out.observer = { action: observerRest(d.perspective_rad), line: band === "W0"
+      ? "The World is untouched: coupling " + w + ". Nothing of the Self is recorded."
+      : band === "W1" ? "The World is listening: coupling " + w + ". The Self's range shrinks to " + C + " to pay for it."
+        : "The World is holding on to the Self: coupling " + w + ". I can see the record forming; the Self can't." };
+  } else if (input === "perspective") {
+    out.demon = dialMoved;
+    out.observer = {
+      B0: { action: "idle", line: "I'm reading straight on: beta = " + beta + "." },
+      B1: { action: "stare", line: "I've tilted my reading to beta = " + beta + ". Same state, a different question." },
+      B2: { action: "stare", line: "I'm reading side-on, beta = " + beta + ". My question now runs across the Self's aim." },
+      B3: { action: "stare", line: "I'm reading from the far side, beta = " + beta + ". The Self's aim will reach me reversed." },
+    }[viewBand(d.perspective_rad)];
+  }
+  return out;
+}
+
+// The run failed: what each guide says.
+export const FAILURE = {
+  self: { action: "angry", line: "The run didn't come back, so I can't tell where my aim landed." },
+  demon: { action: "anger", line: "No counts, no verdict. The law didn't fail; the run did." },
+  observer: { action: "idle", line: "Nothing arrived to look at. Check the status line, and run again if this backend allows it." },
+};
+
+// The opening cutscene (design/persona-cutscene.md): the three guides argue over the Demon's
+// sealed forecast, one animation per line. f is the law at the page's starting dials, or null
+// when the forecast is unavailable (lines 1 and 3 then drop their numbers).
+export function openingScene(lib, f) {
+  const p = f ? lib.fmt(f.p, 3) : null, C = f ? lib.fmt(f.C, 2) : null;
+  return [
+    { persona: "demon", action: "gesture", line: p
+      ? "Before you touch a single control, I've written it down: P(Self=1) = " + p + ". The rest is arithmetic."
+      : "Before you touch a single control, I'll have written it down. The rest is arithmetic." },
+    { persona: "self", action: "idle", line: "You wrote down odds. You didn't write down what I'll intend. There's a dial right here." },
+    { persona: "demon", action: "idle", line: C
+      ? "Turn it, then. The law already says how far it can push the odds: " + C + ". You're welcome to check my work."
+      : "Turn it, then. The law already says how far it can push the odds. You're welcome to check my work." },
+    { persona: "self", action: "happy", line: "I will. If opposite intentions can swing the odds, this model calls that range my freedom." },
+    { persona: "observer", action: "stare", line: "Before either of you celebrates: what you see depends on how I look. Same state, different question, different answer." },
+    { persona: "demon", action: "anger", line: "Perspective is a reading angle, lantern. The law doesn't care where you hover." },
+    { persona: "observer", action: "dance", line: "The law doesn't. The picture does. Press Run, and we'll all read the same counts." },
+    { persona: "self", action: "angry", line: "And if the counts say nothing moved?" },
+    { persona: "observer", action: "idle", line: "Then that's the record. \u201cNo resolved influence\u201d is an answer too." },
+  ];
+}
+
 export function plainDeg(lib, rad) {
   return lib.fmtDeg(rad);
 }

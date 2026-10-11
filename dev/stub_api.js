@@ -201,7 +201,7 @@ function synthesize(kind, s) {
     shots_seen: m.shots_seen, mode: STUB.profiles[kind].mode,
   });
   return { status: "completed", settings: s, source, bit_order: "SelfWorld", counts, metrics: m, prediction: pred,
-    explanation: { factual, poetic, resolved: m.resolved, note: template.explanation.note }, baselines: template.baselines,
+    explanation: { factual, poetic, animation: template.explanation.animation, resolved: m.resolved, note: template.explanation.note }, baselines: template.baselines,
     model_version: STUB.model_version, jobs_submitted: jobsThisLoad, stub: "synthesized in JS from the closed form (seeded sampler)" };
 }
 

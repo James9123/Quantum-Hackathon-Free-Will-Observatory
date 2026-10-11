@@ -147,6 +147,7 @@ async function start() {
     baselines: byId("fwo-baselines"),
     dialogue: byId("fwo-dialogue"), dialoguePortrait: byId("fwo-dialogue-portrait"), portraitWho: byId("fwo-portrait-who"),
     dialogueName: byId("fwo-dialogue-name"), dialogueText: byId("fwo-dialogue-text"), dialogueSkip: byId("fwo-dialogue-skip"),
+    sceneSkip: byId("fwo-scene-skip"), sceneHint: byId("fwo-scene-hint"),
     sound: byId("fwo-sound"), soundHelp: byId("fwo-sound-help"),
     howBody: byId("fwo-how-body"), sureBody: byId("fwo-sure-body"), honesty: byId("fwo-honesty"),
     curve: byId("fwo-curve"), curveSummary: byId("fwo-curve-summary"), curveLegend: byId("fwo-curve-legend"),
@@ -168,6 +169,12 @@ async function start() {
   let curves = null;
   let persona = "self";
   let dialogue = null;       // the RPG-style box; created once the reduced-motion preference is known
+  // What each guide currently says, and the animation it plays saying it: its greeting, then
+  // its reaction to the last dial it can see, its reading of the last run, or the failure.
+  // A tab switch re-shows the selected guide's current line (design/persona-dialogue.md).
+  const say = {};
+  for (const k of PERSONAS) say[k] = { line: txt.INTRO[k], action: "idle" };
+  let sceneExitTo = null;    // a tab clicked during the opening cutscene: where the scene ends
 
   // ---------------------------------------------------------------- guides (persona tabs)
   // The one dialogue box moves into the selected guide's panel, so each tab really
@@ -177,19 +184,25 @@ async function start() {
     if (panel && el.dialogue.parentNode !== panel) panel.insertBefore(el.dialogue, panel.firstChild);
   }
   const tabs = createTabs(dom, PERSONAS.map((key) => ({ key, tab: byId("fwo-tab-" + key), panel: byId("fwo-panel-" + key) })),
-    (key) => { if (dialogue) dialogue.unlock(); persona = key; moveDialogue(key); schedulePoetic(); });
+    (key) => {
+      if (dialogue) {
+        dialogue.unlock();
+        if (dialogue.inScene) { sceneExitTo = key; dialogue.skipScene(); sceneExitTo = null; return; }
+      }
+      persona = key; moveDialogue(key); schedulePoetic();
+    });
 
   // What the selected guide says: its greeting before any run, its reading of the
   // result after one. The polite live region is written once per line (debounced on
   // tab changes, so arrowing through the tabs announces one line, not three).
-  function writePoetic() {
-    const have = current && current.explanation && current.explanation.poetic;
-    const line = have ? current.explanation.poetic[persona] : txt.INTRO[persona];
+  function writePoetic(opts) {
+    const now = say[persona] || { line: "", action: "idle" };
     if (dialogue) {
-      dialogue.show(persona, personaName(persona), line || "");   // writes the live region once
+      if (dialogue.inScene) return;     // the opening cutscene holds the box until it ends
+      dialogue.show(persona, personaName(persona), now.line || "", Object.assign({ action: now.action }, opts || {}));   // writes the live region once
       return;
     }
-    el.poetic.textContent = line ? personaName(persona) + ": " + line : "";
+    el.poetic.textContent = now.line ? personaName(persona) + ": " + now.line : "";
   }
   const schedulePoetic = dom.debounce(writePoetic, 250, setTimeout);
 
@@ -255,9 +268,24 @@ async function start() {
     input.addEventListener("input", () => {
       syncOutputs();
       scheduleForecast();
-      // a new draft: the portraits return to rest (the Observer stares when the point of view turns)
-      if (dialogue && !running) dialogue.setMood({ phase: "idle", perspectiveMoved: input === el.perspective });
     });
+  }
+  // A released dial (design/persona-dialogue.md section 3): each guide that can see that dial
+  // reacts, with the Demon's law for the new draft; the others keep their line. The shown
+  // guide speaks its new line if it reacted.
+  const released = new Set();
+  const flushReactions = dom.debounce(() => {
+    const d = readDraft();
+    const f = txt.idealFor(d);
+    const before = say[persona];
+    for (const input of ["intention", "coupling", "perspective"]) {
+      if (released.has(input)) Object.assign(say, txt.inputReactions(dom, input, d, f));
+    }
+    released.clear();
+    if (!running && say[persona] !== before) writePoetic();
+  }, 600, setTimeout);
+  for (const [key, input] of [["intention", el.intention], ["coupling", el.coupling], ["perspective", el.perspective]]) {
+    input.addEventListener("change", () => { released.add(key); flushReactions(); });
   }
   el.shots.addEventListener("input", () => {
     el.shots.removeAttribute("aria-invalid");
@@ -276,9 +304,19 @@ async function start() {
       dialogue = createDialogue(dom, {
         box: el.dialogue, portrait: el.dialoguePortrait, portraitWho: el.portraitWho, name: el.dialogueName,
         text: el.dialogueText, skip: el.dialogueSkip, live: el.poetic, sound: el.sound, soundHelp: el.soundHelp,
+        sceneSkip: el.sceneSkip, sceneHint: el.sceneHint,
       }, { reducedMotion: reduced, setTimeoutFn: setTimeout, seed: 20261011, sprites: SPRITES });
-      // The greeting is on screen from the start, silently: nothing is announced or played on load.
-      dialogue.show("self", personaName("self"), txt.INTRO.self, { announce: false, animate: false });
+      // The opening cutscene (design/persona-cutscene.md): the guides argue over the Demon's
+      // sealed forecast for the starting dials. The selected tab follows the speaker; at the
+      // end (or on a skip) the box slides back to the Self, or to the tab that was clicked.
+      const law = txt.idealFor(readDraft());
+      const lines = txt.openingScene(dom, Number.isFinite(law.p) && Number.isFinite(law.C) ? law : null)
+        .map((L) => Object.assign({ name: personaName(L.persona) }, L));
+      const follow = (key) => { tabs.select(key, false, true); persona = key; moveDialogue(key); };
+      dialogue.play(lines, {
+        onLine: (L) => follow(L.persona),
+        onDone: () => { follow(sceneExitTo || "self"); writePoetic({ slide: true }); },
+      });
     } catch (err) {
       dialogue = null;   // the plain live-region line still works
       console.warn("[observatory] dialogue box unavailable: " + err);
@@ -442,22 +480,16 @@ async function start() {
     el.progress.hidden = true;
   }
 
-  // Did the sample land within two standard errors of the Demon's forecast?
-  function forecastHit(run) {
-    const m = run.metrics || {}, p = run.prediction || {};
-    const pf = Number(p.p_self_1), pm = Number(m.p_self_1);
-    const n = Number((m.shots_seen || {}).display) || 0;
-    if (!Number.isFinite(pf) || !Number.isFinite(pm) || n <= 0) return null;
-    const sigma = Math.sqrt(Math.max(pf * (1 - pf), 1e-12) / n);
-    return Math.abs(pm - pf) <= 2 * sigma;
-  }
-
   function showResult(run, secs) {
     previous = current;
     current = run;
     const m = run.metrics || {};
     const expl = run.explanation || {};
-    if (dialogue) dialogue.setMood({ phase: "done", resolved: !!m.resolved, forecastHit: forecastHit(run) });
+    // each guide's reading of the run, and its animation (observatory.explanation)
+    const acts = expl.animation || {};
+    for (const k of PERSONAS) {
+      if (expl.poetic && expl.poetic[k]) say[k] = { line: expl.poetic[k], action: acts[k] || "idle" };
+    }
     renderFutures(dom, { f0: el.future0, f1: el.future1 }, current, previous, null);
     renderReadings(dom, txt, el.readings, current);
     drawChart();
@@ -493,7 +525,10 @@ async function start() {
     jobsUsed += 1;
     if (oneJob) lockRun();
     else el.run.setAttribute("aria-disabled", "true");
-    if (dialogue) dialogue.setMood({ phase: "working" });
+    // a run in flight: every guide keeps its line, at rest (the cutscene ends here if it still plays)
+    if (dialogue && dialogue.inScene) dialogue.skipScene();
+    for (const k of PERSONAS) say[k] = { line: say[k].line, action: "idle" };
+    if (dialogue) dialogue.setAction("idle");
     replace(el.runError);
     const draft = readDraft();
     status("Running one job on " + name + ": four tiny circuits" + (draft.canary ? " plus the self-check" : "") + ", " +
@@ -516,7 +551,8 @@ async function start() {
       if (run.status !== "completed") {
         const r = run.error ? run : Object.assign({ error: "the engine returned no status" }, run);
         renderRunError(dom, el.runError, r, current && current.source ? current.source.job_id : null);
-        if (dialogue) dialogue.setMood({ phase: "failed" });
+        Object.assign(say, txt.FAILURE);
+        writePoetic();
         status("The run failed after " + secs + " s: " + r.error, true);
         return;
       }

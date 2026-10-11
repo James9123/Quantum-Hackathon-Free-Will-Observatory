@@ -3,8 +3,8 @@
 // with a soft synthesized blip per few characters, and click, Enter, Space or Escape (or
 // the Skip button) to show the whole line at once.
 //
-// Portrait animation follows the page's state, never the other way round: the sprites
-// are decoration keyed to the result (see MOOD_ACTIONS). Frame timing comes from the
+// Portrait animation follows the page, never the other way round: the page says which
+// action each line plays (design/persona-dialogue.md section 6). Frame timing comes from the
 // sheet data (fps, optional per-frame ticks, optional play-once-then-hold). Under
 // prefers-reduced-motion the portrait shows one still key frame and never advances.
 //
@@ -25,17 +25,9 @@ const VOICES = {
 };
 const MASTER_GAIN = 0.125;          // about -18 dB
 
-// Which animation each guide plays in each page state. The Self reacts to its own
-// result: happy when the choice measurably moved the odds, a droop that holds when it
-// did not (or the run failed). The Demon works its orb while a job runs and when its
-// forecast held; it bristles when the sample fell outside the shot noise it expected.
-// The Observer stares (a long still, then a glance) while waiting or when the point of
-// view is turned, and dances when a run comes back. Idle otherwise.
-const MOOD_ACTIONS = {
-  self: { idle: "idle", working: "idle", done: (m) => (m.resolved ? "happy" : "angry"), failed: "angry" },
-  demon: { idle: "idle", working: "gesture", done: (m) => (m.forecastHit === false ? "anger" : "gesture"), failed: "anger" },
-  observer: { idle: (m) => (m.perspectiveMoved ? "stare" : "idle"), working: "stare", done: "dance", failed: "idle" },
-};
+// Sprite actions by guide: the Self idle | happy | angry (a droop that plays once and holds);
+// the Demon idle | gesture | anger; the Observer idle | stare (a long still, then a glance) |
+// dance. A missing sheet falls back to idle.
 const MIN_FRAME_MS = 16;
 const CHAR_MS = 25;                 // typewriter pace
 const BLIP_S = 0.045;               // blip length
@@ -54,7 +46,8 @@ function mulberry32(seed) {
 
 /**
  * @param lib   the ./dom.js helpers
- * @param els   { box, portrait, portraitWho, name, text, skip, live, sound, soundHelp }
+ * @param els   { box, portrait, portraitWho, name, text, skip, live, sound, soundHelp,
+ *                sceneSkip, sceneHint (the opening cutscene's Skip intro button and hint) }
  * @param opts  { reducedMotion, setTimeoutFn, clearTimeoutFn, seed, audioContextClass,
  *                sprites: the SPRITES table from ./sprites.js (optional) }
  */
@@ -74,6 +67,7 @@ export function createDialogue(lib, els, opts) {
   let timer = null;
   let pending = null;         // { line, i, persona } while a reveal is running
   let shows = 0;
+  let speaker = null;          // who spoke last (a new speaker slides in)
 
   // The box takes over the visible rendering; the live region keeps its job for
   // assistive tech only.
@@ -136,7 +130,7 @@ export function createDialogue(lib, els, opts) {
   // ---------------------------------------------------------------- sprite portrait
   const sprites = opts.sprites || null;
   let spriteEl = null;
-  let mood = { phase: "idle" };
+  let want = "idle";            // the action the page asked for
   const anim = { persona: null, action: null, frame: 0, step: 0, timer: null, size: 128 };
 
   function sheetFor(persona, action) {
@@ -144,10 +138,7 @@ export function createDialogue(lib, els, opts) {
   }
 
   function actionFor(persona) {
-    const table = MOOD_ACTIONS[persona] || MOOD_ACTIONS.self;
-    const entry = table[mood.phase] || "idle";
-    const action = typeof entry === "function" ? entry(mood) : entry;
-    return sheetFor(persona, action) ? action : "idle";
+    return sheetFor(persona, want) ? want : "idle";
   }
 
   function pickSize(sheet) {
@@ -194,7 +185,7 @@ export function createDialogue(lib, els, opts) {
     anim.step += 1;
     if (anim.step >= order.length) {
       if (!sheet.loop) {
-        // play once, then hold (the Self's droop stays on its last frame until the mood changes)
+        // play once, then hold (the Self's droop stays on its last frame until the page asks for another action)
         const hold = sheet.hold === null || sheet.hold === undefined ? order[order.length - 1] : sheet.hold;
         drawFrame(sheet, hold);
         return;
@@ -246,10 +237,9 @@ export function createDialogue(lib, els, opts) {
     }
   }
 
-  /** Tell the portrait what the page is doing: {phase: idle|working|done|failed,
-   *  resolved, forecastHit, perspectiveMoved}. Only the shown guide animates. */
-  function setMood(next) {
-    mood = Object.assign({ phase: "idle" }, next || {});
+  /** Change the shown guide's animation without retyping its line. */
+  function setAction(action) {
+    want = action || "idle";
     if (anim.persona && spriteEl) playAction(anim.persona, actionFor(anim.persona), false);
   }
 
@@ -274,7 +264,7 @@ export function createDialogue(lib, els, opts) {
   function setCue(done) {
     els.box.classList.toggle("fwo-dialogue--done", !!done);
     els.box.classList.toggle("fwo-dialogue--typing", !done);
-    if (els.skip) els.skip.hidden = !!done;
+    if (els.skip) els.skip.hidden = !!done || scene !== null;   // in the cutscene a press on the box does it
   }
 
   function finish() {
@@ -304,17 +294,26 @@ export function createDialogue(lib, els, opts) {
     timer = setTimeoutFn(step, pause);
   }
 
-  /** Show `line` as spoken by `persona`. Writes the live region once, unless
-   *  opts.announce is false (the silent greeting on page load); opts.animate false
-   *  shows the whole line at once. */
+  /** Show `line` as spoken by `persona`, playing opts.action (default idle). Writes the live
+   *  region once, unless opts.announce is false (nothing is announced on page load);
+   *  opts.animate false shows the whole line at once. A change of speaker (or opts.slide)
+   *  slides the new speaker in. */
   function show(persona, name, line, opts) {
-    const o = Object.assign({ announce: true, animate: true }, opts || {});
+    const o = Object.assign({ announce: true, animate: true, action: "idle", slide: false }, opts || {});
     stopTimer();
     pending = null;
     shows += 1;
     const text = String(line || "");
     if (o.announce) els.live.textContent = text ? name + ": " + text : "";
     els.box.hidden = false;
+    const changed = speaker !== null && speaker !== persona;
+    speaker = persona;
+    if ((changed || o.slide) && !reduced) {
+      els.box.classList.remove("fwo-dialogue--enter");
+      void els.box.offsetWidth;             // restart the slide
+      els.box.classList.add("fwo-dialogue--enter");
+    }
+    want = o.action || "idle";
     setPortrait(persona, name);
     els.name.textContent = name;
     if (reduced || !o.animate || !text.length) {
@@ -336,22 +335,89 @@ export function createDialogue(lib, els, opts) {
     els.box.hidden = true;
   }
 
+  // ---------------------------------------------------------------- the opening cutscene
+  // A scripted exchange (design/persona-cutscene.md), one line per press: click, Enter or
+  // Space completes the typing and a second press shows the next line; Escape or "Skip
+  // intro" ends the scene. The page hears each line (onLine: it selects the speaker's tab)
+  // and the end (onDone(skipped)). The first line is not announced (nothing speaks on page
+  // load); every later line follows a press, so it is announced once like any other.
+  let scene = null;           // { lines, i, onLine, onDone }
+
+  function sceneLine() {
+    const L = scene.lines[scene.i];
+    if (scene.onLine) scene.onLine(L, scene.i);
+    show(L.persona, L.name, L.line, { action: L.action, announce: scene.i > 0, slide: scene.i === 0 });
+  }
+
+  function play(lines, o) {
+    if (!lines || !lines.length) return;
+    scene = { lines, i: 0, onLine: o && o.onLine, onDone: o && o.onDone };
+    els.box.classList.add("fwo-dialogue--scene");
+    if (els.sceneSkip) els.sceneSkip.hidden = false;
+    if (els.sceneHint) els.sceneHint.hidden = false;
+    if (typeof document !== "undefined") document.addEventListener("keydown", onDocKey);
+    sceneLine();
+  }
+
+  function advance() {
+    if (!scene) return;
+    if (pending) { finish(); return; }
+    scene.i += 1;
+    if (scene.i >= scene.lines.length) endScene(false);
+    else sceneLine();
+  }
+
+  function endScene(skipped) {
+    if (!scene) return;
+    const done = scene.onDone;
+    scene = null;
+    stopTimer();
+    pending = null;
+    els.box.classList.remove("fwo-dialogue--scene");
+    if (els.sceneSkip) els.sceneSkip.hidden = true;
+    if (els.sceneHint) els.sceneHint.hidden = true;
+    if (typeof document !== "undefined") document.removeEventListener("keydown", onDocKey);
+    if (done) done(!!skipped);
+  }
+
+  // Keys while the scene plays and focus rests on the page itself, not in a control (the box
+  // handles its own keys). Escape skips from anywhere.
+  function onDocKey(ev) {
+    if (!scene || els.box.contains(ev.target)) return;
+    if (ev.key === "Escape") { endScene(true); return; }
+    const t = ev.target;
+    const free = !t || t === document.body || t === document.documentElement;
+    if (!free || (ev.key !== "Enter" && ev.key !== " ")) return;
+    ev.preventDefault();
+    unlock();
+    advance();
+  }
+
   function onSkipEvent(ev) {
     if (ev.type === "keydown" && !["Enter", " ", "Escape"].includes(ev.key)) return;
     if (ev.type === "keydown") ev.preventDefault();
+    if (scene) {
+      if (ev.type === "keydown" && ev.key === "Escape") { endScene(true); return; }
+      unlock();                 // a click or a key press is the gesture that allows the blips
+      advance();
+      return;
+    }
     if (pending) finish();
   }
   els.box.addEventListener("click", onSkipEvent);
   els.box.addEventListener("keydown", onSkipEvent);
   if (els.skip) els.skip.addEventListener("click", (ev) => { ev.stopPropagation(); finish(); });
+  if (els.sceneSkip) els.sceneSkip.addEventListener("click", (ev) => { ev.stopPropagation(); endScene(true); });
 
   return {
-    unlock, show, clear, finish, setMood, refresh,
+    unlock, show, clear, finish, setAction, refresh, play,
+    skipScene() { endScene(true); },
+    get inScene() { return scene !== null; },
     get soundEnabled() { return soundOn && unlocked; },
     get typing() { return pending !== null; },
     get shows() { return shows; },
     get animation() { return { persona: anim.persona, action: anim.action, frame: anim.frame, size: anim.size, running: anim.timer !== null }; },
-    get mood() { return Object.assign({}, mood); },
+    get action() { return want; },
     setSound(on) { soundOn = !!on; if (els.sound && !els.sound.disabled) els.sound.checked = soundOn; },
   };
 }

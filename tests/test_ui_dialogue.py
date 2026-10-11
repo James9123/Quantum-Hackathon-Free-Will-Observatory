@@ -44,7 +44,8 @@ def test_audio_only_after_a_gesture():
     assert re.search(r'addEventListener\("change", \(\) => \{\s*soundOn = els.sound.checked;\s*if \(soundOn\) unlock\(\);', DIALOGUE)
     run_handler = MAIN[MAIN.index('el.run.addEventListener("click"'):]
     assert run_handler.splitlines()[1].strip().startswith("if (dialogue) dialogue.unlock();")
-    assert "if (dialogue) dialogue.unlock(); persona = key; moveDialogue(key); schedulePoetic();" in MAIN
+    tab_handler = MAIN[MAIN.index("const tabs = createTabs("):MAIN.index("function writePoetic(")]
+    assert "dialogue.unlock();" in tab_handler and "persona = key; moveDialogue(key); schedulePoetic();" in tab_handler
 
 
 def test_live_region_written_once_per_show_and_only_there():
@@ -54,8 +55,8 @@ def test_live_region_written_once_per_show_and_only_there():
     assert "els.live" not in step                      # the typewriter never touches the live region
     assert "aria-live" not in DIALOGUE                 # it relies on the existing region, never adds one
     # main.js hands the line to the box instead of writing the live region twice
-    wp = MAIN[MAIN.index("function writePoetic()"):MAIN.index("const schedulePoetic")]
-    assert "dialogue.show(persona, personaName(persona), line" in wp
+    wp = MAIN[MAIN.index("function writePoetic("):MAIN.index("const schedulePoetic")]
+    assert "dialogue.show(persona, personaName(persona), now.line" in wp
     assert wp.count("el.poetic.textContent =") == 1     # the no-box fallback only
 
 
@@ -128,14 +129,29 @@ def test_sprite_timing_rules_from_the_handoff():
     assert data["observer"]["idle"]["frames"] == 12 and data["demon"]["idle"]["frames"] == 6
 
 
-def test_every_mapped_action_exists():
+def test_every_action_the_page_asks_for_exists():
+    """design/persona-dialogue.md section 6: the page (text.js) and the engine name the action
+    each guide plays; every name must be a sheet in sprites.js for that guide."""
     data = _sprites()
-    body = DIALOGUE[DIALOGUE.index("const MOOD_ACTIONS = {"):DIALOGUE.index("const MIN_FRAME_MS")]
-    for persona, actions in (("self", ("idle", "happy", "angry")), ("demon", ("idle", "gesture", "anger")),
-                             ("observer", ("idle", "stare", "dance"))):
+    allowed = {"self": {"idle", "happy", "angry"}, "demon": {"idle", "gesture", "anger"},
+               "observer": {"idle", "stare", "dance"}}
+    for persona, actions in allowed.items():
         for action in actions:
-            assert '"%s"' % action in body, (persona, action)
             assert action in data[persona], (persona, action)
+    text = _read("qollab_project/ui/text.js")
+    scene = text[text.index("export function openingScene("):]
+    pairs = re.findall(r'persona: "(\w+)", action: "(\w+)"', scene)
+    assert pairs == [("demon", "gesture"), ("self", "idle"), ("demon", "idle"), ("self", "happy"), ("observer", "stare"),
+                     ("demon", "anger"), ("observer", "dance"), ("self", "angry"), ("observer", "idle")]
+    failure = text[text.index("export const FAILURE"):text.index("export function openingScene(")]
+    for persona, action in re.findall(r'(\w+): \{ action: "(\w+)"', failure):
+        assert action in allowed[persona], (persona, action)
+    reactions = text[text.index("export function inputReactions("):text.index("export const FAILURE")]
+    assert set(re.findall(r'action: "(\w+)"', reactions)) <= {"idle", "gesture", "stare"}
+    engine = _read("qollab_project/observatory.py")
+    lines = engine[engine.index("def _self_line("):engine.index("def explanation(")]
+    for name in re.findall(r'(?:return [^\n]*?|action = )"(\w+)"', lines):
+        assert any(name in acts for acts in allowed.values()), name
 
 
 def test_player_honours_hold_ticks_and_reduced_motion():
@@ -147,11 +163,32 @@ def test_player_honours_hold_ticks_and_reduced_motion():
     assert "grid-template-columns: 128px 1fr" in CSS and "grid-template-columns: 64px 1fr" in CSS
 
 
-def test_main_js_drives_the_moods():
+def test_main_js_drives_the_guides():
     assert 'import { SPRITES } from "./ui/sprites.js";' in MAIN
     assert "sprites: SPRITES" in MAIN
-    assert 'dialogue.setMood({ phase: "working" })' in MAIN
-    assert 'dialogue.setMood({ phase: "failed" })' in MAIN
-    assert 'dialogue.setMood({ phase: "done", resolved: !!m.resolved, forecastHit: forecastHit(run) })' in MAIN
-    assert 'dialogue.setMood({ phase: "idle", perspectiveMoved: input === el.perspective })' in MAIN
+    assert "setMood" not in MAIN and "MOOD_ACTIONS" not in DIALOGUE
+    # each guide keeps its current line and action; a tab switch re-shows it
+    assert 'for (const k of PERSONAS) say[k] = { line: txt.INTRO[k], action: "idle" };' in MAIN
+    # a released dial: only the guides that can see it react (600 ms, on change)
+    assert 'input.addEventListener("change", () => { released.add(key); flushReactions(); });' in MAIN
+    assert "}, 600, setTimeout);" in MAIN and "txt.inputReactions(dom, input, d, f)" in MAIN
+    # a run in flight: idle, lines kept; the result: the engine's lines and animations; a failure
+    assert 'dialogue.setAction("idle");' in MAIN
+    assert "say[k] = { line: expl.poetic[k], action: acts[k] || \"idle\" };" in MAIN
+    assert "Object.assign(say, txt.FAILURE);" in MAIN
+    # the opening cutscene: tabs follow the speaker quietly; the box slides back at the end
+    assert "dialogue.play(lines, {" in MAIN and "tabs.select(key, false, true)" in MAIN
+    assert "sceneSkip: el.sceneSkip, sceneHint: el.sceneHint," in MAIN
+    assert "writePoetic({ slide: true })" in MAIN
+
+
+def test_opening_cutscene_controls():
+    assert re.search(r'id="fwo-scene-skip"[^>]*hidden>Skip intro</button>', HTML)
+    assert re.search(r'id="fwo-scene-hint"[^>]*hidden>', HTML)
+    play = DIALOGUE[DIALOGUE.index("function play("):DIALOGUE.index("function onSkipEvent(")]
+    assert "announce: scene.i > 0" in DIALOGUE                     # nothing is announced on page load
+    assert "if (pending) { finish(); return; }" in play             # first press completes the typing
+    assert 'if (ev.key === "Escape") { endScene(true); return; }' in play
+    assert 'document.removeEventListener("keydown", onDocKey)' in play
+    assert "fwo-slide-in" in CSS and "fwo-dialogue--enter" in DIALOGUE
     assert "dialogue.refresh()" in MAIN

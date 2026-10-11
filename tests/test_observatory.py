@@ -562,7 +562,10 @@ def test_explanation_unresolved_states_the_rule_in_every_voice():
     for line in ex["poetic"].values():
         assert NO_RESOLVED in line
     assert "uncertainty alone is not freedom" in ex["poetic"]["self"]       # Act 3 line
-    assert "World" in ex["poetic"]["self"]                                     # I = 1 bit: strong World
+    # the Self cannot see the World; the Demon keeps its ledger and the Observer sees it all
+    assert "World" not in ex["poetic"]["self"]
+    assert "the whole Self" in ex["poetic"]["demon"] and "the World holds" in ex["poetic"]["observer"]
+    assert ex["animation"] == {"self": "angry", "demon": "gesture", "observer": "dance"}
 
 
 def test_unresolved_text_does_not_claim_the_law_says_nothing_when_ideal_capacity_is_large():
@@ -577,13 +580,13 @@ def test_unresolved_text_does_not_claim_the_law_says_nothing_when_ideal_capacity
     for line in ex["poetic"].values():
         assert NO_RESOLVED in line
     assert "moves nothing" not in ex["poetic"]["demon"]
-    assert "no longer reshape" not in ex["poetic"]["self"]
+    assert "stay where they are" not in ex["poetic"]["self"]                # the measured range is 0.75
     assert "%.2f" % pred["capacity"] in ex["poetic"]["demon"]              # the law's value is quoted
     # at full coupling the law does say zero, and the Demon may say so
     s1 = obs.validate_settings({"world_coupling": 1.0, "shots_per_probe": 8})
     ex1 = obs.explanation(s1, m, obs.prediction(s1))
     assert "moves nothing" in ex1["poetic"]["demon"] and NO_RESOLVED in ex1["poetic"]["demon"]
-    assert "no longer reshape" in ex1["poetic"]["self"]
+    assert "too small to show" in ex1["poetic"]["self"]                     # the Self only knows its own range
 
 
 def test_explanation_demon_fit_wording_and_future_label():
@@ -599,6 +602,58 @@ def test_explanation_demon_fit_wording_and_future_label():
     assert "nearly settled" in ex["poetic"]["self"]                           # openness 0, resolved
     assert "Predictability and capacity can coexist" in ex["poetic"]["self"]  # Act 2 line
     assert "1.00" in ex["poetic"]["self"]
+
+
+def _counts(p1, c, conn_world=False, n=1024):
+    """Hand counts: display P(Self=1) = p1; intent probes p_low/p_high around 0.5 with range c."""
+    k = int(round(p1 * n)); lo = int(round((0.5 - c / 2) * n)); hi = int(round((0.5 + c / 2) * n))
+    half = n // 2
+    return {
+        "display": {"00": n - k, "01": 0, "10": k, "11": 0},
+        "intent_low": {"00": n - lo, "01": 0, "10": lo, "11": 0},
+        "intent_high": {"00": n - hi, "01": 0, "10": hi, "11": 0},
+        "connection": ({"00": half, "01": 0, "10": 0, "11": half} if conn_world
+                       else {"00": half, "01": 0, "10": half, "11": 0}),
+    }
+
+
+@pytest.mark.parametrize("settings,counts,anim,phrases", [
+    # Act 1: both futures open, full reach, blank ledger
+    ({"intention_rad": PI / 2}, _counts(0.485, 1.0), {"self": "happy", "demon": "anger", "observer": "idle"},
+     {"self": "that range is my freedom", "demon": "A blank ledger", "observer": "The whole picture"}),
+    # Act 2: aimed for Future 1 and settled there
+    ({"intention_rad": PI}, _counts(1.0, 1.0), {"self": "happy", "demon": "anger", "observer": "idle"},
+     {"self": "Predictability and capacity can coexist", "demon": "within the shot noise of 1024 shots",
+      "observer": "beta = 0.00 rad"}),
+    # Reversal: aimed for Future 0, read from the far side
+    ({"intention_rad": 0.0, "perspective_rad": PI}, _counts(1.0, 1.0), {"self": "idle", "demon": "anger", "observer": "stare"},
+     {"self": "Something I can't see turned my aim", "demon": "dial moved the odds by 1.00",
+      "observer": "turned by 180\u00b0: I changed the question, not the state"}),
+])
+def test_persona_lines_follow_what_each_guide_can_see(settings, counts, anim, phrases):
+    s = obs.validate_settings(settings)
+    m = obs.metrics(counts)
+    ex = obs.explanation(s, m, obs.prediction(s))
+    assert ex["animation"] == anim
+    for persona, phrase in phrases.items():
+        assert phrase in ex["poetic"][persona], (persona, ex["poetic"][persona])
+    # the Self never names the World or the readout; numbers are quoted, not invented
+    assert "World" not in ex["poetic"]["self"] and "perspective" not in ex["poetic"]["self"]
+    for line in ex["poetic"].values():
+        assert "proves" not in line.lower() and "free will" not in line.lower()
+
+
+def test_demon_bands_follow_the_world_record():
+    m = obs.metrics(_counts(0.5, 0.7))
+    for w, band_phrase, act in [(0.3, "of the 0.", "idle"), (0.8, "The record holds.", "gesture")]:
+        s = obs.validate_settings({"world_coupling": w})
+        ex = obs.explanation(s, m, obs.prediction(s))
+        assert band_phrase in ex["poetic"]["demon"] and ex["animation"]["demon"] == act, w
+    s = obs.validate_settings({"world_coupling": 0.0})
+    far = obs.metrics(_counts(0.9, 0.7))          # forecast 0.5, sample 0.9: outside the noise
+    ex = obs.explanation(s, far, obs.prediction(s))
+    assert "outside the shot noise" in ex["poetic"]["demon"] and "this sample strayed" in ex["poetic"]["demon"]
+    assert ex["animation"]["demon"] == "anger"
 
 
 # ---------------------------------------------------------------- one job
