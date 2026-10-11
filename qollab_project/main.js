@@ -86,6 +86,18 @@ function prefersReducedMotion() {
   }
 }
 
+// Theme flags for the 3D view: a transparent canvas (the panel's CSS background shows through)
+// and soft halos behind the spheres. Set by a theme as --fwo-scene-transparent: 1 / --fwo-scene-halo: 1.
+function sceneFlags(appEl) {
+  const out = { transparent: false, halo: false };
+  try {
+    const cs = getComputedStyle(appEl);
+    out.transparent = cs.getPropertyValue("--fwo-scene-transparent").trim() === "1";
+    out.halo = cs.getPropertyValue("--fwo-scene-halo").trim() === "1";
+  } catch (err) { /* defaults */ }
+  return out;
+}
+
 // Scene colours come from CSS variables, so a theme in main.css recolours the 3D view too.
 function sceneColors(appEl) {
   const keys = { bg: "bg", self: "self", selfLight: "self-light", selfDeep: "self-deep", world: "world",
@@ -260,7 +272,7 @@ async function start() {
       console.warn("[observatory] dialogue box unavailable: " + err);
     }
   }
-  const scene = createScene(THREE, dom, el.sceneHost, { reducedMotion: reduced, setTimeoutFn: setTimeout, colors: sceneColors(el.app) });
+  const scene = createScene(THREE, dom, el.sceneHost, Object.assign({ reducedMotion: reduced, setTimeoutFn: setTimeout, colors: sceneColors(el.app) }, sceneFlags(el.app)));
   el.motion.checked = !reduced;
   if (reduced) el.motionHelp.textContent = "Your system asks for reduced motion, so animation is off; tick to allow it anyway.";
   el.motion.addEventListener("change", () => { if (scene.available) scene.setMotion(el.motion.checked); });

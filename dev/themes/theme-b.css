@@ -1,0 +1,367 @@
+/* Direction B, "Instrument console", ported onto the friendly page (dev only; loaded by
+   dev/boot.js with ?theme=b, never uploaded). Flat dark slate, IBM Plex Mono readouts and
+   headings, IBM Plex Sans text, square 3 px corners, thin grid lines, precision-scale
+   gauges, a cyan Self and an amber World. Dense, technical, calm.
+   Every selector starts with #fwo-app[data-theme="b"], so the base stylesheet and the other
+   three directions are untouched. No external assets besides the fonts: the grids, ticks,
+   needles, brackets and corner marks are gradients, borders and pseudo-elements. */
+@import "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,500&display=swap";
+
+/* ------------------------------------------------------------ tokens + page */
+#fwo-app[data-theme="b"] {
+  --fwo-bg: #14171b; --fwo-surface: #1b1f24; --fwo-surface-2: #21262c; --fwo-border: #31383f; --fwo-control: #6b7784;
+  --fwo-text: #e7eaed; --fwo-muted: #9aa4ad; --fwo-self: #45c8e0; --fwo-self-strong: #7fdcf0; --fwo-world: #f0a44a;
+  --fwo-on-accent: #062832; --fwo-focus: #ffd84d; --fwo-ok-fg: #46c98b; --fwo-ok-bg: #12261d; --fwo-warn-fg: #e5b85c;
+  --fwo-warn-bg: #2b2310; --fwo-error-fg: #f06a5e; --fwo-error-bg: #2e1615; --fwo-info-bg: #1e2830; --fwo-ghost: #8b96a1;
+  --fwo-chart-grid: #262c33; --fwo-chart-forecast: #f0a44a; --fwo-chart-band: #9aa4ad; --fwo-radius: 3px;
+  --fwo-font-display: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fwo-font-text: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* 3D scene: transparent canvas over the engineering grid, no halos (wireframe feel) */
+  --fwo-scene-bg: #16191e; --fwo-scene-self: #45c8e0; --fwo-scene-self-light: #7fdcf0; --fwo-scene-self-deep: #135f6d;
+  --fwo-scene-world: #f0a44a; --fwo-scene-world-light: #f6c78a; --fwo-scene-world-deep: #7a4b12; --fwo-scene-ghost: #8b96a1;
+  --fwo-scene-link: #45c8e0; --fwo-scene-label-bg: rgba(22, 25, 30, 0.86);
+  --fwo-scene-transparent: 1; --fwo-scene-halo: 0;
+  /* theme-local shades */
+  --b-mono: var(--fwo-font-display); --b-sans: var(--fwo-font-text);
+  --b-well: #10141a; --b-tick: #3a424b; --b-tick-maj: #57626d; --b-dash: #2a6e7c; --b-mark: #4a535d;
+  --b-text-2: #b9c0c7; --b-text-3: #c3cad1; --b-grid: rgba(255, 255, 255, 0.028);
+
+  font-family: var(--b-sans); font-size: 14px; line-height: 1.5;
+  padding: 24px 28px 44px;
+  /* faint 100 px engineering grid over the whole page (its colour is still #14171b) */
+  background: repeating-linear-gradient(90deg, var(--b-grid) 0 1px, transparent 1px 100px),
+              repeating-linear-gradient(0deg, var(--b-grid) 0 1px, transparent 1px 100px), var(--fwo-bg);
+}
+#fwo-app[data-theme="b"] a { color: var(--fwo-self-strong); text-decoration-color: var(--b-dash); }
+#fwo-app[data-theme="b"] h1, #fwo-app[data-theme="b"] h2, #fwo-app[data-theme="b"] h3, #fwo-app[data-theme="b"] h4 {
+  font-family: var(--b-mono); letter-spacing: 0.01em;
+}
+#fwo-app[data-theme="b"] h2 { font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--fwo-text); }
+#fwo-app[data-theme="b"] h3 { font-size: 12.5px; font-weight: 600; line-height: 1.3; }
+
+/* ------------------------------------------------------------ hero */
+#fwo-app[data-theme="b"] .fwo-hero { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--fwo-border); }
+#fwo-app[data-theme="b"] .fwo-kicker {
+  font: 500 11px/1.5 var(--b-mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--fwo-self); margin-bottom: 8px;
+}
+#fwo-app[data-theme="b"] h1.fwo-title { font: 700 30px/1.15 var(--b-mono); letter-spacing: 0.01em; color: var(--fwo-text); margin-bottom: 10px; }
+#fwo-app[data-theme="b"] .fwo-hook { font: 400 14px/1.55 var(--b-sans); color: var(--b-text-2); max-width: 860px; margin-bottom: 10px; }
+#fwo-app[data-theme="b"] .fwo-hook strong { color: var(--fwo-text); }
+#fwo-app[data-theme="b"] .fwo-steps { font: 500 12px/1.4 var(--b-mono); color: var(--b-text-2); gap: 8px 22px; margin-top: 10px; }
+#fwo-app[data-theme="b"] .fwo-step-n {
+  width: 1.7em; height: 1.7em; border-radius: 2px; font: 700 11px/1 var(--b-mono);
+  background: var(--fwo-self); color: var(--fwo-on-accent);
+}
+
+/* ------------------------------------------------------------ panels (wireframe frames) */
+#fwo-app[data-theme="b"] .fwo-layout { gap: 16px; margin-bottom: 16px; }
+#fwo-app[data-theme="b"] .fwo-col { gap: 16px; }
+#fwo-app[data-theme="b"] .fwo-panel {
+  position: relative; border: 1px solid var(--fwo-border); border-radius: 3px; background: var(--fwo-surface); padding: 16px;
+}
+/* the registration mark in the corner of every frame */
+#fwo-app[data-theme="b"] .fwo-panel::before {
+  content: "+"; position: absolute; top: 1px; left: 5px; font: 400 10px/1 var(--b-mono); color: var(--b-mark); pointer-events: none;
+}
+#fwo-app[data-theme="b"] .fwo-panel > h2 { padding-bottom: 8px; margin: 0 0 12px; border-bottom: 1px solid var(--fwo-border); }
+#fwo-app[data-theme="b"] .fwo-panel > h2::after,
+#fwo-app[data-theme="b"] .fwo-more > h2::after { content: ""; display: block; width: 44px; height: 1px; background: var(--fwo-self); margin-top: 5px; }
+#fwo-app[data-theme="b"] .fwo-more > h2 { font-size: 13.5px; margin: 22px 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--fwo-border); }
+#fwo-app[data-theme="b"] h2 .fwo-step-n { margin-right: 8px; vertical-align: 0.1em; }
+
+/* ------------------------------------------------------------ guide: segmented tabs + dialogue */
+#fwo-app[data-theme="b"] .fwo-tabs { gap: 0; margin-bottom: 12px; }
+#fwo-app[data-theme="b"] .fwo-tab {
+  background: var(--fwo-surface); border: 1px solid var(--fwo-border); border-radius: 0; margin-left: -1px;
+  padding: 7px 10px; min-height: 50px; color: var(--fwo-muted); font-family: var(--b-mono);
+}
+#fwo-app[data-theme="b"] .fwo-tab:first-child { margin-left: 0; border-radius: 3px 0 0 3px; }
+#fwo-app[data-theme="b"] .fwo-tab:last-child { border-radius: 0 3px 3px 0; }
+#fwo-app[data-theme="b"] .fwo-tab:hover { background: var(--fwo-surface-2); color: var(--fwo-text); border-color: var(--fwo-border); }
+#fwo-app[data-theme="b"] .fwo-tab[aria-selected="true"] {
+  background: var(--fwo-self); border-color: var(--fwo-self); color: var(--fwo-on-accent); box-shadow: none; position: relative; z-index: 1;
+}
+#fwo-app[data-theme="b"] .fwo-tab:focus-visible { outline-offset: -3px; position: relative; z-index: 2; }
+#fwo-app[data-theme="b"] .fwo-tab-name { font: 600 12px/1.25 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-tab-role { font: 400 10px/1.3 var(--b-mono); color: var(--fwo-muted); }
+#fwo-app[data-theme="b"] .fwo-tab[aria-selected="true"] .fwo-tab-name,
+#fwo-app[data-theme="b"] .fwo-tab[aria-selected="true"] .fwo-tab-role { color: var(--fwo-on-accent); }
+
+#fwo-app[data-theme="b"] .fwo-dialogue {
+  border: 1px solid var(--fwo-border); border-radius: 3px; background: var(--fwo-surface-2); padding: 14px; gap: 6px 14px;
+  /* double rule: a second hairline 3 px inside the frame */
+  box-shadow: inset 0 0 0 3px var(--fwo-surface-2), inset 0 0 0 4px rgba(49, 56, 63, 0.8);
+}
+#fwo-app[data-theme="b"] .fwo-portrait {
+  position: relative; border: 1px dashed var(--fwo-control); border-radius: 2px; background: var(--b-well);
+}
+#fwo-app[data-theme="b"] .fwo-portrait--sprite { border-style: solid; border-color: var(--fwo-border); }
+#fwo-app[data-theme="b"] .fwo-dialogue--self .fwo-portrait { border-color: var(--b-dash); }
+#fwo-app[data-theme="b"] .fwo-dialogue--demon .fwo-portrait { border-color: #7a4b12; }
+/* viewfinder corners on the portrait tile (hairlines on the tile's own edge; the sprite itself is untouched) */
+#fwo-app[data-theme="b"] .fwo-portrait::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; --c: var(--fwo-self);
+  background:
+    linear-gradient(var(--c), var(--c)) 0 0 / 9px 1px, linear-gradient(var(--c), var(--c)) 0 0 / 1px 9px,
+    linear-gradient(var(--c), var(--c)) 100% 0 / 9px 1px, linear-gradient(var(--c), var(--c)) 100% 0 / 1px 9px,
+    linear-gradient(var(--c), var(--c)) 0 100% / 9px 1px, linear-gradient(var(--c), var(--c)) 0 100% / 1px 9px,
+    linear-gradient(var(--c), var(--c)) 100% 100% / 9px 1px, linear-gradient(var(--c), var(--c)) 100% 100% / 1px 9px;
+  background-repeat: no-repeat;
+}
+#fwo-app[data-theme="b"] .fwo-dialogue--demon .fwo-portrait::after { --c: var(--fwo-world); }
+#fwo-app[data-theme="b"] .fwo-dialogue--observer .fwo-portrait::after { --c: var(--b-tick-maj); }
+#fwo-app[data-theme="b"] .fwo-portrait-ph { font: 500 9px/1.3 var(--b-mono); letter-spacing: 0.12em; }
+#fwo-app[data-theme="b"] .fwo-portrait-who { font: 600 11.5px/1.2 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-portrait-size { font: 400 9.5px/1.3 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-dialogue-name { font: 600 12.5px/1.3 var(--b-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+#fwo-app[data-theme="b"] .fwo-dialogue-skip { font: 500 11px/1 var(--b-mono); letter-spacing: 0.04em; border-radius: 2px; min-height: 36px; padding: 4px 10px; }
+#fwo-app[data-theme="b"] .fwo-dialogue-text { font: 400 15px/1.5 var(--b-sans); min-height: 5em; margin-top: 6px; }
+#fwo-app[data-theme="b"] .fwo-tip { font: 400 13px/1.5 var(--b-sans); color: var(--b-text-2); margin: 8px 2px 0; }
+#fwo-app[data-theme="b"] .fwo-guide-foot { border-top: 1px dashed var(--fwo-border); margin-top: 12px; padding-top: 8px; }
+
+/* ------------------------------------------------------------ dials + run */
+#fwo-app[data-theme="b"] .fwo-field { margin: 12px 0 14px; }
+#fwo-app[data-theme="b"] .fwo-field > label, #fwo-app[data-theme="b"] .fwo-range-head label,
+#fwo-app[data-theme="b"] .fwo-check > label { font: 500 12.5px/1.35 var(--b-sans); color: var(--fwo-text); }
+#fwo-app[data-theme="b"] .fwo-tech { font: 400 11px/1.3 var(--b-mono); color: var(--fwo-muted); }
+#fwo-app[data-theme="b"] .fwo-out { font: 600 11.5px/1.5 var(--b-mono); color: var(--fwo-self); }
+#fwo-app[data-theme="b"] .fwo-small { font-size: 12px; line-height: 1.5; }
+#fwo-app[data-theme="b"] .fwo-help { font: 400 11.5px/1.45 var(--b-sans); color: var(--fwo-muted); margin-top: 3px; }
+#fwo-app[data-theme="b"] input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--fwo-self); }
+
+/* native range, drawn as a dark rail with ruler ticks and a rectangular cyan thumb */
+#fwo-app[data-theme="b"] input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 36px; min-height: 36px; margin: 2px 0 0; padding: 0;
+  background: transparent; cursor: pointer; border-radius: 2px;
+}
+#fwo-app[data-theme="b"] input[type="range"]:focus-visible { outline: 3px solid var(--fwo-focus); outline-offset: -3px; }
+#fwo-app[data-theme="b"] input[type="range"]::-webkit-slider-runnable-track {
+  box-sizing: border-box; height: 8px; border: 1px solid var(--b-tick); border-radius: 2px;
+  background: repeating-linear-gradient(90deg, #2a3037 0 1px, transparent 1px calc((100% - 1px) / 10)), var(--b-well);
+}
+#fwo-app[data-theme="b"] input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; box-sizing: border-box; width: 14px; height: 26px; margin-top: -9px;
+  border: 1px solid #0b2a31; border-radius: 2px;
+  background: linear-gradient(90deg, transparent 0 calc(50% - 0.5px), #0b2a31 calc(50% - 0.5px) calc(50% + 0.5px), transparent calc(50% + 0.5px)) 0 3px / 100% calc(100% - 6px) no-repeat,
+              var(--fwo-self);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+#fwo-app[data-theme="b"] input[type="range"]::-moz-range-track {
+  box-sizing: border-box; height: 8px; border: 1px solid var(--b-tick); border-radius: 2px; background: var(--b-well);
+}
+#fwo-app[data-theme="b"] input[type="range"]::-moz-range-progress {
+  height: 6px; background: repeating-linear-gradient(90deg, var(--fwo-self) 0 3px, transparent 3px 6px);
+}
+#fwo-app[data-theme="b"] input[type="range"]::-moz-range-thumb {
+  box-sizing: border-box; width: 14px; height: 26px; border: 1px solid #0b2a31; border-radius: 2px; background: var(--fwo-self);
+}
+#fwo-app[data-theme="b"] input[type="number"], #fwo-app[data-theme="b"] select {
+  font: 500 13px/1.4 var(--b-mono); color: var(--fwo-text); background: var(--b-well);
+  border: 1px solid var(--fwo-control); border-radius: 2px; min-height: 38px;
+}
+
+#fwo-app[data-theme="b"] .fwo-actions { margin-top: 16px; }
+#fwo-app[data-theme="b"] .fwo-button {
+  font: 600 13.5px/1.2 var(--b-mono); letter-spacing: 0.06em; border: 1px solid var(--b-dash); border-radius: 3px;
+  background: var(--fwo-self); color: var(--fwo-on-accent); min-height: 46px; padding: 10px 18px;
+}
+#fwo-app[data-theme="b"] .fwo-button .fwo-step-n { background: var(--fwo-on-accent); color: var(--fwo-self); }
+#fwo-app[data-theme="b"] .fwo-button:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--fwo-self-strong); border-color: var(--b-dash); }
+#fwo-app[data-theme="b"] .fwo-button:disabled, #fwo-app[data-theme="b"] .fwo-button[aria-disabled="true"] {
+  background: var(--fwo-surface-2); color: var(--fwo-muted); border: 1px dashed var(--b-mark);
+}
+#fwo-app[data-theme="b"] .fwo-button:disabled .fwo-step-n, #fwo-app[data-theme="b"] .fwo-button[aria-disabled="true"] .fwo-step-n {
+  background: var(--b-mark); color: var(--fwo-bg);
+}
+#fwo-app[data-theme="b"] #fwo-run-policy { font: 400 11.5px/1.45 var(--b-sans); color: var(--fwo-muted); margin-top: 8px; }
+#fwo-app[data-theme="b"] .fwo-status {
+  border: 1px solid var(--fwo-border); border-left: 3px solid var(--fwo-ok-fg); border-radius: 3px; background: var(--fwo-surface);
+  padding: 9px 14px 9px 12px; margin-top: 12px; font: 500 12.5px/1.5 var(--b-mono); color: #d8e6dc; font-variant-numeric: tabular-nums;
+}
+#fwo-app[data-theme="b"] .fwo-status::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; background: var(--fwo-ok-fg); margin-right: 10px; vertical-align: 1px;
+}
+#fwo-app[data-theme="b"] .fwo-status--error { border-left-color: var(--fwo-error-fg); background: var(--fwo-error-bg); color: var(--fwo-error-fg); }
+#fwo-app[data-theme="b"] .fwo-status--error::before { background: var(--fwo-error-fg); }
+#fwo-app[data-theme="b"] .fwo-progress { border-radius: 2px; font: 500 12px/1.5 var(--b-mono); background: var(--fwo-surface-2); }
+#fwo-app[data-theme="b"] .fwo-progress::before { color: var(--fwo-self); }
+#fwo-app[data-theme="b"] .fwo-note { border-radius: 3px; font: 400 12px/1.5 var(--b-sans); }
+#fwo-app[data-theme="b"] .fwo-draft {
+  font: 400 11px/1.55 var(--b-mono); color: var(--fwo-muted); border-top: 1px dashed var(--fwo-border); padding-top: 10px; margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ detail drawers */
+#fwo-app[data-theme="b"] .fwo-details > summary { font: 500 12.5px/1.4 var(--b-mono); color: var(--fwo-self); letter-spacing: 0.01em; }
+#fwo-app[data-theme="b"] .fwo-details > summary::before { color: var(--fwo-muted); font-size: 11px; }
+#fwo-app[data-theme="b"] details.fwo-panel { padding: 4px 16px; margin: 0 0 10px; }
+#fwo-app[data-theme="b"] details.fwo-panel[open] { padding-bottom: 14px; }
+#fwo-app[data-theme="b"] details.fwo-panel > summary { font-size: 13px; font-weight: 600; min-height: 44px; }
+#fwo-app[data-theme="b"] details.fwo-panel[open] > summary { border-bottom: 1px solid var(--fwo-border); margin-bottom: 10px; }
+
+/* ------------------------------------------------------------ scene: engineering grid behind a transparent canvas */
+#fwo-app[data-theme="b"] .fwo-scene { padding: 10px 10px 12px; }
+#fwo-app[data-theme="b"] .fwo-scene > h2 { margin: 2px 4px 10px; }
+#fwo-app[data-theme="b"] .fwo-scene-host {
+  border-radius: 2px; border: 1px solid var(--fwo-border); height: clamp(300px, 36vw, 420px);
+  background:
+    repeating-linear-gradient(90deg, #2b3138 0 1px, transparent 1px 100px),
+    repeating-linear-gradient(0deg, #2b3138 0 1px, transparent 1px 100px),
+    repeating-linear-gradient(90deg, #22272d 0 1px, transparent 1px 20px),
+    repeating-linear-gradient(0deg, #22272d 0 1px, transparent 1px 20px),
+    #16191e;
+}
+/* viewfinder corners inside the scene frame */
+#fwo-app[data-theme="b"] .fwo-scene-host::after {
+  content: ""; position: absolute; inset: 6px; pointer-events: none; z-index: 2; --c: var(--b-tick-maj);
+  background:
+    linear-gradient(var(--c), var(--c)) 0 0 / 12px 1px, linear-gradient(var(--c), var(--c)) 0 0 / 1px 12px,
+    linear-gradient(var(--c), var(--c)) 100% 0 / 12px 1px, linear-gradient(var(--c), var(--c)) 100% 0 / 1px 12px,
+    linear-gradient(var(--c), var(--c)) 0 100% / 12px 1px, linear-gradient(var(--c), var(--c)) 0 100% / 1px 12px,
+    linear-gradient(var(--c), var(--c)) 100% 100% / 12px 1px, linear-gradient(var(--c), var(--c)) 100% 100% / 1px 12px;
+  background-repeat: no-repeat;
+}
+#fwo-app[data-theme="b"] .fwo-scene-label {
+  font: 500 11px/1.4 var(--b-mono); letter-spacing: 0.01em; border-radius: 2px; padding: 1px 6px; color: var(--b-text-2);
+}
+#fwo-app[data-theme="b"] .fwo-scene-label--self { color: var(--b-text-2); }
+#fwo-app[data-theme="b"] .fwo-scene-label--world { color: var(--fwo-world); }
+#fwo-app[data-theme="b"] .fwo-scene-label--g1, #fwo-app[data-theme="b"] .fwo-scene-label--g0 { color: var(--fwo-ghost); }
+#fwo-app[data-theme="b"] .fwo-scene-fallback { font: 400 12.5px/1.5 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-scene-caption { font: 400 11px/1.55 var(--b-mono); color: var(--fwo-muted); margin: 10px 4px 0; }
+#fwo-app[data-theme="b"] .fwo-motion { margin: 6px 4px 0; }
+
+/* ------------------------------------------------------------ futures */
+#fwo-app[data-theme="b"] .fwo-futures { gap: 12px; margin-top: 12px; }
+#fwo-app[data-theme="b"] .fwo-future { border: 1px solid var(--fwo-border); border-radius: 3px; background: var(--fwo-surface-2); padding: 12px 14px; }
+#fwo-app[data-theme="b"] .fwo-future-h { font: 600 12.5px/1.2 var(--b-mono); color: var(--fwo-self); margin-bottom: 4px; }
+#fwo-app[data-theme="b"] .fwo-future-p { font: 700 34px/1 var(--b-mono); color: var(--fwo-self); margin: 0 0 4px; font-variant-numeric: lining-nums tabular-nums; }
+#fwo-app[data-theme="b"] .fwo-future-p--empty { color: var(--fwo-muted); }
+#fwo-app[data-theme="b"] .fwo-future .fwo-small { font: 400 11px/1.5 var(--b-mono); color: var(--fwo-muted); margin: 0 0 4px; }
+#fwo-app[data-theme="b"] .fwo-future .fwo-meter {
+  height: 8px; border-radius: 2px; background: var(--b-well); border: 1px solid var(--fwo-border); margin: 8px 0 6px; overflow: hidden;
+}
+#fwo-app[data-theme="b"] .fwo-future .fwo-meter-fill { background: repeating-linear-gradient(90deg, var(--fwo-self) 0 4px, var(--b-dash) 4px 6px); }
+
+/* ------------------------------------------------------------ readings: precision scales */
+#fwo-app[data-theme="b"] .fwo-results > .fwo-small { font: 400 12px/1.5 var(--b-sans); color: var(--b-text-2); }
+#fwo-app[data-theme="b"] .fwo-readings { gap: 14px; }
+#fwo-app[data-theme="b"] .fwo-reading {
+  display: flex; flex-direction: column; border: 1px solid var(--fwo-border); border-radius: 3px; background: var(--fwo-surface-2); padding: 14px;
+}
+#fwo-app[data-theme="b"] .fwo-reading--resolved { border-color: var(--b-dash); }
+#fwo-app[data-theme="b"] .fwo-reading--unresolved { border: 1px dashed var(--fwo-world); }
+/* the scale sits between the title and the number, as on the instrument */
+#fwo-app[data-theme="b"] .fwo-reading-h { order: 0; font: 600 12px/1.3 var(--b-mono); color: var(--fwo-self); margin: 0 0 4px; }
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter { order: 1; }
+#fwo-app[data-theme="b"] .fwo-reading-value { order: 2; margin: 0 0 8px; }
+#fwo-app[data-theme="b"] .fwo-reading-line { order: 3; font: 400 11.5px/1.5 var(--b-mono); color: var(--b-text-3); margin: 0 0 4px; font-variant-numeric: tabular-nums; }
+#fwo-app[data-theme="b"] .fwo-reading-line:last-of-type { margin-bottom: 8px; }
+#fwo-app[data-theme="b"] .fwo-tech-line {
+  order: 4; margin: auto 0 0; padding-top: 7px; font: 400 11px/1.55 var(--b-mono); color: var(--fwo-muted); border-top: 1px solid var(--fwo-border);
+}
+#fwo-app[data-theme="b"] .fwo-reading-num { font: 700 30px/1 var(--b-mono); color: var(--fwo-text); font-variant-numeric: lining-nums tabular-nums; }
+#fwo-app[data-theme="b"] .fwo-reading-unit { font: 500 12px/1 var(--b-mono); color: var(--fwo-muted); margin-left: 2px; }
+
+/* the gauge box: 52 px tall, rail at 26 px */
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter {
+  position: relative; height: 52px; margin: 2px 0 6px; border: 0; border-radius: 0; background: none; overflow: visible;
+}
+/* rail, 21 minor ticks (every 5 %), 5 major ticks (every 25 %) */
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 36px;
+  background:
+    repeating-linear-gradient(90deg, var(--b-tick-maj) 0 1px, transparent 1px calc((100% - 1px) / 4)) 0 27px / 100% 9px no-repeat,
+    repeating-linear-gradient(90deg, var(--b-tick) 0 1px, transparent 1px calc((100% - 1px) / 20)) 0 27px / 100% 5px no-repeat,
+    linear-gradient(var(--fwo-border), var(--fwo-border)) 0 26px / 100% 1px no-repeat;
+}
+/* needle + flag at --fwo-v */
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter::after {
+  content: ""; position: absolute; top: 12px; width: 10px; height: 18px; left: calc(var(--fwo-v, 0) * (100% - 1px) - 4.5px);
+  background:
+    linear-gradient(var(--fwo-self), var(--fwo-self)) 2px 0 / 6px 5px no-repeat,
+    linear-gradient(var(--fwo-self), var(--fwo-self)) 4px 0 / 2px 18px no-repeat;
+  transition: left 600ms ease-out;
+}
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter--empty::after { display: none; }
+/* a reading of exactly zero gets the amber zero-stop ring around the needle */
+@container style(--fwo-v: 0.0000) {
+  #fwo-app[data-theme="b"] .fwo-reading .fwo-meter::after {
+    background:
+      radial-gradient(circle at 5px 10px, transparent 2.6px, var(--fwo-world) 3.1px 4.3px, transparent 4.8px) 0 0 / 10px 18px no-repeat,
+      linear-gradient(var(--fwo-self), var(--fwo-self)) 2px 0 / 6px 5px no-repeat,
+      linear-gradient(var(--fwo-self), var(--fwo-self)) 4px 0 / 2px 18px no-repeat;
+  }
+}
+/* the 95 % band: a bracket from --fwo-lo to --fwo-hi over the rail (inline left/width come from the page) */
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter-band {
+  top: 18px; bottom: auto; height: 8px; border: 1px solid var(--fwo-self); border-bottom: 0; border-radius: 0;
+  background: rgba(69, 200, 224, 0.22); z-index: 0;
+}
+/* the fill bar becomes the row of scale labels under the major ticks */
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter-fill {
+  position: absolute; left: -0.5ch; right: -0.5ch; top: 38px; bottom: auto; height: auto; width: auto !important;
+  background: none; transition: none; font: 400 9px/1 var(--b-mono); color: var(--fwo-muted); font-variant-numeric: tabular-nums;
+}
+#fwo-app[data-theme="b"] .fwo-reading .fwo-meter-fill::before {
+  content: "0 0.25 0.5 0.75 1"; display: block; text-align: justify; text-align-last: justify; white-space: normal;
+}
+#fwo-app[data-theme="b"] .fwo-honest { font: 400 12px/1.5 var(--b-sans); color: var(--fwo-muted); margin-top: 12px; }
+
+/* ------------------------------------------------------------ record, chart, baselines, chips */
+#fwo-app[data-theme="b"] .fwo-factual { font: 400 13px/1.6 var(--b-mono); color: var(--fwo-text); max-width: 1020px; font-variant-numeric: tabular-nums; }
+#fwo-app[data-theme="b"] .fwo-formula { font: 500 12.5px/1.5 var(--b-mono); color: var(--fwo-world); }
+#fwo-app[data-theme="b"] code, #fwo-app[data-theme="b"] pre { font-family: var(--b-mono); font-size: 12px; }
+#fwo-app[data-theme="b"] pre, #fwo-app[data-theme="b"] .fwo-pre { background: var(--b-well); border-radius: 2px; }
+#fwo-app[data-theme="b"] table { font: 400 12px/1.5 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-table-cap { font: 500 11px/1.4 var(--b-mono); }
+#fwo-app[data-theme="b"] .fwo-caption { font: 400 12.5px/1.5 var(--b-sans); color: var(--b-text-2); }
+#fwo-app[data-theme="b"] .fwo-legend { font: 400 11.5px/1.5 var(--b-mono); color: var(--fwo-muted); gap: 6px 16px; }
+#fwo-app[data-theme="b"] .fwo-svg text { font-family: var(--b-mono); font-size: 10.5px; fill: var(--fwo-muted); }
+#fwo-app[data-theme="b"] .fwo-c-value { font-size: 11.5px; font-weight: 600; fill: var(--fwo-text); }
+#fwo-app[data-theme="b"] .fwo-c-cat { font-size: 12px; font-weight: 600; fill: var(--b-text-3); }
+#fwo-app[data-theme="b"] .fwo-svg .fwo-c-grid line.fwo-c-axis { stroke: var(--b-tick-maj); }
+#fwo-app[data-theme="b"] .fwo-c-bar--current { fill: var(--fwo-self); stroke: var(--fwo-self); }
+#fwo-app[data-theme="b"] .fwo-c-hatch { stroke: rgba(69, 200, 224, 0.45); }
+#fwo-app[data-theme="b"] .fwo-c-bar--previous { stroke: var(--fwo-ghost); }
+#fwo-app[data-theme="b"] .fwo-c-point { stroke: var(--fwo-surface); }
+#fwo-app[data-theme="b"] .fwo-steps-list li { font-size: 13px; }
+#fwo-app[data-theme="b"] .fwo-baselines { gap: 14px; }
+#fwo-app[data-theme="b"] .fwo-baseline { border: 1px dashed var(--b-tick); border-radius: 3px; padding: 12px 14px; }
+#fwo-app[data-theme="b"] .fwo-baseline .fwo-reading-h { color: var(--fwo-world); }
+#fwo-app[data-theme="b"] .fwo-baseline > p { font: 500 12.5px/1.5 var(--b-mono); margin: 0 0 4px; font-variant-numeric: tabular-nums; }
+#fwo-app[data-theme="b"] .fwo-baseline > p.fwo-small { font: 400 12px/1.5 var(--b-sans); color: var(--fwo-muted); }
+#fwo-app[data-theme="b"] .fwo-chip {
+  border: 1px solid var(--fwo-border); border-radius: 3px; padding: 4px 9px; font: 500 11px/1.4 var(--b-mono); color: var(--b-text-2); background: var(--fwo-surface);
+}
+#fwo-app[data-theme="b"] .fwo-chip--strong { border-color: var(--b-tick-maj); color: var(--fwo-text); }
+
+/* ------------------------------------------------------------ footer */
+#fwo-app[data-theme="b"] .fwo-footer { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--fwo-border); }
+#fwo-app[data-theme="b"] .fwo-attribution { font: 600 15px/1.4 var(--b-mono); color: var(--fwo-text); margin-bottom: 6px; }
+#fwo-app[data-theme="b"] .fwo-footer .fwo-small { font: 400 11px/1.55 var(--b-mono); color: var(--fwo-muted); max-width: 820px; }
+
+/* ------------------------------------------------------------ motion: the needle is the only thing this theme animates */
+@media (prefers-reduced-motion: reduce) {
+  #fwo-app[data-theme="b"] .fwo-reading .fwo-meter::after { transition: none; }
+}
+
+/* ------------------------------------------------------------ phones */
+@media (max-width: 480px) {
+  #fwo-app[data-theme="b"] { padding: 14px 12px 32px; }
+  #fwo-app[data-theme="b"] h1.fwo-title { font-size: 23px; }
+  #fwo-app[data-theme="b"] .fwo-hook { font-size: 13.5px; }
+  #fwo-app[data-theme="b"] .fwo-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #fwo-app[data-theme="b"] .fwo-tab { padding: 7px 5px; min-height: 48px; }
+  #fwo-app[data-theme="b"] .fwo-tab-name { font-size: 11px; }
+  #fwo-app[data-theme="b"] .fwo-tab-role { font-size: 9.5px; }
+  #fwo-app[data-theme="b"] .fwo-dialogue { padding: 10px; gap: 6px 10px; }
+  #fwo-app[data-theme="b"] .fwo-dialogue-text { font-size: 14px; min-height: 3.2em; }
+  #fwo-app[data-theme="b"] .fwo-scene-host { height: 300px; }
+  #fwo-app[data-theme="b"] .fwo-future { padding: 10px 10px; }
+  #fwo-app[data-theme="b"] .fwo-future-p { font-size: 28px; }
+  #fwo-app[data-theme="b"] .fwo-reading-num { font-size: 26px; }
+  #fwo-app[data-theme="b"] .fwo-panel { padding: 14px; }
+  #fwo-app[data-theme="b"] details.fwo-panel { padding: 4px 14px; }
+  #fwo-app[data-theme="b"] details.fwo-panel[open] { padding-bottom: 12px; }
+}

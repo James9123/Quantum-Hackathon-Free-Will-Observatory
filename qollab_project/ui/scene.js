@@ -101,13 +101,15 @@ export function brainGraph(seed, nNodes = N_NODES, perNode = LINKS_PER_NODE) {
 
 export function createScene(THREE, lib, host, opts) {
   const COLORS = Object.assign({}, BASE_COLORS, (opts && opts.colors) || {});
-  const o = Object.assign({ reducedMotion: false, seed: 20261010 }, opts || {});
+  // Theme hooks: transparent lets the panel's CSS background (a starfield, a grid, graph
+  // paper) show behind the 3D view; halo adds soft radial glows behind the spheres.
+  const o = Object.assign({ reducedMotion: false, seed: 20261010, transparent: false, halo: false }, opts || {});
   const { h, replace } = lib;
   const api = { available: false };
 
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "low-power" });
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: !!o.transparent, powerPreference: "low-power" });
   } catch (err) {
     replace(host, h("p", { class: "fwo-scene-fallback" },
       "The 3D view could not start in this browser (" + String(err && err.message ? err.message : err) +
@@ -115,7 +117,7 @@ export function createScene(THREE, lib, host, opts) {
     return api;
   }
   api.available = true;
-  renderer.setClearColor(COLORS.bg, 1);
+  renderer.setClearColor(COLORS.bg, o.transparent ? 0 : 1);
   renderer.setPixelRatio(Math.min(2, (typeof devicePixelRatio === "number" && devicePixelRatio) || 1));
   const canvas = renderer.domElement;
   canvas.setAttribute("role", "img");
@@ -180,6 +182,41 @@ export function createScene(THREE, lib, host, opts) {
   world.position.set(...P.world);
   world.scale.setScalar(P.worldR);
   scene.add(world);
+
+  // Soft glows behind the spheres (theme hook). A radial-gradient texture is drawn on a
+  // 2D canvas, so no image asset is needed; each halo is a billboard sprite scaled with its sphere.
+  const halos = { f1: null, f0: null, world: null };
+  if (o.halo && typeof document !== "undefined") {
+    const makeHaloTexture = (hex) => {
+      const c = document.createElement("canvas");
+      c.width = c.height = 128;
+      const g = c.getContext("2d");
+      if (!g) return null;
+      const r = g.createRadialGradient(64, 64, 4, 64, 64, 64);
+      const col = typeof hex === "number" ? "#" + hex.toString(16).padStart(6, "0") : String(hex);
+      r.addColorStop(0, col + "66");
+      r.addColorStop(0.55, col + "1f");
+      r.addColorStop(1, col + "00");
+      g.fillStyle = r;
+      g.fillRect(0, 0, 128, 128);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    };
+    const haloFor = (hex, pos, scale) => {
+      const tex = makeHaloTexture(hex);
+      if (!tex) return null;
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false }));
+      sp.position.set(pos[0], pos[1], pos[2] - 0.05);
+      sp.scale.setScalar(scale);
+      sp.renderOrder = -1;
+      scene.add(sp);
+      return sp;
+    };
+    halos.f1 = haloFor(COLORS.selfLight, P.f1, 2.2);
+    halos.f0 = haloFor(COLORS.selfLight, P.f0, 2.2);
+    halos.world = haloFor(COLORS.worldLight, P.world, P.worldR * 3.4);
+  }
 
   const v = (a) => new THREE.Vector3(a[0], a[1], a[2]);
   const bx = P.brain[0] + P.lobeOffset + P.lobeRadii[0] * 0.75;   // right edge of the brain
@@ -261,6 +298,8 @@ export function createScene(THREE, lib, host, opts) {
     f1.visible = !placeholder; f0.visible = !placeholder;
     f1.scale.setScalar(Math.max(0.001, RMAX * Math.cbrt(p1)));
     f0.scale.setScalar(Math.max(0.001, RMAX * Math.cbrt(p0)));
+    if (halos.f1) halos.f1.scale.setScalar(2.6 * Math.max(0.001, RMAX * Math.cbrt(p1)) + 0.9);
+    if (halos.f0) halos.f0.scale.setScalar(2.6 * Math.max(0.001, RMAX * Math.cbrt(p0)) + 0.9);
     setTube(tubes.b1, curves.b1, placeholder ? 2 : 2 + 10 * p1);
     setTube(tubes.b0, curves.b0, placeholder ? 2 : 2 + 10 * p0);
     tubeMat.opacity = placeholder ? 0.35 : 0.92;

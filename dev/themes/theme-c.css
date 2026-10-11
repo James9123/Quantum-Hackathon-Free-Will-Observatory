@@ -1,0 +1,391 @@
+/* Theme C: Luminous anatomy. Dev-only skin loaded by dev/boot.js with ?theme=c on top of
+   qollab_project/main.css. Near-black page with a violet glow at the top, the 3D scene as a
+   glowing organism (violet Self, mint World), Fraunces display + Space Grotesk text, 22 px
+   radii, orb gauges for the three readings. Every rule is scoped to #fwo-app[data-theme="c"].
+   No images, no url(): gradients, box-shadow glows, pseudo-elements and gradient masks only. */
+@import "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=Space+Grotesk:wght@400;500;700&display=swap";
+
+/* ------------------------------------------------------------ tokens */
+#fwo-app[data-theme="c"] {
+  --fwo-bg: #050507;
+  --fwo-surface: #0e0e13;
+  --fwo-surface-2: #15151d;
+  --fwo-border: #26262f;
+  --fwo-control: #7a7694;
+  --fwo-text: #f6f4f0;
+  --fwo-muted: #a7a4b0;
+  --fwo-self: #b79cff;
+  --fwo-self-strong: #d3c2ff;
+  --fwo-world: #63e6c4;
+  --fwo-on-accent: #17102b;
+  --fwo-focus: #e4d9ff;
+  --fwo-ok-fg: #6fe3a5;
+  --fwo-ok-bg: #0f2219;
+  --fwo-warn-fg: #efc65e;
+  --fwo-warn-bg: #272010;
+  --fwo-error-fg: #f27e8e;
+  --fwo-error-bg: #2a1217;
+  --fwo-info-bg: #14121e;
+  --fwo-ghost: #948fa6;
+  --fwo-chart-grid: #1e1e28;
+  --fwo-chart-forecast: #d3c2ff;
+  --fwo-chart-band: #a7a4b0;
+  --fwo-radius: 22px;
+  --fwo-font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --fwo-font-text: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* secondary tones used by the skin */
+  --fwo-c-soft: #c6c3ce;
+  --fwo-c-line: #d8d5de;
+  --fwo-c-panel: rgba(17, 17, 23, 0.72);
+  --fwo-c-tile: rgba(21, 21, 29, 0.6);
+  --fwo-c-track: #5e5e73;
+  --fwo-c-glow: rgba(183, 156, 255, 0.4);
+  /* 3D scene: violet Self, mint World, transparent canvas over the host gradient, halos on */
+  --fwo-scene-bg: #050507;
+  --fwo-scene-self: #b79cff;
+  --fwo-scene-self-light: #d3c2ff;
+  --fwo-scene-self-deep: #4a3a8c;
+  --fwo-scene-world: #63e6c4;
+  --fwo-scene-world-light: #a8f3df;
+  --fwo-scene-world-deep: #1d6a57;
+  --fwo-scene-ghost: #948fa6;
+  --fwo-scene-link: #b79cff;
+  --fwo-scene-label-bg: rgba(5, 5, 7, 0.8);
+  --fwo-scene-transparent: 1;
+  /* --fwo-scene-halo: 1 is the intended hook, but today ui/scene.js makeHaloTexture() does
+     hex.toString(16) on the "#rrggbb" string main.js reads from CSS ("##d3c2ff66"), which
+     throws and aborts the whole page start. Until that one-line fix lands, the glows behind
+     the spheres are painted by the scene host's backdrop (below). Flip this to 1 afterwards. */
+  --fwo-scene-halo: 1;
+
+  padding: 52px 32px 72px;
+  font-size: 15.5px;
+  line-height: 1.6;
+  /* near-black page with the violet glow at the top; the glow fades out inside the app box */
+  background: #050507 radial-gradient(860px 760px at 50% -120px, #1c1632 0%, #110e1e 40%, rgba(5, 5, 7, 0) 70%) no-repeat;
+}
+
+#fwo-app[data-theme="c"] h1, #fwo-app[data-theme="c"] h2, #fwo-app[data-theme="c"] h3, #fwo-app[data-theme="c"] h4 {
+  font-family: var(--fwo-font-display); font-weight: 400; letter-spacing: 0;
+}
+#fwo-app[data-theme="c"] h3 { font: 500 14px/1.3 var(--fwo-font-text); letter-spacing: 0.04em; color: var(--fwo-self-strong); }
+#fwo-app[data-theme="c"] h4 { font: 500 14px/1.3 var(--fwo-font-text); color: var(--fwo-text); }
+#fwo-app[data-theme="c"] strong { color: var(--fwo-text); font-weight: 700; }
+#fwo-app[data-theme="c"] .fwo-small { font-size: 13px; color: var(--fwo-muted); }
+#fwo-app[data-theme="c"] .fwo-help { font-size: 12.5px; color: var(--fwo-muted); }
+
+/* ------------------------------------------------------------ hero */
+#fwo-app[data-theme="c"] .fwo-hero { text-align: center; margin-bottom: 38px; }
+#fwo-app[data-theme="c"] .fwo-kicker {
+  font: 500 11.5px/1.6 var(--fwo-font-text); letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--fwo-world); margin-bottom: 16px;
+}
+#fwo-app[data-theme="c"] .fwo-title {
+  font: 300 clamp(42px, 5vw, 64px)/1.04 var(--fwo-font-display); font-variation-settings: "opsz" 144;
+  letter-spacing: 0.005em; color: #fbf9f5; margin-bottom: 18px;
+}
+#fwo-app[data-theme="c"] .fwo-hook { max-width: 720px; margin: 0 auto 22px; color: var(--fwo-c-soft); font-size: 16px; }
+#fwo-app[data-theme="c"] .fwo-steps { justify-content: center; gap: 10px 26px; font-weight: 500; color: var(--fwo-c-soft); margin-top: 4px; }
+#fwo-app[data-theme="c"] .fwo-step-n {
+  width: 24px; height: 24px; font: 700 12px/1 var(--fwo-font-text);
+  background: linear-gradient(135deg, #d3c2ff, #b79cff 60%, #9a7ef0); color: var(--fwo-on-accent);
+  box-shadow: 0 0 14px rgba(183, 156, 255, 0.45);
+}
+#fwo-app[data-theme="c"] h2 .fwo-step-n { width: 26px; height: 26px; font-size: 13px; margin-right: 10px; vertical-align: 0.22em; }
+
+/* ------------------------------------------------------------ panels + layout */
+#fwo-app[data-theme="c"] .fwo-layout { gap: 26px; margin-bottom: 26px; }
+#fwo-app[data-theme="c"] .fwo-col { gap: 26px; }
+#fwo-app[data-theme="c"] .fwo-panel {
+  background: var(--fwo-c-panel); border: 1px solid var(--fwo-border); border-radius: var(--fwo-radius);
+  padding: 28px; margin: 0 0 26px; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
+}
+#fwo-app[data-theme="c"] .fwo-panel > h2 {
+  font: 400 26px/1.15 var(--fwo-font-display); color: var(--fwo-text);
+  padding-bottom: 12px; margin: 0 0 16px; border-bottom: 1px solid var(--fwo-border);
+}
+#fwo-app[data-theme="c"] .fwo-more > h2 { font: 400 26px/1.15 var(--fwo-font-display); color: var(--fwo-text); margin: 34px 0 16px; }
+
+/* ------------------------------------------------------------ guide: tabs + dialogue */
+#fwo-app[data-theme="c"] .fwo-tabs { gap: 10px; margin-bottom: 16px; }
+#fwo-app[data-theme="c"] .fwo-tab {
+  align-items: center; text-align: center; gap: 2px; min-height: 56px; padding: 9px 12px;
+  border: 1px solid #33333f; border-radius: 999px; background: rgba(21, 21, 29, 0.55);
+  color: var(--fwo-muted); font-family: var(--fwo-font-text);
+}
+#fwo-app[data-theme="c"] .fwo-tab:hover { border-color: #4a4a58; color: var(--fwo-text); }
+#fwo-app[data-theme="c"] .fwo-tab-name { font-weight: 500; font-size: 14.5px; color: inherit; }
+#fwo-app[data-theme="c"] .fwo-tab-role { font-size: 12px; color: var(--fwo-muted); }
+#fwo-app[data-theme="c"] .fwo-tab[aria-selected="true"] {
+  color: var(--fwo-on-accent); background: var(--fwo-self); border-color: var(--fwo-self);
+  box-shadow: 0 0 26px var(--fwo-c-glow);
+}
+#fwo-app[data-theme="c"] .fwo-tab[aria-selected="true"] .fwo-tab-name { color: var(--fwo-on-accent); font-weight: 700; }
+#fwo-app[data-theme="c"] .fwo-tab[aria-selected="true"] .fwo-tab-role { color: #2a1f4a; }
+#fwo-app[data-theme="c"] .fwo-tip { font-size: 14.5px; color: var(--fwo-c-soft); margin: 12px 2px 0; }
+#fwo-app[data-theme="c"] .fwo-guide-foot { margin-top: 16px; padding-top: 12px; }
+
+#fwo-app[data-theme="c"] .fwo-dialogue {
+  gap: 6px 16px; padding: 16px; border: 1px solid var(--fwo-border); border-radius: 18px;
+  background: var(--fwo-c-tile); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+/* the portrait tile: a spotlight behind the pixel-art sprite; the sprite itself is never scaled or filtered */
+#fwo-app[data-theme="c"] .fwo-portrait {
+  border: 1px dashed var(--fwo-control); border-radius: 14px;
+  background: radial-gradient(circle at 50% 32%, #1b1631 0%, #0a0a10 74%);
+}
+#fwo-app[data-theme="c"] .fwo-portrait--sprite { border-style: solid; border-color: var(--fwo-border); }
+#fwo-app[data-theme="c"] .fwo-dialogue--self .fwo-portrait { border-color: rgba(183, 156, 255, 0.55); box-shadow: 0 0 24px rgba(183, 156, 255, 0.22); }
+#fwo-app[data-theme="c"] .fwo-dialogue--demon .fwo-portrait { border-color: rgba(99, 230, 196, 0.5); box-shadow: 0 0 24px rgba(99, 230, 196, 0.18); }
+#fwo-app[data-theme="c"] .fwo-dialogue--observer .fwo-portrait { border-color: rgba(167, 164, 176, 0.5); box-shadow: 0 0 24px rgba(167, 164, 176, 0.14); }
+#fwo-app[data-theme="c"] .fwo-portrait-who { font-family: var(--fwo-font-text); }
+#fwo-app[data-theme="c"] .fwo-dialogue-name { font: italic 400 19px/1.2 var(--fwo-font-display); letter-spacing: 0; }
+#fwo-app[data-theme="c"] .fwo-dialogue--self .fwo-dialogue-name { color: var(--fwo-self-strong); }
+#fwo-app[data-theme="c"] .fwo-dialogue--observer .fwo-dialogue-name { color: var(--fwo-c-soft); }
+#fwo-app[data-theme="c"] .fwo-dialogue-text { font: italic 400 19px/1.45 var(--fwo-font-display); color: var(--fwo-text); margin-top: 8px; min-height: 4.4em; }
+#fwo-app[data-theme="c"] .fwo-dialogue--done .fwo-dialogue-text::after { color: var(--fwo-self); }
+#fwo-app[data-theme="c"] .fwo-dialogue-skip {
+  border: 1px solid #33333f; border-radius: 999px; padding: 4px 14px; min-height: 36px;
+  font-family: var(--fwo-font-text); font-size: 12.5px; color: var(--fwo-muted); background: rgba(21, 21, 29, 0.55);
+}
+#fwo-app[data-theme="c"] .fwo-dialogue-skip:hover, #fwo-app[data-theme="c"] .fwo-dialogue-skip:focus-visible { color: var(--fwo-text); border-color: #4a4a58; }
+
+/* ------------------------------------------------------------ dials */
+#fwo-app[data-theme="c"] .fwo-field { margin: 20px 0; }
+#fwo-app[data-theme="c"] .fwo-range-head { margin-bottom: 2px; }
+#fwo-app[data-theme="c"] .fwo-range-head label { font: 500 14px/1.4 var(--fwo-font-text); color: var(--fwo-text); }
+#fwo-app[data-theme="c"] .fwo-tech { font-size: 12.5px; color: var(--fwo-muted); }
+#fwo-app[data-theme="c"] .fwo-out { font: 700 13.5px/1.4 var(--fwo-font-text); color: var(--fwo-self-strong); }
+#fwo-app[data-theme="c"] .fwo-field > label { font-weight: 500; }
+
+/* thin track + glowing orb thumb (Firefox also gets the lit portion) */
+#fwo-app[data-theme="c"] input[type="range"] {
+  -webkit-appearance: none; appearance: none; background: transparent; height: 40px; min-height: 40px;
+  margin: 0; padding: 0; cursor: pointer; border-radius: 8px;
+}
+#fwo-app[data-theme="c"] input[type="range"]::-webkit-slider-runnable-track { height: 2px; border-radius: 1px; background: var(--fwo-c-track); }
+#fwo-app[data-theme="c"] input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 19px; height: 19px; margin-top: -8.5px; border: 0; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #f0e9ff, #b79cff 60%, #6d4fc2);
+  box-shadow: 0 0 0 1px rgba(183, 156, 255, 0.5), 0 0 18px 3px rgba(183, 156, 255, 0.5);
+}
+#fwo-app[data-theme="c"] input[type="range"]::-moz-range-track { height: 2px; border-radius: 1px; background: var(--fwo-c-track); }
+#fwo-app[data-theme="c"] input[type="range"]::-moz-range-progress { height: 2px; border-radius: 1px; background: var(--fwo-self); box-shadow: 0 0 12px rgba(183, 156, 255, 0.8); }
+#fwo-app[data-theme="c"] input[type="range"]::-moz-range-thumb {
+  width: 19px; height: 19px; border: 0; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #f0e9ff, #b79cff 60%, #6d4fc2);
+  box-shadow: 0 0 0 1px rgba(183, 156, 255, 0.5), 0 0 18px 3px rgba(183, 156, 255, 0.5);
+}
+
+/* round luminous checkboxes */
+#fwo-app[data-theme="c"] input[type="checkbox"] {
+  -webkit-appearance: none; appearance: none; width: 20px; height: 20px; margin: 0; cursor: pointer;
+  border: 1.5px solid #6e6e84; border-radius: 50%; background: rgba(21, 21, 29, 0.6);
+  display: inline-grid; place-content: center;
+}
+#fwo-app[data-theme="c"] input[type="checkbox"]:checked {
+  border-color: var(--fwo-self); background: rgba(183, 156, 255, 0.14); box-shadow: 0 0 10px rgba(183, 156, 255, 0.35);
+}
+#fwo-app[data-theme="c"] input[type="checkbox"]:checked::after {
+  content: "\2713"; color: var(--fwo-self-strong); font: 700 12px/1 var(--fwo-font-text);
+}
+#fwo-app[data-theme="c"] .fwo-check > label { font-weight: 500; }
+
+#fwo-app[data-theme="c"] input[type="number"], #fwo-app[data-theme="c"] select {
+  background: #0a0a10; border: 1px solid var(--fwo-control); border-radius: 12px; padding: 8px 12px; font-family: var(--fwo-font-text);
+}
+
+#fwo-app[data-theme="c"] .fwo-actions { margin-top: 24px; }
+#fwo-app[data-theme="c"] .fwo-button {
+  border: 0; border-radius: 999px; min-height: 52px; padding: 12px 22px;
+  background: linear-gradient(135deg, #d3c2ff, #b79cff 55%, #9a7ef0); color: var(--fwo-on-accent);
+  font: 700 15.5px/1.2 var(--fwo-font-text); letter-spacing: 0.02em;
+  box-shadow: 0 6px 30px rgba(183, 156, 255, 0.38);
+}
+#fwo-app[data-theme="c"] .fwo-button:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: linear-gradient(135deg, #e4d9ff, #c4acff 55%, #a88ef5); border-color: transparent;
+  box-shadow: 0 8px 36px rgba(183, 156, 255, 0.5);
+}
+#fwo-app[data-theme="c"] .fwo-button .fwo-step-n { background: var(--fwo-on-accent); color: var(--fwo-self-strong); box-shadow: none; }
+#fwo-app[data-theme="c"] .fwo-button:disabled, #fwo-app[data-theme="c"] .fwo-button[aria-disabled="true"] {
+  color: var(--fwo-muted); background: rgba(21, 21, 29, 0.7); border: 1px dashed #4a4a58; box-shadow: none;
+}
+#fwo-app[data-theme="c"] .fwo-button:disabled .fwo-step-n, #fwo-app[data-theme="c"] .fwo-button[aria-disabled="true"] .fwo-step-n {
+  background: #2a2a36; color: var(--fwo-muted);
+}
+#fwo-app[data-theme="c"] #fwo-run-policy { margin: 11px 0 0; font-size: 12.5px; }
+
+/* status pill with a glowing mark */
+#fwo-app[data-theme="c"] .fwo-status {
+  position: relative; margin: 16px 0 0; padding: 12px 20px 12px 42px;
+  border: 1px solid var(--fwo-border); border-left: 1px solid var(--fwo-border); border-radius: 22px;
+  background: rgba(21, 21, 29, 0.55); color: #d9e6de; font-size: 13.5px; line-height: 1.55;
+}
+#fwo-app[data-theme="c"] .fwo-status::before {
+  content: ""; position: absolute; left: 20px; top: 18px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--fwo-ok-fg); box-shadow: 0 0 12px 2px rgba(111, 227, 165, 0.55);
+}
+#fwo-app[data-theme="c"] .fwo-status--error { color: var(--fwo-error-fg); background: var(--fwo-error-bg); border-color: rgba(242, 126, 142, 0.4); }
+#fwo-app[data-theme="c"] .fwo-status--error::before { background: var(--fwo-error-fg); box-shadow: 0 0 12px 2px rgba(242, 126, 142, 0.5); }
+#fwo-app[data-theme="c"] .fwo-progress { border-radius: 999px; padding: 8px 18px; background: rgba(21, 21, 29, 0.55); border: 1px solid var(--fwo-border); font-size: 13.5px; }
+#fwo-app[data-theme="c"] .fwo-note { border-radius: 14px; padding: 10px 14px; font-size: 13px; }
+#fwo-app[data-theme="c"] .fwo-draft { font-size: 12.5px; border-top: 1px dashed #2a2a36; padding-top: 12px; margin-top: 12px; }
+
+/* ------------------------------------------------------------ details / summaries */
+#fwo-app[data-theme="c"] .fwo-details > summary {
+  font: 500 15px/1.4 var(--fwo-font-text); color: var(--fwo-self-strong); min-height: 44px; padding: 8px 0;
+}
+#fwo-app[data-theme="c"] .fwo-details > summary::before { color: var(--fwo-self); font-size: 0.9em; }
+#fwo-app[data-theme="c"] details.fwo-panel { padding: 6px 28px; margin: 0 0 14px; }
+#fwo-app[data-theme="c"] details.fwo-panel[open] { padding-bottom: 24px; }
+#fwo-app[data-theme="c"] details.fwo-panel > summary { font-size: 16px; min-height: 52px; }
+#fwo-app[data-theme="c"] .fwo-factual { font-weight: 400; font-size: 15.5px; color: var(--fwo-text); max-width: 1000px; }
+
+/* ------------------------------------------------------------ scene */
+#fwo-app[data-theme="c"] .fwo-scene { padding: 24px; }
+#fwo-app[data-theme="c"] .fwo-scene-host {
+  height: clamp(300px, 40vw, 420px); border-radius: 16px; border: 1px solid #1d1d27;
+  /* The glowing organism's backdrop, seen through the transparent WebGL canvas: soft violet
+     halos where the two future spheres sit (the scene's camera keeps them at fixed positions),
+     a mint halo under the World, a "tissue" bloom behind the Self, and the dark radial field. */
+  background:
+    radial-gradient(17% 25% at 74% 27%, rgba(183, 156, 255, 0.34) 0%, rgba(183, 156, 255, 0.12) 50%, rgba(183, 156, 255, 0) 76%),
+    radial-gradient(17% 25% at 74% 66%, rgba(183, 156, 255, 0.34) 0%, rgba(183, 156, 255, 0.12) 50%, rgba(183, 156, 255, 0) 76%),
+    radial-gradient(10% 14% at 28% 83%, rgba(99, 230, 196, 0.32) 0%, rgba(99, 230, 196, 0.1) 55%, rgba(99, 230, 196, 0) 80%),
+    radial-gradient(32% 42% at 28% 44%, rgba(142, 111, 232, 0.22) 0%, rgba(142, 111, 232, 0.09) 48%, rgba(142, 111, 232, 0) 74%),
+    radial-gradient(85% 85% at 42% 40%, #14101f 0%, #0a0a10 55%, #050507 100%);
+}
+#fwo-app[data-theme="c"] .fwo-scene-label { font: 500 12.5px/1.4 var(--fwo-font-text); color: var(--fwo-c-soft); padding: 2px 9px; }
+#fwo-app[data-theme="c"] .fwo-scene-label--self { color: var(--fwo-c-soft); }
+#fwo-app[data-theme="c"] .fwo-scene-label--world { color: var(--fwo-world); }
+#fwo-app[data-theme="c"] .fwo-scene-fallback { padding: 28px 20px; }
+#fwo-app[data-theme="c"] .fwo-scene-caption { font-size: 12.5px; margin: 14px 4px 0; }
+#fwo-app[data-theme="c"] .fwo-motion { margin: 10px 4px 0; }
+#fwo-app[data-theme="c"] .fwo-motion > label { font-size: 13px; }
+
+/* ------------------------------------------------------------ futures */
+#fwo-app[data-theme="c"] .fwo-futures { gap: 16px; margin-top: 18px; }
+#fwo-app[data-theme="c"] .fwo-future { background: var(--fwo-c-tile); border: 1px solid var(--fwo-border); border-radius: 18px; padding: 18px 20px; }
+#fwo-app[data-theme="c"] .fwo-future-h { margin-bottom: 6px; }
+#fwo-app[data-theme="c"] .fwo-future-p {
+  font: 300 54px/1 var(--fwo-font-display); color: var(--fwo-self-strong); margin: 0 0 8px; letter-spacing: -0.01em;
+}
+#fwo-app[data-theme="c"] .fwo-future-p--empty { color: var(--fwo-muted); }
+#fwo-app[data-theme="c"] .fwo-future .fwo-meter { height: 4px; border: 0; border-radius: 2px; background: #2a2a36; margin: 10px 0 10px; overflow: hidden; }
+#fwo-app[data-theme="c"] .fwo-future .fwo-meter-fill { background: linear-gradient(90deg, #6d4fc2, var(--fwo-self-strong)); box-shadow: 0 0 10px rgba(183, 156, 255, 0.7); }
+#fwo-app[data-theme="c"] .fwo-future .fwo-small { font-size: 12.5px; margin-bottom: 4px; }
+
+/* ------------------------------------------------------------ readings: orb gauges */
+#fwo-app[data-theme="c"] .fwo-readings { gap: 22px; margin-top: 18px; }
+#fwo-app[data-theme="c"] .fwo-reading {
+  display: flex; flex-direction: column; background: var(--fwo-c-tile); border: 1px solid var(--fwo-border);
+  border-radius: 18px; padding: 22px;
+}
+#fwo-app[data-theme="c"] .fwo-reading--resolved { border-color: #3a2f66; box-shadow: 0 0 34px rgba(183, 156, 255, 0.12); }
+#fwo-app[data-theme="c"] .fwo-reading--unresolved { border-style: dashed; border-color: rgba(99, 230, 196, 0.6); }
+#fwo-app[data-theme="c"] .fwo-reading-h { order: 0; font-size: 14px; margin-bottom: 8px; }
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter { order: 1; }
+#fwo-app[data-theme="c"] .fwo-reading-value { order: 2; margin: 0 0 10px; }
+#fwo-app[data-theme="c"] .fwo-reading-line, #fwo-app[data-theme="c"] .fwo-tech-line { order: 3; }
+#fwo-app[data-theme="c"] .fwo-reading-num { font: 300 46px/1 var(--fwo-font-display); color: var(--fwo-text); }
+#fwo-app[data-theme="c"] .fwo-reading-unit { font: 500 14px/1 var(--fwo-font-text); color: var(--fwo-muted); margin-left: 4px; }
+#fwo-app[data-theme="c"] .fwo-reading-line { font-size: 13px; color: var(--fwo-c-line); margin-bottom: 6px; }
+#fwo-app[data-theme="c"] .fwo-tech-line { font-size: 12px; padding-top: 11px; margin-top: 8px; }
+
+/* The gauge is a 140 x 88 field with the orb centred at (70, 42): a faint rim ring (the full
+   scale), the core disc whose diameter and glow follow --fwo-v, the 95 % band as an arc of a
+   ring between core and rim (conic gradient under a ring mask), and a dashed mint ring when
+   the value is exactly zero. The bar children are hidden or repurposed. */
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter {
+  position: relative; width: 140px; height: 88px; margin: 0 0 6px -6px; border: 0; border-radius: 0; overflow: visible;
+  background: radial-gradient(circle at 70px 42px, rgba(0, 0, 0, 0) 38.9px, #2f2f3b 39.4px, #2f2f3b 40.6px, rgba(0, 0, 0, 0) 41.1px);
+}
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter-fill { display: none; }
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter::before {
+  content: ""; position: absolute; left: 70px; top: 42px; z-index: 1;
+  width: calc(20px + 34px * var(--fwo-v, 0)); height: calc(20px + 34px * var(--fwo-v, 0));
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: radial-gradient(circle at 42% 36%, #f0e9ff 0%, #c9b4ff 40%, #9a7ef0 85%, #8468d8 100%);
+  box-shadow:
+    0 0 calc(8px + 14px * var(--fwo-v, 0)) calc(1px + 3px * var(--fwo-v, 0)) rgba(183, 156, 255, 0.55),
+    0 0 calc(22px + 40px * var(--fwo-v, 0)) calc(4px + 16px * var(--fwo-v, 0)) rgba(183, 156, 255, 0.22);
+}
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter::after {
+  content: ""; position: absolute; left: 70px; top: 42px; z-index: 2; width: 30px; height: 30px;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: repeating-conic-gradient(var(--fwo-world) 0 14deg, rgba(0, 0, 0, 0) 14deg 30deg);
+  -webkit-mask: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 12.3px, #000 12.9px, #000 14.1px, rgba(0, 0, 0, 0) 14.7px);
+  mask: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 12.3px, #000 12.9px, #000 14.1px, rgba(0, 0, 0, 0) 14.7px);
+  opacity: clamp(0, 1 - var(--fwo-v, 1) * 1000, 1);
+}
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter-band {
+  position: absolute; inset: 0 !important; width: auto !important; border: 0; border-radius: 0; z-index: 0;
+  background: conic-gradient(from calc(var(--fwo-lo, 0) * 360deg) at 70px 42px,
+    rgba(211, 194, 255, 0.6) 0deg, rgba(211, 194, 255, 0.6) calc((var(--fwo-hi, 0) - var(--fwo-lo, 0)) * 360deg), rgba(0, 0, 0, 0) 0deg);
+  -webkit-mask: radial-gradient(circle at 70px 42px, rgba(0, 0, 0, 0) 29px, #000 29.6px, #000 33.4px, rgba(0, 0, 0, 0) 34px);
+  mask: radial-gradient(circle at 70px 42px, rgba(0, 0, 0, 0) 29px, #000 29.6px, #000 33.4px, rgba(0, 0, 0, 0) 34px);
+}
+/* before any run: a dim unlit core, no glow, no zero ring */
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter--empty::before { opacity: 0.35; box-shadow: none; background: #6d5fa0; }
+#fwo-app[data-theme="c"] .fwo-reading .fwo-meter--empty::after { opacity: 0; }
+#fwo-app[data-theme="c"] .fwo-honest { font-size: 13px; margin-top: 18px; }
+
+/* ------------------------------------------------------------ chips, baselines, tables, chart */
+#fwo-app[data-theme="c"] .fwo-chips { gap: 9px; margin: 6px 0 12px; }
+#fwo-app[data-theme="c"] .fwo-chip {
+  border: 1px solid var(--fwo-border); border-radius: 999px; padding: 6px 15px; font-size: 12.5px;
+  color: var(--fwo-c-soft); background: var(--fwo-c-tile);
+}
+#fwo-app[data-theme="c"] .fwo-chip--strong { font-weight: 600; border-color: rgba(183, 156, 255, 0.6); color: var(--fwo-self-strong); }
+#fwo-app[data-theme="c"] .fwo-baselines { gap: 22px; }
+#fwo-app[data-theme="c"] .fwo-baseline { border: 1px dashed #33333f; border-radius: 18px; padding: 18px 22px; }
+#fwo-app[data-theme="c"] .fwo-baseline .fwo-reading-h { color: var(--fwo-world); }
+#fwo-app[data-theme="c"] pre, #fwo-app[data-theme="c"] .fwo-pre { background: #050507; border-radius: 14px; padding: 12px 14px; }
+#fwo-app[data-theme="c"] table { font-size: 13px; }
+#fwo-app[data-theme="c"] thead th { background: #15151d; }
+#fwo-app[data-theme="c"] .fwo-formula { color: var(--fwo-world); }
+#fwo-app[data-theme="c"] .fwo-figure { margin-top: 12px; }
+#fwo-app[data-theme="c"] .fwo-svg text { font-family: var(--fwo-font-text); font-size: 12px; }
+#fwo-app[data-theme="c"] .fwo-svg .fwo-c-grid line.fwo-c-axis { stroke: #2a2a36; }
+#fwo-app[data-theme="c"] .fwo-c-hatch { stroke: rgba(183, 156, 255, 0.45); }
+#fwo-app[data-theme="c"] .fwo-c-bar--previous { stroke: var(--fwo-ghost); }
+#fwo-app[data-theme="c"] .fwo-c-bar--current { fill: var(--fwo-self); stroke: var(--fwo-self); }
+#fwo-app[data-theme="c"] .fwo-c-bar--forecast { fill: rgba(183, 156, 255, 0.05); stroke: var(--fwo-self-strong); stroke-width: 2; }
+#fwo-app[data-theme="c"] .fwo-c-value { font-weight: 700; }
+#fwo-app[data-theme="c"] .fwo-c-cat { fill: var(--fwo-c-soft); font-weight: 500; }
+#fwo-app[data-theme="c"] .fwo-caption { font-size: 13.5px; color: var(--fwo-c-soft); margin-top: 10px; }
+#fwo-app[data-theme="c"] .fwo-legend { gap: 6px 20px; margin: 14px 0 6px; font-size: 12.5px; color: var(--fwo-muted); }
+
+/* ------------------------------------------------------------ footer */
+#fwo-app[data-theme="c"] .fwo-footer { text-align: center; margin-top: 34px; padding-top: 26px; }
+#fwo-app[data-theme="c"] .fwo-attribution { font: 400 24px/1.3 var(--fwo-font-display); color: var(--fwo-text); margin-bottom: 10px; }
+#fwo-app[data-theme="c"] .fwo-footer .fwo-small { max-width: 760px; margin: 0 auto; }
+
+/* ------------------------------------------------------------ narrow screens */
+@media (max-width: 760px) {
+  #fwo-app[data-theme="c"] .fwo-hero { text-align: left; margin-bottom: 28px; }
+  #fwo-app[data-theme="c"] .fwo-kicker { letter-spacing: 0.22em; }
+  #fwo-app[data-theme="c"] .fwo-hook { margin-left: 0; }
+  #fwo-app[data-theme="c"] .fwo-steps { justify-content: flex-start; gap: 8px 18px; }
+  #fwo-app[data-theme="c"] .fwo-future-p { font-size: 46px; }
+}
+@media (max-width: 480px) {
+  #fwo-app[data-theme="c"] { padding: 32px 16px 48px; }
+  #fwo-app[data-theme="c"] .fwo-layout, #fwo-app[data-theme="c"] .fwo-col { gap: 18px; }
+  #fwo-app[data-theme="c"] .fwo-panel { padding: 20px; margin-bottom: 18px; border-radius: 20px; }
+  #fwo-app[data-theme="c"] .fwo-panel > h2 { font-size: 23px; }
+  #fwo-app[data-theme="c"] .fwo-scene { padding: 16px; }
+  #fwo-app[data-theme="c"] .fwo-tabs { gap: 8px; }
+  #fwo-app[data-theme="c"] .fwo-tab { min-height: 48px; padding: 7px 14px; }
+  #fwo-app[data-theme="c"] .fwo-dialogue { padding: 12px; border-radius: 16px; }
+  #fwo-app[data-theme="c"] .fwo-portrait { border-radius: 10px; }
+  #fwo-app[data-theme="c"] .fwo-dialogue-text { font-size: 17px; min-height: 3.2em; }
+  #fwo-app[data-theme="c"] .fwo-futures { gap: 10px; }
+  #fwo-app[data-theme="c"] .fwo-future { padding: 14px 14px; border-radius: 16px; }
+  #fwo-app[data-theme="c"] .fwo-future-p { font-size: 38px; }
+  #fwo-app[data-theme="c"] .fwo-reading { padding: 18px; }
+  #fwo-app[data-theme="c"] .fwo-reading-num { font-size: 42px; }
+  #fwo-app[data-theme="c"] details.fwo-panel { padding: 4px 20px; }
+  #fwo-app[data-theme="c"] details.fwo-panel[open] { padding-bottom: 18px; }
+  #fwo-app[data-theme="c"] .fwo-footer { text-align: left; }
+}

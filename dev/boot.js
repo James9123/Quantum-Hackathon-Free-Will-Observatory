@@ -47,7 +47,7 @@ if (theme && /^[abcd]$/.test(theme)) {
   await new Promise((resolve) => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "./themes.css";
+    link.href = "./themes/theme-" + theme + ".css";
     link.onload = resolve;
     link.onerror = resolve;
     document.head.appendChild(link);

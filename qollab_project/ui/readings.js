@@ -30,6 +30,15 @@ function meter(lib, value, band) {
   // same numbers are always printed next to it.
   const { h } = lib;
   const bar = h("div", { class: "fwo-meter", "aria-hidden": "true" });
+  // custom properties so a theme can draw the same value as an arc, a scale or an orb
+  const clamp = (x) => Math.max(0, Math.min(1, Number(x)));
+  bar.style.setProperty("--fwo-v", value === null ? "0" : clamp(value).toFixed(4));
+  if (band && band[0] !== null && band[1] !== null) {
+    bar.style.setProperty("--fwo-lo", clamp(band[0]).toFixed(4));
+    bar.style.setProperty("--fwo-hi", clamp(band[1]).toFixed(4));
+    bar.classList.add("fwo-meter--band");
+  }
+  if (value === null) bar.classList.add("fwo-meter--empty");
   if (band && band[0] !== null && band[1] !== null) {
     const r = h("div", { class: "fwo-meter-band" });
     r.style.left = (100 * Math.max(0, Math.min(1, band[0]))).toFixed(1) + "%";
