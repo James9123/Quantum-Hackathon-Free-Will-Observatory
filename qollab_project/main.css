@@ -1884,7 +1884,7 @@
 }
 /* the portrait tile: only the frame around the pixel art changes, never its scale */
 #fwo-app[data-theme="d"] .fwo-portrait { border: 1.5px dashed var(--fwo-ink); border-radius: var(--fwo-radius); background: var(--fwo-surface); }
-#fwo-app[data-theme="d"] .fwo-portrait--sprite { border-style: solid; border-color: var(--fwo-ink); background: var(--fwo-surface-2); }
+#fwo-app[data-theme="d"] .fwo-portrait--sprite { border-style: solid; border-color: var(--fwo-ink); background: var(--fwo-info-bg); }   /* pale blueprint blue, not white, behind the sprites */
 #fwo-app[data-theme="d"] .fwo-dialogue--self .fwo-portrait { border-color: var(--fwo-self); }
 #fwo-app[data-theme="d"] .fwo-dialogue--demon .fwo-portrait { border-color: var(--fwo-world); }
 #fwo-app[data-theme="d"] .fwo-portrait-ph { font: 500 10px/1.3 var(--fwo-font-text); letter-spacing: 0.12em; }
