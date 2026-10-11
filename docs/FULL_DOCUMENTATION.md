@@ -82,7 +82,7 @@ reorganized into one document with in-file links instead of cross-file ones.
 
 ## Overview
 
-*A fictional instrument for exploring the capacity to reshape possible futures.*
+_A fictional instrument for exploring the capacity to reshape possible futures._
 
 **In one sentence:** a single-page, brain-shaped graph where three personas investigate one
 two-qubit Self through fresh simulator experiments, visible changes in probability, and a
@@ -96,18 +96,18 @@ Observer) read the same data differently. Every number on the page comes from on
 submitted simulator job of four two-qubit Qiskit circuits, and every reading has an exact
 definition, a closed-form prediction and a conservative error bar.
 
-> **Honesty, first.** The correspondence between controls and words is *designed, not
-> discovered*. Simulators compute what quantum theory predicts (and how a noise model
+> **Honesty, first.** The correspondence between controls and words is _designed, not
+> discovered_. Simulators compute what quantum theory predicts (and how a noise model
 > degrades it); they do not test nature. The readings are a fictional model, not a
 > measurement of free will, not neuroscience, and not proof of agency: a responsive
 > classical model scores just as high. See [Honesty](#honesty-what-this-is-and-is-not).
 
-| Judging trait | Where to look |
-|---|---|
-| Novelty & creativity | [What it does](#what-it-does), [The question](#the-question), [Beyond the tutorial](#beyond-the-tutorial) |
-| Technical execution | [How to run on Qollab](#how-to-run-on-qollab), [The model](#the-model-physics-and-statistics), [Claims and validation](#claims-and-validation), the test suite ([Development and testing](#development-and-testing)) |
-| Impact potential | [Beyond the tutorial](#beyond-the-tutorial), [Development and testing](#development-and-testing) |
-| Documentation quality | This document (and the split-file set at [docs/README.md](README.md)), [BUILDLOG.md](../BUILDLOG.md), [CREDITS.md](../CREDITS.md) |
+| Judging trait         | Where to look                                                                                                                                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Novelty & creativity  | [What it does](#what-it-does), [The question](#the-question), [Beyond the tutorial](#beyond-the-tutorial)                                                                                                            |
+| Technical execution   | [How to run on Qollab](#how-to-run-on-qollab), [The model](#the-model-physics-and-statistics), [Claims and validation](#claims-and-validation), the test suite ([Development and testing](#development-and-testing)) |
+| Impact potential      | [Beyond the tutorial](#beyond-the-tutorial), [Development and testing](#development-and-testing)                                                                                                                     |
+| Documentation quality | This document (and the split-file set at [docs/README.md](README.md)), [BUILDLOG.md](../BUILDLOG.md), [CREDITS.md](../CREDITS.md)                                                                                    |
 
 **Links:** Qollab project: TODO(captain). Demo video (2–3 min, public link): TODO(captain).
 Source: TODO(captain).
@@ -116,7 +116,7 @@ Source: TODO(captain).
 1814 thought experiment about a calculating intellect that could predict the whole universe
 from one instant's data — the classical picture of determinism that Bell-inequality
 experiments are the modern rebuttal to. The Observatory borrows the name because its own
-Demon persona *does* compute an exact forecast from the quantum state before any shots are
+Demon persona _does_ compute an exact forecast from the quantum state before any shots are
 taken, and the project's central question — is a known probability distribution the same
 thing as an open future? — is a dramatized descendant of that older argument. The full story,
 with the appropriate caveats about what it does and doesn't prove, is in
@@ -124,7 +124,7 @@ with the appropriate caveats about what it does and doesn't prove, is in
 
 ### What it does
 
-**The scene.** A brain-shaped graph (two fixed lobes; the decorative nodes are *not* qubits)
+**The scene.** A brain-shaped graph (two fixed lobes; the decorative nodes are _not_ qubits)
 holds one fictional Self. Two branches leave it, **Future 0** and **Future 1**, sized by the
 measured probabilities of the last run. A **World bridge** rises from a second qubit, the
 World, into the Self; its width and opacity follow the measured Connection reading. The
@@ -141,27 +141,27 @@ console) or C (luminous anatomy). Each style draws the same data in its own way.
 Each guide speaks in an RPG-style dialogue box, and only about what it can see; a short
 opening scene introduces them.
 
-| Persona | What they do | What it reveals |
-|---|---|---|
-| **The Self** | Changes the Intention and presses *Run experiment*. | The current future distribution, plus the Capacity available under opposite intentions. |
+| Persona             | What they do                                          | What it reveals                                                                                                                                                       |
+| ------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **The Self**        | Changes the Intention and presses _Run experiment_.   | The current future distribution, plus the Capacity available under opposite intentions.                                                                               |
 | **Laplace's Demon** | Forecasts the chosen settings before the job returns. | The closed-form prediction next to the fresh sample, plus two labelled classical baselines (fixed output: Capacity 0, Openness 0; fair coin: Capacity 0, Openness 1). |
-| **The Observer** | Changes the Perspective and reruns. | A different observable for the same prepared state. Capacity stays comparable because its two probes share the readout. |
+| **The Observer**    | Changes the Perspective and reruns.                   | A different observable for the same prepared state. Capacity stays comparable because its two probes share the readout.                                               |
 
 **Three controls** (angles in radians; see [The model](#the-model-physics-and-statistics)):
 
-| Control | What it is in the circuit | Range (default) |
-|---|---|---|
-| Intention | a phase φ on the Self: `RZ(φ)` | 0 to 2π (π/2) |
-| World coupling | a slider w; γ = w·π/2; a controlled-`RY(2γ)` from Self to World | 0 to 1 (0) |
-| Perspective | the equatorial readout angle β: `RZ(−β)`, `H`, measure Z | 0 to π (0) |
+| Control        | What it is in the circuit                                       | Range (default) |
+| -------------- | --------------------------------------------------------------- | --------------- |
+| Intention      | a phase φ on the Self: `RZ(φ)`                                  | 0 to 2π (π/2)   |
+| World coupling | a slider w; γ = w·π/2; a controlled-`RY(2γ)` from Self to World | 0 to 1 (0)      |
+| Perspective    | the equatorial readout angle β: `RZ(−β)`, `H`, measure Z        | 0 to π (0)      |
 
 **Three readings**, each computed from raw counts, never from the animation:
 
-| Reading | Question it answers | Definition | Range |
-|---|---|---|---|
-| **Capacity C** | How far can opposite intentions move P(Self = 1)? | \|p_high − p_low\| from the two intent probes, with a conservative 95% interval | 0 to 1 |
-| **Openness O** | How uncertain is the current Self outcome? | binary entropy of the display P(Self = 1) | 0 to 1 bit |
-| **Connection I** | How much does a reference World measurement reveal about the Self? | mutual information of the separate connection probe | 0 to 1 bit |
+| Reading          | Question it answers                                                | Definition                                                                      | Range      |
+| ---------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------- | ---------- |
+| **Capacity C**   | How far can opposite intentions move P(Self = 1)?                  | \|p_high − p_low\| from the two intent probes, with a conservative 95% interval | 0 to 1     |
+| **Openness O**   | How uncertain is the current Self outcome?                         | binary entropy of the display P(Self = 1)                                       | 0 to 1 bit |
+| **Connection I** | How much does a reference World measurement reveal about the Self? | mutual information of the separate connection probe                             | 0 to 1 bit |
 
 Under the scene: the three readings, a before/after probability chart, one factual sentence
 plus one line in the persona's voice, and a **How this works** drawer with the circuit, the
@@ -170,7 +170,7 @@ four probes' counts, the job record and the formulas.
 ### The question
 
 Is uncertainty the same thing as freedom? This project gives the fiction a precise rule and
-lets you test it. *Free will, here, is defined as the capacity to reshape possible futures:*
+lets you test it. _Free will, here, is defined as the capacity to reshape possible futures:_
 the Self has a distribution of outcomes, an intention is a control input that can redirect
 that distribution, and freedom within the model is the **range of redistribution** available
 to that input. One surprising outcome is never enough; the model asks whether an
@@ -178,10 +178,10 @@ intervention changes the odds across repeated experiments.
 
 **The central result.** Two situations both look 50/50:
 
-| Setting | P(Self = 1) | Openness | Capacity (ideal) | The model's verdict |
-|---|---|---|---|---|
-| no coupling (w = 0), intention π/2 | 0.5 | 1 bit | **1.0** (intentions sweep 0% → 100%) | high-capacity |
-| full coupling (w = 1), *any* intention | 0.5 | 1 bit | **0.0** (every allowed intention gives 50/50) | low-capacity |
+| Setting                                | P(Self = 1) | Openness | Capacity (ideal)                              | The model's verdict |
+| -------------------------------------- | ----------- | -------- | --------------------------------------------- | ------------------- |
+| no coupling (w = 0), intention π/2     | 0.5         | 1 bit    | **1.0** (intentions sweep 0% → 100%)          | high-capacity       |
+| full coupling (w = 1), _any_ intention | 0.5         | 1 bit    | **0.0** (every allowed intention gives 50/50) | low-capacity        |
 
 In the model, uncertainty alone is not freedom. The ideal Capacity is cos γ: it falls from 1
 to 0 as the World records which alternative the Self took, while the Self's own odds never
@@ -199,7 +199,7 @@ All three of the rules' routes, in this order of weight:
 2. **An original analytical and educational contribution.** The capacity law C = cos γ for
    this control family; a Hoeffding-bounded Capacity interval with a fixed "no resolved
    influence" rule and a measured coverage check; the Demon's forecast against the sample;
-   two labelled classical baselines; claim cards that say what each number does *not* show.
+   two labelled classical baselines; claim cards that say what each number does _not_ show.
 3. **A technical extension.** Four probes and two canary checks packed into one 17-qubit
    job (IonQ's one-job-per-run rule), an exact in-browser noise model with an IonQ-like
    preset shown next to the ideal prediction, and a one-job guard that is tested.
@@ -222,24 +222,24 @@ Open the project on Qollab, keep the **built-in simulator** in the Run dialog, p
 experiment**. The first run on the defaults (Intention π/2, coupling 0, perspective 0,
 1,024 shots per probe) is Act 1 of the demo.
 
-| Entry | Files | What you get |
-|---|---|---|
-| **JS page (the submission)** | top-level `index.html` (a body fragment) + `main.js` + `main.css` + `ui/*.js`, with `observatory.py`, `observatory_api.py`, the `qk_*.py` toolkit and `data/*.json` | Qollab runs the JS entry whenever both top-level `index.html` and `main.js` exist. The page uses only the injected `backend`, our Python modules (`import * as api from "observatory_api"`, JSON strings both ways) and three.js from Qollab's import map. Nothing runs outside the browser: no server, no polling API, no API keys, no bundler. |
-| **Python console (fallback)** | `main.py` + the same Python modules and data | Used only when the JS entry files are absent (`tools/pack_for_qollab.py --entry python` leaves them out). Qollab's Run-settings form shows `main()`'s parameters: `intention_deg` (90), `world_coupling` (0), `perspective_deg` (0), `shots_per_probe` (1024), `persona` (`self`). Output: backend profile, the Demon's forecast, one run's four count tables, the three readings with the interval, the explanation, the baselines. |
+| Entry                         | Files                                                                                                                                                               | What you get                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **JS page (the submission)**  | top-level `index.html` (a body fragment) + `main.js` + `main.css` + `ui/*.js`, with `observatory.py`, `observatory_api.py`, the `qk_*.py` toolkit and `data/*.json` | Qollab runs the JS entry whenever both top-level `index.html` and `main.js` exist. The page uses only the injected `backend`, our Python modules (`import * as api from "observatory_api"`, JSON strings both ways) and three.js from Qollab's import map. Nothing runs outside the browser: no server, no polling API, no API keys, no bundler.                                                                                     |
+| **Python console (fallback)** | `main.py` + the same Python modules and data                                                                                                                        | Used only when the JS entry files are absent (`tools/pack_for_qollab.py --entry python` leaves them out). Qollab's Run-settings form shows `main()`'s parameters: `intention_deg` (90), `world_coupling` (0), `perspective_deg` (0), `shots_per_probe` (1024), `persona` (`self`). Output: backend profile, the Demon's forecast, one run's four count tables, the three readings with the interval, the explanation, the baselines. |
 
 Build either upload with `tools/pack_for_qollab.py --entry js` or `--entry python`; see
 [SUBMIT.md](../SUBMIT.md).
 
 **Backends** (Qollab's Run dialog):
 
-| Backend | Kind | Notes |
-|---|---|---|
-| Built-in simulator | ideal, local | Qiskit `BasicSimulator`, 24 qubits. **Free and local: the backend judges press Run on.** |
-| AWS Braket local | ideal, local | 25 qubits |
-| IBM noise models | noisy, local (in the browser) | circuits are transpiled first; `mode=auto` sends the three canary blocks and four probes as one list job of 7 small circuits |
-| IonQ Forte 1 / Forte Enterprise 1 (simulator) | noisy, remote | 29 qubits, **one job per run**; the four probes and the canaries travel in that one job |
+| Backend                                       | Kind                          | Notes                                                                                                                        |
+| --------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Built-in simulator                            | ideal, local                  | Qiskit `BasicSimulator`, 24 qubits. **Free and local: the backend judges press Run on.**                                     |
+| AWS Braket local                              | ideal, local                  | 25 qubits                                                                                                                    |
+| IBM noise models                              | noisy, local (in the browser) | circuits are transpiled first; `mode=auto` sends the three canary blocks and four probes as one list job of 7 small circuits |
+| IonQ Forte 1 / Forte Enterprise 1 (simulator) | noisy, remote                 | 29 qubits, **one job per run**; the four probes and the canaries travel in that one job                                      |
 
-**One job per run.** Each press of *Run experiment* submits exactly one `backend.run(...)`
+**One job per run.** Each press of _Run experiment_ submits exactly one `backend.run(...)`
 holding all four probes (`display`, `intent_low`, `intent_high`, `connection`) plus two
 canary checks: an orientation block (prepared `110`, a key that is not a palindrome, so a
 reversed bit order is diagnosed rather than absorbed) and a readout calibration (flip rates
@@ -258,7 +258,7 @@ simulators report counts as round(probability × shots), so totals can differ sl
 `world_coupling` [0, 1], `perspective_rad` [0, π], `shots_per_probe` [1, 4096], `persona`
 (`self` / `demon` / `observer`), `mode` (`auto` / `tile` / `list`), `canary` (bool).
 Out-of-range or ill-typed values (beyond a 10⁻⁹ rounding allowance at the upper limits)
-return a visible *failed* result before any job is submitted; old counts are never
+return a visible _failed_ result before any job is submitted; old counts are never
 substituted for a live run.
 
 ---
@@ -308,15 +308,15 @@ interval, the persona explanations — is pure Python with no further quantum ex
 
 ### Module responsibilities
 
-| Module | Role | Imported by |
-|---|---|---|
-| `observatory.py` | The physics and the fiction: settings validation, circuit construction (`make_circuit`, `probes`), bit-order correction (`canonical_counts`), the three readings and their interval, the exact/closed-form model, the persona explanation text, and `run()` — the one function that drives an actual job. | `observatory_api.py`, `main.py` |
-| `observatory_api.py` | The JSON bridge the browser calls: `profile_json`, `predict_json`, `run_json`, `explain_json`, `curves_json`. Every function takes/returns JSON strings, never raises, and loads the shipped datasets by literal path. | `main.js` (as `observatory_api`), `main.py` |
-| `qk_runtime.py` | The Qollab harness: classifies whatever `backend` object was injected (`backend_profile`), decides the packing mode (`preferred_mode`), transpiles if needed (`prepare`), and enforces **one `backend.run` per run** (`run_once`, `begin_run`, `jobs_submitted`). Never constructs a backend. | `observatory.py`, `qk_packer.py`, `qk_mitigation.py` |
-| `qk_packer.py` | Lays out one or more circuit "blocks" (a circuit plus the qubits to measure) into a single submission — `tile` (all blocks side by side on one circuit), `list` (one circuit per block, one list job) or `tiles` (first-fit packing into multiple tiles). Adds the orientation and readout-calibration canary blocks and unpacks block-local counts afterward. | `observatory.py` |
-| `qk_noise.py` | The exact in-browser noise dial: evolves the full density matrix under depolarizing gate noise and classical readout flips, for circuits small enough to afford it (`MAX_QUBITS = 10`). Backs the Demon's "IonQ-like" forecast and the shipped noise curve. | `observatory.py`, `observatory_api.py` |
-| `qk_data.py` | Dataset plumbing: builds, serializes and validates the `data/fwo_*.json` files (schema tag, generator, git commit, timestamp, library versions, machine class), and provides `json_safe` (NaN/inf → null) for every JSON response. | `observatory_api.py`, `lab/sweep.py` |
-| `qk_primitives.py`, `qk_bounds.py`, `qk_estimators.py`, `qk_mitigation.py`, `qk_cards.py` | A general Bell/CHSH toolkit (Bell-state prep, classical/quantum bound computation, witness estimators, readout and ZNE mitigation, claim-card rendering), built and validated end to end on the CHSH reference project before the Observatory existed. Shipped alongside the Observatory (see [SUBMIT.md](../SUBMIT.md) §4) for reuse, and exercised by `tests/` and `reference/chsh/`, but **not called by the Observatory's own run path** — `observatory.py` only reaches into `qk_data`, `qk_noise`, `qk_packer` and `qk_runtime`. | `reference/chsh/`, `tests/`, `smoke/` |
+| Module                                                                                    | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Imported by                                          |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `observatory.py`                                                                          | The physics and the fiction: settings validation, circuit construction (`make_circuit`, `probes`), bit-order correction (`canonical_counts`), the three readings and their interval, the exact/closed-form model, the persona explanation text, and `run()` — the one function that drives an actual job.                                                                                                                                                                                                                              | `observatory_api.py`, `main.py`                      |
+| `observatory_api.py`                                                                      | The JSON bridge the browser calls: `profile_json`, `predict_json`, `run_json`, `explain_json`, `curves_json`. Every function takes/returns JSON strings, never raises, and loads the shipped datasets by literal path.                                                                                                                                                                                                                                                                                                                 | `main.js` (as `observatory_api`), `main.py`          |
+| `qk_runtime.py`                                                                           | The Qollab harness: classifies whatever `backend` object was injected (`backend_profile`), decides the packing mode (`preferred_mode`), transpiles if needed (`prepare`), and enforces **one `backend.run` per run** (`run_once`, `begin_run`, `jobs_submitted`). Never constructs a backend.                                                                                                                                                                                                                                          | `observatory.py`, `qk_packer.py`, `qk_mitigation.py` |
+| `qk_packer.py`                                                                            | Lays out one or more circuit "blocks" (a circuit plus the qubits to measure) into a single submission — `tile` (all blocks side by side on one circuit), `list` (one circuit per block, one list job) or `tiles` (first-fit packing into multiple tiles). Adds the orientation and readout-calibration canary blocks and unpacks block-local counts afterward.                                                                                                                                                                         | `observatory.py`                                     |
+| `qk_noise.py`                                                                             | The exact in-browser noise dial: evolves the full density matrix under depolarizing gate noise and classical readout flips, for circuits small enough to afford it (`MAX_QUBITS = 10`). Backs the Demon's "IonQ-like" forecast and the shipped noise curve.                                                                                                                                                                                                                                                                            | `observatory.py`, `observatory_api.py`               |
+| `qk_data.py`                                                                              | Dataset plumbing: builds, serializes and validates the `data/fwo_*.json` files (schema tag, generator, git commit, timestamp, library versions, machine class), and provides `json_safe` (NaN/inf → null) for every JSON response.                                                                                                                                                                                                                                                                                                     | `observatory_api.py`, `lab/sweep.py`                 |
+| `qk_primitives.py`, `qk_bounds.py`, `qk_estimators.py`, `qk_mitigation.py`, `qk_cards.py` | A general Bell/CHSH toolkit (Bell-state prep, classical/quantum bound computation, witness estimators, readout and ZNE mitigation, claim-card rendering), built and validated end to end on the CHSH reference project before the Observatory existed. Shipped alongside the Observatory (see [SUBMIT.md](../SUBMIT.md) §4) for reuse, and exercised by `tests/` and `reference/chsh/`, but **not called by the Observatory's own run path** — `observatory.py` only reaches into `qk_data`, `qk_noise`, `qk_packer` and `qk_runtime`. | `reference/chsh/`, `tests/`, `smoke/`                |
 
 The toolkit split matters for anyone extending the project: the Observatory-specific physics
 lives entirely in `observatory.py`; everything it calls below that line is backend plumbing
@@ -360,10 +360,10 @@ step 5 touches an actual simulator or remote job, and it happens exactly once pe
 
 Qollab inspects the uploaded project and prefers the JS entry if both exist:
 
-| Entry | Files | Which code runs |
-|---|---|---|
-| **JS page** (the submission) | top-level `index.html` + `main.js` + `main.css` + `ui/*.js`, plus every `.py` module and `data/*.json` | `main.js` calls `observatory_api` directly in the browser tab (Pyodide); no server, no polling, nothing runs outside the browser. |
-| **Python console** (fallback) | `main.py` + the same Python modules and data | Qollab's own harness builds a `backend` global, then runs `main.py`'s top-level code, then calls `main(intention_deg, world_coupling, perspective_deg, shots_per_probe, persona)` with literal defaults read from the signature. `main.py` imports `observatory` and `observatory_api` directly and prints a console report. |
+| Entry                         | Files                                                                                                  | Which code runs                                                                                                                                                                                                                                                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **JS page** (the submission)  | top-level `index.html` + `main.js` + `main.css` + `ui/*.js`, plus every `.py` module and `data/*.json` | `main.js` calls `observatory_api` directly in the browser tab (Pyodide); no server, no polling, nothing runs outside the browser.                                                                                                                                                                                            |
+| **Python console** (fallback) | `main.py` + the same Python modules and data                                                           | Qollab's own harness builds a `backend` global, then runs `main.py`'s top-level code, then calls `main(intention_deg, world_coupling, perspective_deg, shots_per_probe, persona)` with literal defaults read from the signature. `main.py` imports `observatory` and `observatory_api` directly and prints a console report. |
 
 Both entries share one engine; `tools/pack_for_qollab.py` decides which files to upload for
 which entry (see [Packaging for Qollab](#packaging-for-qollab)). The platform's specific
@@ -379,11 +379,11 @@ without recomputing them in the session (`qollab_project/data/`), and are loaded
 path (that is how Qollab decides which files to bundle); if a file is missing, the page
 computes the exact curve in the session and says so:
 
-| File | Produced by | Shape | Used for |
-|---|---|---|---|
-| `fwo_theory.json` | `lab/sweep.py --experiment fwo_theory` | 101 rows over `w` ∈ [0, 1]; each row has `params.w` and the exact `capacity`, `p_low`, `p_high`, `connection_bits`, `openness_bits`, `p_self_1` | The theory curve in the "How sure can we be" drawer |
-| `fwo_noise.json` | `lab/sweep.py --experiment fwo_noise` | 40 rows over `scale` (0–80×) × `w` ∈ {0, 0.5}; adds `capacity_ideal`, `capacity_loss`, `noise_effective` | The Demon's noise-degradation view |
-| `fwo_coverage.json` | `lab/sweep.py --experiment fwo_coverage` | 5 rows over `w` ∈ {0, 0.25, 0.5, 0.75, 1}; `capacity_exact`, `coverage_95`, `mean_width`, `resolved_fraction` from 2,000 seeded runs each | The calibration table proving the Hoeffding interval's coverage |
+| File                | Produced by                              | Shape                                                                                                                                           | Used for                                                        |
+| ------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `fwo_theory.json`   | `lab/sweep.py --experiment fwo_theory`   | 101 rows over `w` ∈ [0, 1]; each row has `params.w` and the exact `capacity`, `p_low`, `p_high`, `connection_bits`, `openness_bits`, `p_self_1` | The theory curve in the "How sure can we be" drawer             |
+| `fwo_noise.json`    | `lab/sweep.py --experiment fwo_noise`    | 40 rows over `scale` (0–80×) × `w` ∈ {0, 0.5}; adds `capacity_ideal`, `capacity_loss`, `noise_effective`                                        | The Demon's noise-degradation view                              |
+| `fwo_coverage.json` | `lab/sweep.py --experiment fwo_coverage` | 5 rows over `w` ∈ {0, 0.25, 0.5, 0.75, 1}; `capacity_exact`, `coverage_95`, `mean_width`, `resolved_fraction` from 2,000 seeded runs each       | The calibration table proving the Hoeffding interval's coverage |
 
 Every file is a `qk_data`-schema dataset: it carries its own generator command, git commit,
 UTC timestamp, library versions and **machine class** (a 48-thread x86 workstation; Python
@@ -426,7 +426,7 @@ run record (`bit_order_check`), never silently corrected.
 The exact two-qubit experiment behind the Free Will Observatory, every reading's definition,
 the bit-order rule, the uncertainty interval, and what none of it shows. The fiction is
 intentional; the circuit behaviour underneath it is reproducible, and this section is the
-specification the code implements (`model_version` = `fwo-1`). Numbers marked *measured*
+specification the code implements (`model_version` = `fwo-1`). Numbers marked _measured_
 were produced by the code in this repository (CPython 3.14.4, qiskit 2.5.2, numpy 2.5.3);
 the full tables with seeds are in [Claims and validation](#claims-and-validation).
 
@@ -436,11 +436,11 @@ angle γ = w·π/2.
 
 ### 1. The circuit
 
-| Control | Operation | Range (default) | Why it earns its name |
-|---|---|---|---|
-| Intention | `RZ(φ)` on the Self | 0 to 2π (π/2) | varying the phase changes how the two alternatives recombine |
-| World coupling | controlled-`RY(2γ)`, control Self, target World | w: 0 to 1 (0) | it correlates the Self with a second system |
-| Perspective | `RZ(−β)` then `H` on the Self, then measure Z | 0 to π (0) | it changes the measured observable |
+| Control        | Operation                                       | Range (default) | Why it earns its name                                        |
+| -------------- | ----------------------------------------------- | --------------- | ------------------------------------------------------------ |
+| Intention      | `RZ(φ)` on the Self                             | 0 to 2π (π/2)   | varying the phase changes how the two alternatives recombine |
+| World coupling | controlled-`RY(2γ)`, control Self, target World | w: 0 to 1 (0)   | it correlates the Self with a second system                  |
+| Perspective    | `RZ(−β)` then `H` on the Self, then measure Z   | 0 to π (0)      | it changes the measured observable                           |
 
 Circuit order:
 
@@ -457,7 +457,7 @@ measure Self and World
 The controlled rotation is written with standard gates only, so every backend (and IonQ's
 compiler) takes it unchanged: `RY(γ)` on the World, `CX(Self → World)`, `RY(−γ)` on the
 World, `CX(Self → World)`. That is the standard decomposition of Qiskit's `CRYGate(2γ)`
-(control/target convention as in its API reference); *measured:* the block's unitary
+(control/target convention as in its API reference); _measured:_ the block's unitary
 matches `CRYGate(2γ)` to a maximum element difference of 1.6×10⁻¹⁶ over 25 values of γ in
 [0, π/2]. The first `H` creates the alternatives; the phase controls how they recombine;
 the coupling writes which-alternative information into the World; the final `RZ` and `H`
@@ -481,7 +481,7 @@ So, before readout,
 |ψ> = [ |00> + e^{i phi} cos(gamma) |10> + e^{i phi} sin(gamma) |11> ] / sqrt(2)
 ```
 
-*Measured:* the statevector of the unrotated circuit matches this expression, up to a global
+_Measured:_ the statevector of the unrotated circuit matches this expression, up to a global
 phase, to 1.6×10⁻¹⁶ over 35 (φ, w) points.
 
 The World's marginal is P(World = 1) = sin²γ / 2 and does not depend on φ or β. The Self's
@@ -511,7 +511,7 @@ it and restore full capacity (the "constraint" at w = 1 is relative to Self-only
 and the World is one qubit whose record is fully readable by the connection probe, unlike a
 many-body environment whose records are effectively irreversible.
 
-*Measured:* at w ∈ {0, 0.25, 0.5, 0.75, 1} the engine's capacity equals the record overlap
+_Measured:_ at w ∈ {0, 0.25, 0.5, 0.75, 1} the engine's capacity equals the record overlap
 and cos γ, the concurrence equals sin γ, and C² + D² = 1 to 10⁻¹² (a test checks it).
 
 ### 3. The display probability
@@ -519,12 +519,12 @@ and cos γ, the concurrence equals sin γ, and C² + D² = 1 to 10⁻¹² (a tes
 Write θ = φ − β. `RZ(−β)` turns e^{iφ} into e^{iθ} (up to a global phase). `H` on the Self
 maps |0⟩ → (|0⟩ + |1⟩)/√2 and |1⟩ → (|0⟩ − |1⟩)/√2. Collecting the Self = 1 amplitudes:
 
-| Outcome (Self, World) | Amplitude | Probability |
-|---|---|---|
-| (1, 0) | (1 − e^{iθ} cos γ) / 2 | (1 − 2 cos γ cos θ + cos²γ) / 4 |
-| (1, 1) | −e^{iθ} sin γ / 2 | sin²γ / 4 |
-| (0, 0) | (1 + e^{iθ} cos γ) / 2 | (1 + 2 cos γ cos θ + cos²γ) / 4 |
-| (0, 1) | e^{iθ} sin γ / 2 | sin²γ / 4 |
+| Outcome (Self, World) | Amplitude              | Probability                     |
+| --------------------- | ---------------------- | ------------------------------- |
+| (1, 0)                | (1 − e^{iθ} cos γ) / 2 | (1 − 2 cos γ cos θ + cos²γ) / 4 |
+| (1, 1)                | −e^{iθ} sin γ / 2      | sin²γ / 4                       |
+| (0, 0)                | (1 + e^{iθ} cos γ) / 2 | (1 + 2 cos γ cos θ + cos²γ) / 4 |
+| (0, 1)                | e^{iθ} sin γ / 2       | sin²γ / 4                       |
 
 Adding the first two rows (cos²γ + sin²γ = 1):
 
@@ -535,7 +535,7 @@ P(Self = 1) = [ 1 - cos(gamma) * cos(phi - beta) ] / 2
 At zero coupling (γ = 0) the intention sweeps P(Self = 1) from 0 (θ = 0) to 1 (θ = π). At
 full coupling (γ = π/2) the Self marginal is 1/2 for every intention and every perspective.
 
-*Measured:* over a grid of 13 φ × 9 w × 7 β = 819 settings, the exact statevector
+_Measured:_ over a grid of 13 φ × 9 w × 7 β = 819 settings, the exact statevector
 probabilities differ from the closed forms by at most 3.3×10⁻¹⁶ for P(Self = 1),
 1.1×10⁻¹⁶ for p_low and p_high, 1.7×10⁻¹⁶ for Capacity against cos γ and 3.3×10⁻¹⁶ for
 Connection against the formula of [§5](#5-the-readings). (The team's design note reported the
@@ -546,12 +546,12 @@ same grid size agreeing to better than 1.1×10⁻¹⁵ with its own implementati
 Four two-qubit circuits make one run, submitted together as one job. Their names and
 results are kept separate.
 
-| Probe | Settings | Purpose |
-|---|---|---|
-| `display` | user φ, γ, β; full circuit | drives the visible future distribution; the source of Openness |
-| `intent_low` | φ = β; same γ and β | one end of the accessible probability range: ideal p_low = (1 − cos γ)/2 |
-| `intent_high` | φ = β + π; same γ and β | the opposite end: ideal p_high = (1 + cos γ)/2 |
-| `connection` | user φ and γ; **no** final `RZ(−β)`/`H`; measure both qubits in Z | shared information in a fixed reference basis; the source of Connection |
+| Probe         | Settings                                                          | Purpose                                                                  |
+| ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `display`     | user φ, γ, β; full circuit                                        | drives the visible future distribution; the source of Openness           |
+| `intent_low`  | φ = β; same γ and β                                               | one end of the accessible probability range: ideal p_low = (1 − cos γ)/2 |
+| `intent_high` | φ = β + π; same γ and β                                           | the opposite end: ideal p_high = (1 + cos γ)/2                           |
+| `connection`  | user φ and γ; **no** final `RZ(−β)`/`H`; measure both qubits in Z | shared information in a fixed reference basis; the source of Connection  |
 
 Default 1,024 shots per probe (4,096 sampled executions per click), capped at 4,096 per
 probe. Angles above 2π are equivalent modulo 2π. Capacity is never estimated by comparing
@@ -570,11 +570,11 @@ density-matrix simulators run far faster than one wide tile. Either way it is on
 Raw counts are stored first; every metric is computed from counts, never from the
 animation. p is a probability estimated as counts / shots seen.
 
-| Reading | Exact calculation | Interpretation | Ideal value |
-|---|---|---|---|
-| **Capacity C** | \|p_high − p_low\| from the two intent probes | total variation distance between the two binary Self distributions; the primary fictional agency measure, 0 to 1 | cos γ |
-| **Openness O** | −p·log₂p − (1 − p)·log₂(1 − p) with 0·log₂0 = 0, on the display p = P(Self = 1) | uncertainty of the current Self outcome, 0 to 1 bit. Uncertainty is **not** capacity. | h([1 − cos γ cos θ]/2) |
-| **Connection I** | Σ_{s,w} p(s,w)·log₂[p(s,w) / (p(s)·p(w))] over the connection probe's counts only, skipping zero terms | classical mutual information between Self and World in the reference measurement, 0 to 1 bit; not a general entanglement witness | h(sin²γ/2) − ½·h(sin²γ) |
+| Reading          | Exact calculation                                                                                       | Interpretation                                                                                                                   | Ideal value             |
+| ---------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| **Capacity C**   | \|p_high − p_low\| from the two intent probes                                                           | total variation distance between the two binary Self distributions; the primary fictional agency measure, 0 to 1                 | cos γ                   |
+| **Openness O**   | −p·log₂p − (1 − p)·log₂(1 − p) with 0·log₂0 = 0, on the display p = P(Self = 1)                         | uncertainty of the current Self outcome, 0 to 1 bit. Uncertainty is **not** capacity.                                            | h([1 − cos γ cos θ]/2)  |
+| **Connection I** | Σ\_{s,w} p(s,w)·log₂[p(s,w) / (p(s)·p(w))] over the connection probe's counts only, skipping zero terms | classical mutual information between Self and World in the reference measurement, 0 to 1 bit; not a general entanglement witness | h(sin²γ/2) − ½·h(sin²γ) |
 
 h(x) = −x·log₂x − (1 − x)·log₂(1 − x) is the binary entropy. In the connection probe the
 ideal joint distribution (SelfWorld keys) is p(00) = 1/2, p(01) = 0, p(10) = cos²γ/2,
@@ -582,28 +582,28 @@ p(11) = sin²γ/2, so the Self marginal is 1/2 whatever the coupling, and I depe
 
 Ideal values at the settings used in the demo (β = 0):
 
-| w | γ | p_low / p_high | C | I (bits) | display p at φ = π/2 | O at φ = π/2 |
-|---|---|---|---|---|---|---|
-| 0 | 0 | 0.0000 / 1.0000 | 1.0000 | 0.0000 | 0.5 | 1 bit |
-| 0.5 | π/4 | 0.1464 / 0.8536 | 0.7071 | 0.3113 | 0.5 | 1 bit |
-| 1 | π/2 | 0.5000 / 0.5000 | 0.0000 | 1.0000 | 0.5 | 1 bit |
+| w   | γ   | p_low / p_high  | C      | I (bits) | display p at φ = π/2 | O at φ = π/2 |
+| --- | --- | --------------- | ------ | -------- | -------------------- | ------------ |
+| 0   | 0   | 0.0000 / 1.0000 | 1.0000 | 0.0000   | 0.5                  | 1 bit        |
+| 0.5 | π/4 | 0.1464 / 0.8536 | 0.7071 | 0.3113   | 0.5                  | 1 bit        |
+| 1   | π/2 | 0.5000 / 0.5000 | 0.0000 | 1.0000   | 0.5                  | 1 bit        |
 
 At φ = π (still w = 0) the display p is 1 and O is 0 bits while C stays 1: predictability
 and capacity coexist. These numbers are closed-form consequences of the formulas above, not
 run results; the shrinking p_low/p_high range is the quantity the capacity probes estimate.
 
-*Measured* (Qiskit `BasicSimulator`, `seed_simulator=11`, 1,024 shots per probe, one job
+_Measured_ (Qiskit `BasicSimulator`, `seed_simulator=11`, 1,024 shots per probe, one job
 per row; the samples on Qollab are fresh each run):
 
-| w | φ | p_low / p_high | C [95% interval] | Resolved | I (bits) | display p | O (bits) |
-|---|---|---|---|---|---|---|---|
-| 0 | π/2 | 0.0000 / 1.0000 | 1.0000 [0.9075, 1.0000] | yes | 0.0000 | 0.485 | 0.999 |
-| 0 | π | 0.0000 / 1.0000 | 1.0000 [0.9075, 1.0000] | yes | 0.0000 | 1.000 | 0.000 |
-| 0.5 | π/2 | 0.1494 / 0.8652 | 0.7158 [0.6233, 0.8083] | yes | 0.2895 | 0.516 | 0.999 |
-| 1 | π/2 | 0.5156 / 0.4854 | 0.0303 [0.0000, 0.1228] | **no** | 0.9989 | 0.525 | 0.998 |
+| w   | φ   | p_low / p_high  | C [95% interval]        | Resolved | I (bits) | display p | O (bits) |
+| --- | --- | --------------- | ----------------------- | -------- | -------- | --------- | -------- |
+| 0   | π/2 | 0.0000 / 1.0000 | 1.0000 [0.9075, 1.0000] | yes      | 0.0000   | 0.485     | 0.999    |
+| 0   | π   | 0.0000 / 1.0000 | 1.0000 [0.9075, 1.0000] | yes      | 0.0000   | 1.000     | 0.000    |
+| 0.5 | π/2 | 0.1494 / 0.8652 | 0.7158 [0.6233, 0.8083] | yes      | 0.2895   | 0.516     | 0.999    |
+| 1   | π/2 | 0.5156 / 0.4854 | 0.0303 [0.0000, 0.1228] | **no**   | 0.9989   | 0.525     | 0.998    |
 
 The readings are never averaged into a single "free will percentage". When Capacity is shown
-as a percentage it is labelled *Capacity in this model* and defined in the drawer.
+as a percentage it is labelled _Capacity in this model_ and defined in the drawer.
 
 ### 6. Bit order
 
@@ -619,7 +619,7 @@ nowhere else.
 The test that catches a mistake: flip q0 only (`X` on the Self, nothing on the World) and
 measure. Qiskit reports the key `01`; the app must report `10` with certainty. A reversed
 mapping would report `01`, and a mapping applied twice would report `01` as well.
-*Measured:* through the real packing path, 256 of 256 shots came back as Qiskit `01` and
+_Measured:_ through the real packing path, 256 of 256 shots came back as Qiskit `01` and
 were reported as `10`, with the orientation canary passing in the same job.
 
 Independently of that check, every job carries two canary checks from `qk_packer` (three
@@ -644,7 +644,7 @@ P( |p_hat - p| >= t ) <= 2 * exp(-2 * N * t^2)
 
 **Choice of t.** Set the right-hand side to 1/40: t(N) = √(ln 80 / (2N)).
 
-**Union bound over the two intent probes.** The probability that *either* estimate misses
+**Union bound over the two intent probes.** The probability that _either_ estimate misses
 by its t is at most 1/40 + 1/40 = 1/20. On the complementary event, which has probability
 at least 95%,
 
@@ -672,21 +672,21 @@ the request).
 the exact distributions with numpy's seeded generator, `--seed 1`; 1,024 shots per probe;
 shipped as `data/fwo_coverage.json`):
 
-| w | exact C | interval contained C | mean width | fraction "resolved" |
-|---|---|---|---|---|
-| 0 | 1.0000 | 100.0% | 0.093 | 1.000 |
-| 0.25 | 0.9239 | 100.0% | 0.169 | 1.000 |
-| 0.5 | 0.7071 | 100.0% | 0.185 | 1.000 |
-| 0.75 | 0.3827 | 100.0% | 0.185 | 1.000 |
-| 1 | 0.0000 | 100.0% | 0.111 | 0.000 |
-| 0.9 (an in-session check with the same experiment; not in the shipped file) | 0.1564 | 100.0% | 0.185 | 0.999 |
+| w                                                                           | exact C | interval contained C | mean width | fraction "resolved" |
+| --------------------------------------------------------------------------- | ------- | -------------------- | ---------- | ------------------- |
+| 0                                                                           | 1.0000  | 100.0%               | 0.093      | 1.000               |
+| 0.25                                                                        | 0.9239  | 100.0%               | 0.169      | 1.000               |
+| 0.5                                                                         | 0.7071  | 100.0%               | 0.185      | 1.000               |
+| 0.75                                                                        | 0.3827  | 100.0%               | 0.185      | 1.000               |
+| 1                                                                           | 0.0000  | 100.0%               | 0.111      | 0.000               |
+| 0.9 (an in-session check with the same experiment; not in the shipped file) | 0.1564  | 100.0%               | 0.185      | 0.999               |
 
 Coverage well above the nominal 95% is what a Hoeffding + union bound should show; the
 useful lines are the last column: an effect of 0.156 is resolved essentially always, and a
 true zero was never reported as an influence in 2,000 tries.
 
 **What the user sees.** "Capacity 0.03; conservative 95% interval 0.00–0.12." If the
-interval includes zero: *"No resolved influence at this shot count."* A tiny positive
+interval includes zero: _"No resolved influence at this shot count."_ A tiny positive
 estimate is never described as proven agency, and the estimate is never forced to zero.
 
 **What the interval assumes.** Independent, identically distributed shots within each probe
@@ -710,11 +710,11 @@ cannot have capacity: a classical bit set by a switch has Capacity 1.
 
 The default experiments run on an ideal simulator; the Qollab backends with noise models
 (the in-browser IBM models and IonQ's cloud simulators) degrade the readings according to
-*their* models. The Demon also shows an IonQ-like prediction (`noisy_ionq_like`) computed by
+_their_ models. The Demon also shows an IonQ-like prediction (`noisy_ionq_like`) computed by
 the project's exact density-matrix noise model with IonQ's published Forte-1 simulator
 depolarizing rates (r₁q = 2.67×10⁻⁴, r₂q = 4.95×10⁻³, as documented for jobs before
 September 2025) applied to our own gate decomposition. It is an approximation of IonQ's
-noise, a modelled degradation, not a hardware measurement. *Computed:* Capacity 0.9888 at
+noise, a modelled degradation, not a hardware measurement. _Computed:_ Capacity 0.9888 at
 w = 0 (p_low/p_high 0.0056/0.9944), 0.6992 at w = 0.5 (ideal 0.7071) and 0 at w = 1;
 Connection 0.2919 bits at w = 0.5 and 0.9531 at w = 1 (ideal 0.3113 and 1). The marginal
 that is already 1/2 cannot be moved by depolarizing noise, so at full coupling the noise
@@ -763,7 +763,7 @@ explanations; on any exception a `failed` status with whatever is known),
 `explain_json(result, persona)` (one persona's explanation for a result) and
 `curves_json()` (the three shipped datasets with provenance, or an exact fallback computed
 in the session). Invalid settings never raise: they come back as a `failed` record with the
-reason, before any job is submitted (*measured:* `world_coupling = 1.5` → `failed`, zero
+reason, before any job is submitted (_measured:_ `world_coupling = 1.5` → `failed`, zero
 jobs). Settings: `intention_rad` [0, 2π] (default π/2), `world_coupling` [0, 1] (0),
 `perspective_rad` [0, π] (0), `shots_per_probe` [1, 4096] (1024), `persona`
 (`self`/`demon`/`observer`), `mode` (`auto`/`tile`/`list`), `canary` (true).
@@ -804,13 +804,13 @@ simulator and one IonQ Forte 1 simulator job) are recorded by the captain per
 
 These use `qiskit.quantum_info` directly — no sampling, no shot noise:
 
-| Check | Result |
-|---|---|
-| Closed form vs exact statevector over a grid of 13 φ × 9 w × 7 β = 819 settings | max \|error\| in P(Self = 1): 3.3×10⁻¹⁶; in p_low / p_high: 1.1×10⁻¹⁶; in Capacity vs cos γ: 1.7×10⁻¹⁶; in Connection vs h(sin²γ/2) − ½h(sin²γ): 3.3×10⁻¹⁶ |
-| State before readout vs the expression in [§2](#2-the-state-before-readout) (connection circuit, up to a global phase, 35 (φ, w) points) | max \|amplitude difference\| 1.6×10⁻¹⁶ |
-| `RY(γ)·CX·RY(−γ)·CX` block vs Qiskit's `CRYGate(2γ)` (25 values of γ) | max \|matrix element difference\| 1.6×10⁻¹⁶ |
-| Bit order: flip q0 only, through the real packing and `canonical_counts` path (256 shots) | Qiskit key `01` → app outcome `10` for 256/256 shots; orientation canary passed |
-| Perspective: β = 0 vs β = 1.0 rad at φ = π/2, w = 0.5 | ideal P(Self = 1) 0.5000 vs 0.2025; ideal Capacity cos γ = 0.7071 for both |
+| Check                                                                                                                                    | Result                                                                                                                                                     |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Closed form vs exact statevector over a grid of 13 φ × 9 w × 7 β = 819 settings                                                          | max \|error\| in P(Self = 1): 3.3×10⁻¹⁶; in p_low / p_high: 1.1×10⁻¹⁶; in Capacity vs cos γ: 1.7×10⁻¹⁶; in Connection vs h(sin²γ/2) − ½h(sin²γ): 3.3×10⁻¹⁶ |
+| State before readout vs the expression in [§2](#2-the-state-before-readout) (connection circuit, up to a global phase, 35 (φ, w) points) | max \|amplitude difference\| 1.6×10⁻¹⁶                                                                                                                     |
+| `RY(γ)·CX·RY(−γ)·CX` block vs Qiskit's `CRYGate(2γ)` (25 values of γ)                                                                    | max \|matrix element difference\| 1.6×10⁻¹⁶                                                                                                                |
+| Bit order: flip q0 only, through the real packing and `canonical_counts` path (256 shots)                                                | Qiskit key `01` → app outcome `10` for 256/256 shots; orientation canary passed                                                                            |
+| Perspective: β = 0 vs β = 1.0 rad at φ = π/2, w = 0.5                                                                                    | ideal P(Self = 1) 0.5000 vs 0.2025; ideal Capacity cos γ = 0.7071 for both                                                                                 |
 
 ### Resolution rule and common assumptions
 
@@ -819,12 +819,12 @@ Capacity's uncertainty is the conservative 95% Hoeffding interval of
 [§7](#7-the-hoeffding-interval): e = √(ln 80/(2N_low)) + √(ln 80/(2N_high)), which is 0.0925
 at 1,024 shots per probe.
 
-| Interval for C | Reading |
-|---|---|
-| excludes zero (\|p̂_high − p̂_low\| > e) | **resolved**: the intentions moved the odds by at least the lower limit |
-| includes zero | **"No resolved influence at this shot count."** Never "zero capacity", never "proven agency". |
+| Interval for C                         | Reading                                                                                       |
+| -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| excludes zero (\|p̂_high − p̂_low\| > e) | **resolved**: the intentions moved the odds by at least the lower limit                       |
+| includes zero                          | **"No resolved influence at this shot count."** Never "zero capacity", never "proven agency". |
 
-There is no classical bound to exceed here: these claims are about a *designed* model's
+There is no classical bound to exceed here: these claims are about a _designed_ model's
 predictions, and the two classical references (fixed output, fair coin) are baselines, not
 bounds. Standard errors for single probabilities are binomial, se = √(p̂(1 − p̂)/N), which is
 0 at p̂ = 0 or 1 (one reason the Capacity interval is Hoeffding's, not a normal one).
@@ -850,7 +850,7 @@ on Qollab the samples are fresh each run.
 **Claim.** At zero World coupling (w = 0, γ = 0) and any perspective β, the two intent probes
 of one job give P(Self = 1) = 0 for φ = β and P(Self = 1) = 1 for φ = β + π, so Capacity
 C = 1: opposite intentions move the Self's odds across the entire range. (On a simulator,
-read this as: *quantum theory predicts* C = 1 for this circuit family at γ = 0.)
+read this as: _quantum theory predicts_ C = 1 for this circuit family at γ = 0.)
 
 **Assumptions.**
 
@@ -867,14 +867,14 @@ more capacity; 1 is the maximum.
 
 **Result ± se.**
 
-| Run | p_low / p_high (± se) | C [95% interval] | Resolved? | Notes |
-|---|---|---|---|---|
-| Exact, no noise | 0 / 1 (exact) | 1.0000 (exact) | n/a | closed form; agrees with the statevector to 1.1×10⁻¹⁶ over the 819-point grid ([Exact checks](#exact-checks)) |
-| Exact, IonQ-like preset | 0.0056 / 0.9944 | 0.9888 | n/a | the published Forte-1 rates on our gates (the scale-1 row of `data/fwo_noise.json` at w = 0); an approximation of IonQ's model |
-| Built-in simulator, seed 11, 1,024 shots per probe, one job (Act 1: φ = π/2, β = 0) | 0.0000 ± 0 (0/1024) / 1.0000 ± 0 (1024/1024) | **1.0000 [0.9075, 1.0000]** | **yes** | display P(Self = 1) = 0.485 (497/1024, ideal 0.5), O = 0.999 bits, I = 0.000 bits; orientation canary passed; flip rates 0.0 / 0.0; 0.03 s |
-| Built-in simulator, seed 11, one job (Act 2: φ = π, β = 0) | 0.0000 / 1.0000 | 1.0000 [0.9075, 1.0000] | yes | display P(Self = 1) = 1.000 (1024/1024), O = 0.000 bits: predictability and capacity coexist |
-| Qollab built-in simulator in the browser, one job, 1,024 shots per probe (φ = 140°, w = 0.52, β = 99°; 2026-10-10) | p_low / p_high not shown separately on the page | **0.667 [0.574, 0.760]** (ideal cos γ = 0.685) | **yes** | display P(Self = 1) = 0.234 (240/1024; Demon forecast 0.242), O = 0.786 bits, I = 0.328 bits; 0.1 s; a different setting from Act 1, so the ideal capacity is 0.685, not 1 |
-| IonQ Forte 1 simulator (noise model forte-1), one remote job of 17 qubits, 1,024 shots per probe (φ = 222°, w = 0.20, β = 86°; 2026-10-10) | not shown separately on the page | **0.94 [0.84, 1.00]** (ideal cos γ = 0.951) | **yes** | O = 0.618 bits, I = 0.032 bits; job id `01a1296d-229a-70da-8d9b-2b90d19715e6`, wall time 11.46 s; shots seen 1,024 per probe (no rounding shortfall); canary passed, readout flip rates 0.00% / 0.00% (the published model has no readout term); in-browser versions python 3.14.2, qiskit 2.5.2, numpy 2.4.6, qiskit_ionq 1.0.2 |
+| Run                                                                                                                                        | p_low / p_high (± se)                           | C [95% interval]                               | Resolved? | Notes                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- | ---------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Exact, no noise                                                                                                                            | 0 / 1 (exact)                                   | 1.0000 (exact)                                 | n/a       | closed form; agrees with the statevector to 1.1×10⁻¹⁶ over the 819-point grid ([Exact checks](#exact-checks))                                                                                                                                                                                                                    |
+| Exact, IonQ-like preset                                                                                                                    | 0.0056 / 0.9944                                 | 0.9888                                         | n/a       | the published Forte-1 rates on our gates (the scale-1 row of `data/fwo_noise.json` at w = 0); an approximation of IonQ's model                                                                                                                                                                                                   |
+| Built-in simulator, seed 11, 1,024 shots per probe, one job (Act 1: φ = π/2, β = 0)                                                        | 0.0000 ± 0 (0/1024) / 1.0000 ± 0 (1024/1024)    | **1.0000 [0.9075, 1.0000]**                    | **yes**   | display P(Self = 1) = 0.485 (497/1024, ideal 0.5), O = 0.999 bits, I = 0.000 bits; orientation canary passed; flip rates 0.0 / 0.0; 0.03 s                                                                                                                                                                                       |
+| Built-in simulator, seed 11, one job (Act 2: φ = π, β = 0)                                                                                 | 0.0000 / 1.0000                                 | 1.0000 [0.9075, 1.0000]                        | yes       | display P(Self = 1) = 1.000 (1024/1024), O = 0.000 bits: predictability and capacity coexist                                                                                                                                                                                                                                     |
+| Qollab built-in simulator in the browser, one job, 1,024 shots per probe (φ = 140°, w = 0.52, β = 99°; 2026-10-10)                         | p_low / p_high not shown separately on the page | **0.667 [0.574, 0.760]** (ideal cos γ = 0.685) | **yes**   | display P(Self = 1) = 0.234 (240/1024; Demon forecast 0.242), O = 0.786 bits, I = 0.328 bits; 0.1 s; a different setting from Act 1, so the ideal capacity is 0.685, not 1                                                                                                                                                       |
+| IonQ Forte 1 simulator (noise model forte-1), one remote job of 17 qubits, 1,024 shots per probe (φ = 222°, w = 0.20, β = 86°; 2026-10-10) | not shown separately on the page                | **0.94 [0.84, 1.00]** (ideal cos γ = 0.951)    | **yes**   | O = 0.618 bits, I = 0.032 bits; job id `01a1296d-229a-70da-8d9b-2b90d19715e6`, wall time 11.46 s; shots seen 1,024 per probe (no rounding shortfall); canary passed, readout flip rates 0.00% / 0.00% (the published model has no readout term); in-browser versions python 3.14.2, qiskit 2.5.2, numpy 2.4.6, qiskit_ionq 1.0.2 |
 
 The interval's lower limit 0.9075 = 1 − e is the conservative bound's price: at 1,024 shots
 per probe nothing can be resolved more finely than e = 0.0925 even when every shot agrees.
@@ -894,11 +894,11 @@ per probe nothing can be resolved more finely than e = 0.0925 even when every sh
 **Counterarguments.**
 
 - **"Capacity measures the controller, not the Self."** True: C is a property of the
-  control family and the state together, and the word *intention* is a designed label for
+  control family and the state together, and the word _intention_ is a designed label for
   a gate. The model says so on its explanation page; it claims an inspectable
   correspondence, not a discovery.
 - **"Trivial by construction."** At γ = 0 the Self is a single qubit whose phase is dialled
-  in, so C = 1 is guaranteed. Agreed; the interesting claim is that the *same* 50/50
+  in, so C = 1 is guaranteed. Agreed; the interesting claim is that the _same_ 50/50
   outcome can carry C = 1 here and C = 0 at full coupling (Card B).
 - **"The readout decides the answer."** Changing β changes the observable, but both intent
   probes use the same readout, so Capacity is comparable across perspectives and the ideal
@@ -913,7 +913,7 @@ per probe nothing can be resolved more finely than e = 0.0925 even when every sh
 **Claim.** At full World coupling (w = 1, γ = π/2) the display probability P(Self = 1) is
 1/2 for every intention φ and every perspective β, and the two intent probes give the same
 distribution, so Capacity C = 0: in this control family no intention reshapes the Self's
-odds. (On a simulator: *quantum theory predicts* C = 0 at γ = π/2; a sampled run shows an
+odds. (On a simulator: _quantum theory predicts_ C = 0 at γ = π/2; a sampled run shows an
 interval that includes zero.)
 
 **Assumptions.**
@@ -931,13 +931,13 @@ O = **1 bit**, and (Card C) Connection I = **1 bit**.
 
 **Result ± se.**
 
-| Run | p_low / p_high (± se) | C [95% interval] | Resolved? | O (bits) | Notes |
-|---|---|---|---|---|---|
-| Exact, no noise | 0.5 / 0.5 (exact) | 0.0000 (exact) | n/a | 1.000 | closed form |
-| Exact, IonQ-like preset | 0.5 / 0.5 | 0.0000 | n/a | 1.000 | depolarizing noise cannot move a marginal that is already 1/2; it shows up in Connection instead (Card C: 0.953 bits) |
-| Built-in simulator, seed 11, 1,024 shots per probe, one job (Act 3: φ = π/2, β = 0) | 0.5156 ± 0.0156 / 0.4854 ± 0.0156 | **0.0303 [0.0000, 0.1228]** | **no** | 0.998 | display P(Self = 1) = 0.525; I = 0.999 bits; the page says *No resolved influence at this shot count* |
-| Built-in simulator, seeds 1 / 2 / 3, same settings | 0.4854 / 0.4873; 0.5215 / 0.5303; 0.5000 / 0.5127 | 0.0020 [0, 0.0945]; 0.0088 [0, 0.1013]; 0.0127 [0, 0.1052] | no / no / no | 1.000 / 0.998 / 1.000 | three more samples: the estimate wanders by a few hundredths and is never forced to zero |
-| Platform runs at w = 1 | not run at w = 1 on the platform yet (optional) | | | | the two platform runs so far used w = 0.52 (built-in) and w = 0.20 (IonQ Forte 1); see Card A |
+| Run                                                                                 | p_low / p_high (± se)                             | C [95% interval]                                           | Resolved?    | O (bits)              | Notes                                                                                                                 |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------- | ------------ | --------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Exact, no noise                                                                     | 0.5 / 0.5 (exact)                                 | 0.0000 (exact)                                             | n/a          | 1.000                 | closed form                                                                                                           |
+| Exact, IonQ-like preset                                                             | 0.5 / 0.5                                         | 0.0000                                                     | n/a          | 1.000                 | depolarizing noise cannot move a marginal that is already 1/2; it shows up in Connection instead (Card C: 0.953 bits) |
+| Built-in simulator, seed 11, 1,024 shots per probe, one job (Act 3: φ = π/2, β = 0) | 0.5156 ± 0.0156 / 0.4854 ± 0.0156                 | **0.0303 [0.0000, 0.1228]**                                | **no**       | 0.998                 | display P(Self = 1) = 0.525; I = 0.999 bits; the page says _No resolved influence at this shot count_                 |
+| Built-in simulator, seeds 1 / 2 / 3, same settings                                  | 0.4854 / 0.4873; 0.5215 / 0.5303; 0.5000 / 0.5127 | 0.0020 [0, 0.0945]; 0.0088 [0, 0.1013]; 0.0127 [0, 0.1052] | no / no / no | 1.000 / 0.998 / 1.000 | three more samples: the estimate wanders by a few hundredths and is never forced to zero                              |
+| Platform runs at w = 1                                                              | not run at w = 1 on the platform yet (optional)   |                                                            |              |                       | the two platform runs so far used w = 0.52 (built-in) and w = 0.20 (IonQ Forte 1); see Card A                         |
 
 At 1,024 shots per probe the interval's upper limit is |d̂| + e, so it is at least 0.0925
 wide whatever the sample. **Calibration** (`lab/experiments.fwo_coverage`, 2,000 seeded
@@ -969,7 +969,7 @@ and 1.
 
 - **"Hidden, not destroyed."** A demon with access to both qubits could still steer the
   Self. True, and the model agrees: Capacity is relative to the allowed controls, which is
-  why the explanation says *these* intention controls no longer reshape the odds.
+  why the explanation says _these_ intention controls no longer reshape the odds.
 - **"This is just decoherence with a story on top."** It is coherent coupling to a second
   qubit, which from the Self's side is indistinguishable from dephasing. The story is the
   point of the project and is declared as artistic construction; the physics underneath is
@@ -985,7 +985,7 @@ and 1.
 **Claim.** In the reference basis (Z on both qubits, no readout rotation), the classical
 mutual information between the Self and World outcomes rises from 0 bits at w = 0 to 1 bit
 at w = 1, following I = h(sin²γ/2) − ½·h(sin²γ) (0.3113 bits at w = 0.5), independently of
-the intention φ. (On a simulator: *quantum theory predicts* this curve for the connection
+the intention φ. (On a simulator: _quantum theory predicts_ this curve for the connection
 probe.)
 
 **Assumptions.**
@@ -1003,13 +1003,13 @@ w = 0 / 0.5 / 1. Direction: higher means more shared information in this basis.
 
 **Result ± se.**
 
-| Run | I (bits) at w = 0 / 0.5 / 1 | Notes |
-|---|---|---|
-| Exact, no noise | 0.0000 / 0.3113 / 1.0000 (exact) | closed form; agrees with the statevector to 3.3×10⁻¹⁶ over the 819-point grid; `data/fwo_theory.json` carries the curve |
-| Exact, IonQ-like preset | 0.0000 / 0.2919 / 0.9531 | w = 0 and 0.5 from the scale-1 rows of `data/fwo_noise.json`, w = 1 from `predict_json`'s live IonQ-like forecast; depolarizing noise erodes the correlation at full coupling even though it cannot move a marginal that is already 1/2 (Card B) |
-| Built-in simulator, seed 11, 1,024 shots, one job per w | 0.0000 / 0.2895 / 0.9989 | w = 0: counts 00/10 = 532/492, World never 1; w = 0.5: 00/10/11 = 532/262/230; w = 1: 00/11 = 532/492, matching pairs only (Acts 1 and 3 and the w = 0.5 run above) |
-| Qollab built-in simulator in the browser, one job (w = 0.52) | 0.328 bits at w = 0.52 (ideal 0.33) | 2026-10-10; same run as Card A |
-| IonQ Forte 1 simulator, one remote job (w = 0.20) | 0.032 bits at w = 0.20 (ideal 0.03) | 2026-10-10; job id `01a1296d-229a-70da-8d9b-2b90d19715e6`, 11.46 s, 1,024 shots per probe |
+| Run                                                          | I (bits) at w = 0 / 0.5 / 1         | Notes                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Exact, no noise                                              | 0.0000 / 0.3113 / 1.0000 (exact)    | closed form; agrees with the statevector to 3.3×10⁻¹⁶ over the 819-point grid; `data/fwo_theory.json` carries the curve                                                                                                                          |
+| Exact, IonQ-like preset                                      | 0.0000 / 0.2919 / 0.9531            | w = 0 and 0.5 from the scale-1 rows of `data/fwo_noise.json`, w = 1 from `predict_json`'s live IonQ-like forecast; depolarizing noise erodes the correlation at full coupling even though it cannot move a marginal that is already 1/2 (Card B) |
+| Built-in simulator, seed 11, 1,024 shots, one job per w      | 0.0000 / 0.2895 / 0.9989            | w = 0: counts 00/10 = 532/492, World never 1; w = 0.5: 00/10/11 = 532/262/230; w = 1: 00/11 = 532/492, matching pairs only (Acts 1 and 3 and the w = 0.5 run above)                                                                              |
+| Qollab built-in simulator in the browser, one job (w = 0.52) | 0.328 bits at w = 0.52 (ideal 0.33) | 2026-10-10; same run as Card A                                                                                                                                                                                                                   |
+| IonQ Forte 1 simulator, one remote job (w = 0.20)            | 0.032 bits at w = 0.20 (ideal 0.03) | 2026-10-10; job id `01a1296d-229a-70da-8d9b-2b90d19715e6`, 11.46 s, 1,024 shots per probe                                                                                                                                                        |
 
 **What this does NOT show.**
 
@@ -1030,7 +1030,7 @@ w = 0 / 0.5 / 1. Direction: higher means more shared information in this basis.
 
 - **"Classical correlation suffices, so the quantum part is decoration."** For this card,
   yes: Connection does not distinguish entangled from classically correlated. The quantum
-  content of the project is in the *interference* that Cards A and B read out, where the
+  content of the project is in the _interference_ that Cards A and B read out, where the
   same coupling that raises I lowers C through cos γ, and both come from one state.
 - **"The estimator is biased."** Agreed, by at most a few thousandths of a bit at the
   default shots; the ideal curve is shown beside the estimate so the reader can see it.
@@ -1099,22 +1099,22 @@ the results in plain words, then optional detail panels:
 
 ### Files
 
-| File | Uploaded? | Role |
-|---|---|---|
-| `qollab_project/index.html` | yes | Body fragment (no scripts, no `on*` attributes, no inline styles): header + backend badge, status line, persona tabs, controls, scene host, futures, readings, chart, explanation, baselines, the "How this works" drawer, footer with the attribution line. |
-| `qollab_project/main.css` | yes | The only stylesheet. Scoped under `#fwo-app`; colours are CSS variables. Carries the four page styles (A night observatory, B instrument console, C luminous anatomy, D blueprint), each scoped by `data-theme` on `#fwo-app`, and one Google Fonts import for their typefaces. Every style's text and control colours are contrast-tested. |
-| `qollab_project/main.js` | yes | Entry: waits for the DOM, wires everything, calls Python, ends with `await new Promise(() => {})`. |
-| `qollab_project/ui/dom.js` | yes | `whenMounted`, `h`/`svg` builders (text only, never `innerHTML`), number formatting, a `setTimeout`-only debounce, accessible tables. |
-| `qollab_project/ui/text.js` | yes | Every sentence the page shows or announces (honesty note, probe texts, capacity sentence, scene label, chart and curve summaries). |
-| `qollab_project/ui/tabs.js` | yes | Persona tabs (WAI-ARIA tabs, roving tabindex, arrow keys). |
-| `qollab_project/ui/badge.js` | yes | Backend badge. |
-| `qollab_project/ui/scene.js` | yes | The three.js scene (below). Exports `mulberry32` and `brainGraph` so the geometry is testable. |
-| `qollab_project/ui/plate.js` | yes | The scene drawn flat as SVG in the four design directions' styles (below). A theme selects it with `--fwo-scene-plate`; it needs no WebGL. |
-| `qollab_project/ui/chart.js` | yes | Hand-rolled SVG bar chart (previous / current / forecast) and line chart (theory curves). |
-| `qollab_project/ui/readings.js` | yes | Futures, the three readings, Demon forecast and comparison, baselines, run-failure view, the drawer (circuit text, count tables, job record, honesty), coverage and noise tables. |
-| `dev/index.html`, `dev/boot.js`, `dev/stub_api.js`, `dev/stub_data.js` | no | Stub mode for local testing (below). |
-| `tools/make_ui_stubs.py` | no | Regenerates `dev/stub_data.js` from the real `observatory_api` functions. |
-| `tests/test_ui_static.py` | no | Static checks: platform rules, labels, live regions, contrast, hygiene, stub contract, node parse. |
+| File                                                                   | Uploaded? | Role                                                                                                                                                                                                                                                                                                                                        |
+| ---------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `qollab_project/index.html`                                            | yes       | Body fragment (no scripts, no `on*` attributes, no inline styles): header + backend badge, status line, persona tabs, controls, scene host, futures, readings, chart, explanation, baselines, the "How this works" drawer, footer with the attribution line.                                                                                |
+| `qollab_project/main.css`                                              | yes       | The only stylesheet. Scoped under `#fwo-app`; colours are CSS variables. Carries the four page styles (A night observatory, B instrument console, C luminous anatomy, D blueprint), each scoped by `data-theme` on `#fwo-app`, and one Google Fonts import for their typefaces. Every style's text and control colours are contrast-tested. |
+| `qollab_project/main.js`                                               | yes       | Entry: waits for the DOM, wires everything, calls Python, ends with `await new Promise(() => {})`.                                                                                                                                                                                                                                          |
+| `qollab_project/ui/dom.js`                                             | yes       | `whenMounted`, `h`/`svg` builders (text only, never `innerHTML`), number formatting, a `setTimeout`-only debounce, accessible tables.                                                                                                                                                                                                       |
+| `qollab_project/ui/text.js`                                            | yes       | Every sentence the page shows or announces (honesty note, probe texts, capacity sentence, scene label, chart and curve summaries).                                                                                                                                                                                                          |
+| `qollab_project/ui/tabs.js`                                            | yes       | Persona tabs (WAI-ARIA tabs, roving tabindex, arrow keys).                                                                                                                                                                                                                                                                                  |
+| `qollab_project/ui/badge.js`                                           | yes       | Backend badge.                                                                                                                                                                                                                                                                                                                              |
+| `qollab_project/ui/scene.js`                                           | yes       | The three.js scene (below). Exports `mulberry32` and `brainGraph` so the geometry is testable.                                                                                                                                                                                                                                              |
+| `qollab_project/ui/plate.js`                                           | yes       | The scene drawn flat as SVG in the four design directions' styles (below). A theme selects it with `--fwo-scene-plate`; it needs no WebGL.                                                                                                                                                                                                  |
+| `qollab_project/ui/chart.js`                                           | yes       | Hand-rolled SVG bar chart (previous / current / forecast) and line chart (theory curves).                                                                                                                                                                                                                                                   |
+| `qollab_project/ui/readings.js`                                        | yes       | Futures, the three readings, Demon forecast and comparison, baselines, run-failure view, the drawer (circuit text, count tables, job record, honesty), coverage and noise tables.                                                                                                                                                           |
+| `dev/index.html`, `dev/boot.js`, `dev/stub_api.js`, `dev/stub_data.js` | no        | Stub mode for local testing (below).                                                                                                                                                                                                                                                                                                        |
+| `tools/make_ui_stubs.py`                                               | no        | Regenerates `dev/stub_data.js` from the real `observatory_api` functions.                                                                                                                                                                                                                                                                   |
+| `tests/test_ui_static.py`                                              | no        | Static checks: platform rules, labels, live regions, contrast, hygiene, stub contract, node parse.                                                                                                                                                                                                                                          |
 
 `ui/` modules import nothing; `main.js` imports them and passes in the helpers (and the
 `THREE` module), so they behave the same under Qollab's CommonJS transform and as native
@@ -1145,16 +1145,16 @@ ES modules in stub mode.
 
 (from the build guide, applied from the completed display run only)
 
-| Element | Mapping |
-|---|---|
-| Future 1 / Future 0 spheres | radius = `RMAX · cbrt(p)`, p = P(Self = 1) and 1 − p from the display probe (volume follows probability) |
-| Branch tubes | thickness 2 + 10 p **pixels**, converted to world units at the branch depth (`unitsPerPx`), so it is really that many pixels |
-| World bridge | thickness 4 + 4.5 I px (at most 8.5 px) and opacity 0.15 + 0.85 I, I = connection bits from the separate connection probe |
-| Ghost | the previous completed distribution as wireframe spheres and faint tubes labelled "previous"; the live geometry animates from it over about 1 s (eased); replaced when the next result arrives |
-| Particles | 520 points, a fixed number, routed to the two branches in proportions p0 / p1; they drift along the branches when motion is on; never shot chronology |
-| Brain graph | two ellipsoid lobes, 100 nodes, 3 nearest-neighbour links each, generated once from a seeded PRNG (`mulberry32`, seed 20261010); it never changes with the data |
-| Before/after chart | bars: previous (hatched), current (solid), Demon forecast (outlined, dashed) |
-| Theory chart (drawer) | ideal capacity (solid), P_low / P_high (dashed), connection (dash-dot) against w, with the draft's w as a diamond |
+| Element                     | Mapping                                                                                                                                                                                        |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Future 1 / Future 0 spheres | radius = `RMAX · cbrt(p)`, p = P(Self = 1) and 1 − p from the display probe (volume follows probability)                                                                                       |
+| Branch tubes                | thickness 2 + 10 p **pixels**, converted to world units at the branch depth (`unitsPerPx`), so it is really that many pixels                                                                   |
+| World bridge                | thickness 4 + 4.5 I px (at most 8.5 px) and opacity 0.15 + 0.85 I, I = connection bits from the separate connection probe                                                                      |
+| Ghost                       | the previous completed distribution as wireframe spheres and faint tubes labelled "previous"; the live geometry animates from it over about 1 s (eased); replaced when the next result arrives |
+| Particles                   | 520 points, a fixed number, routed to the two branches in proportions p0 / p1; they drift along the branches when motion is on; never shot chronology                                          |
+| Brain graph                 | two ellipsoid lobes, 100 nodes, 3 nearest-neighbour links each, generated once from a seeded PRNG (`mulberry32`, seed 20261010); it never changes with the data                                |
+| Before/after chart          | bars: previous (hatched), current (solid), Demon forecast (outlined, dashed)                                                                                                                   |
+| Theory chart (drawer)       | ideal capacity (solid), P_low / P_high (dashed), connection (dash-dot) against w, with the draft's w as a diamond                                                                              |
 
 Colour is never the only signal: labels, hatching, dash patterns and text carry everything.
 
@@ -1168,12 +1168,12 @@ picks one in stub mode) sets `--fwo-scene-plate` to its letter, and `main.js` th
 scene with `ui/plate.js` instead of the three.js view. Without the variable the 3D view runs,
 unchanged.
 
-| Style | Look |
-|---|---|
-| a, night observatory | starfield sky, gold shaded orbs with halos, dotted light along the branches, ringed teal World |
-| b, instrument console | engineering grid, wireframe reticles with tick rings and centre marks, annotated `t = ... px` and `I = ... bits` |
-| c, luminous anatomy | violet glow behind the brain, glowing orbs, mint World |
-| d, blueprint | graph paper, ink lines, brick-red discs with a hatched quadrant and centre lines, dimension line `Ø = 52 · ∛p`, annotated widths |
+| Style                 | Look                                                                                                                             |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| a, night observatory  | starfield sky, gold shaded orbs with halos, dotted light along the branches, ringed teal World                                   |
+| b, instrument console | engineering grid, wireframe reticles with tick rings and centre marks, annotated `t = ... px` and `I = ... bits`                 |
+| c, luminous anatomy   | violet glow behind the brain, glowing orbs, mint World                                                                           |
+| d, blueprint          | graph paper, ink lines, brick-red discs with a hatched quadrant and centre lines, dimension line `Ø = 52 · ∛p`, annotated widths |
 
 The plate keeps the 3D view's mappings: radius `52 · cbrt(p)` scene units, branch width
 2 + 10 p screen pixels (non-scaling strokes), bridge 4 + 4.5 I px (at most 8.5) at opacity
@@ -1230,13 +1230,13 @@ is drawn at a whole-number scale with `image-rendering: pixelated`). `tools/buil
 embeds the team's SpriteGen exports as data URIs (JavaScript on Qollab cannot fetch project
 files) and copies each sheet's timing from its sidecar and frame names.
 
-| State of the page | The Self | Laplace's Demon | The Observer |
-|---|---|---|---|
-| at rest | idle | idle | idle (stare while the point-of-view dial is being turned) |
-| a job is running | idle | gesture (works the orb) | stare |
-| result: the choice measurably moved the odds | happy | gesture if the sample fell within the forecast's shot noise, anger if it fell outside | dance |
-| result: no resolved influence | angry: frames 1–4 once, then hold on frame 4 until the dials change or a new run starts | same rule as above | dance |
-| the run failed | angry (same hold) | anger | idle |
+| State of the page                            | The Self                                                                                | Laplace's Demon                                                                       | The Observer                                              |
+| -------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| at rest                                      | idle                                                                                    | idle                                                                                  | idle (stare while the point-of-view dial is being turned) |
+| a job is running                             | idle                                                                                    | gesture (works the orb)                                                               | stare                                                     |
+| result: the choice measurably moved the odds | happy                                                                                   | gesture if the sample fell within the forecast's shot noise, anger if it fell outside | dance                                                     |
+| result: no resolved influence                | angry: frames 1–4 once, then hold on frame 4 until the dials change or a new run starts | same rule as above                                                                    | dance                                                     |
+| the run failed                               | angry (same hold)                                                                       | anger                                                                                 | idle                                                      |
 
 Timing rules: each sheet plays at its own fps; a sheet with per-frame `ticks` holds frames
 for that many ticks (the Observer's stare holds its first image for 61 ticks, about 7.6 s,
@@ -1252,31 +1252,31 @@ placeholder box is shown instead.
 Checked in a Chromium-based browser in stub mode on Sat 2026-10-10 (evening, MDT), then
 again after an adversarial review the same night, which fixed the items marked "fixed".
 
-| Check | Result | How |
-|---|---|---|
-| No console errors | Pass | Console read after load, three runs (the three demo acts), tab switches, and the ionq / error / none / reduce scenarios; the only error-level messages are the deliberate ones from the failing stand-in and the missing-backend path, which the page also shows. |
-| Scene renders and follows the data | Pass | Screenshots after act 1 (49.7 / 50.3 %), act 2 (100 / 0 % with the ghost labelled "previous 49.7 %"), act 3 (w = 1: thick bright bridge, capacity 0.007, interval 0.000–0.099, "No resolved influence at this shot count."). |
-| Everything on the canvas exists as text | Pass | Futures cards (p and counts), the three readings, the scene caption, the canvas `aria-label` (rewritten per run), the chart summary + data table, the four count tables. |
-| Persona tabs by keyboard | Pass | Focus on "The Self", ArrowRight moves focus and selection to the Demon (comparison table shown), ArrowRight again to the Observer; Home/End supported. The persona line is rewritten 600 ms after the last change, so arrowing announces one line. |
-| One job, clicked three times | Pass | IonQ-shaped stand-in: three programmatic clicks in one tick gave one job; the lock note received focus and says the job was used. |
-| Failure path | Pass | Failing stand-in: visible error note with the job evidence; Run stays usable; readings still say "No run yet". |
-| Missing backend | Pass | `?backend=none`: badge says profile unavailable, forecast and curves still work, Run allows one press. |
-| Every control has a label | Pass | `<label for>` on every input/select (also a test); range inputs carry `aria-valuetext` in radians and degrees. |
-| Live regions | Pass | Only the status line and the persona line are live (also a test). |
-| Visible focus | Pass (by inspection) | 3 px yellow `:focus-visible` outline on every interactive element (12:1 on navy). |
-| Text contrast ≥ 4.5:1 | Pass | Computed from the CSS variables in `tests/test_ui_static.py`: body text 16:1, muted 9:1+, teal and amber 11:1+ on every surface, dark text on the teal button 9:1, note colours 8:1+. Non-text (focus ring, borders, chart strokes) ≥ 3:1. |
-| Reduced motion | Pass | `?reduce=1`: the Motion box starts unchecked with an explanation; after a run the canvas pixels were identical 0.7 s apart (no transition, no particle flow). The CSS rule that removes transitions under the media query is verified by inspection only (the JS switch cannot change what CSS sees). Fixed: when the OS preference changes back to "no preference" the checkbox and the scene now agree. |
-| WebGL unavailable | Pass (fixed) | `?nowebgl=1`: a text note replaces the canvas, the Motion box is disabled and says why, Run still works and the futures, readings, chart and caption ("it would show ...") populate. A lost context later (`WEBGL_lose_context`) also falls back to text. |
-| Canvas text alternative is accurate | Pass (fixed) | The canvas `aria-label` used to call Future 0 the left sphere and Future 1 the right one; both sit on the right (Future 1 upper, Future 0 lower) and the label now says so. |
-| Narrow chart labels | Pass (fixed) | At 360 px the value labels of neighbouring bars touched ("50.7%50.0%"); they now alternate in height on narrow charts. |
-| Failure evidence | Pass (fixed) | The error view said "a submission may have been attempted" whenever `job_id` was null, even when nothing reached the backend. It now reads the submission markers (`n_circuits` / `submitted_as`, written just before the call; `job_returned` just after) and, after an earlier successful run, recognises stale job evidence instead of attributing it to the failed attempt. |
-| 360 px wide | Pass | Viewport 360 × 780 with every `details` open after a run: `scrollWidth` = 360, no element past the right edge except table cells inside their keyboard-focusable scroll regions; all six scene labels measured inside the canvas. |
-| Keyboard walk | Pass | From the Self tab, Tab visits the panel, the three sliders, Job settings, Run, Motion and the two details summaries in visual order; every stop matched `:focus-visible` with the 3 px outline (computed style read at each stop). Arrow keys move the sliders; Home/End/arrows move the persona tabs. |
-| Performance | Pass | 100 instanced nodes, 188 link segments, 520 points, five tubes: about 60 frames/s with motion on; the per-frame loop allocates nothing (tube geometry is rebuilt only when its pixel width or the scale changes, and the old buffers are released); the JS heap did not grow over a 5 s sample. The loop idles when motion is off and nothing animates, and disposes the renderer if the canvas leaves the document. |
-| 200 % zoom | Pass | Emulated as a 640 × 400 viewport: single column, no horizontal scroll. |
-| axe-core 4.10.2 | 0 violations | Run on `#fwo-app` after a run with every `details` open; 1 item "needs review" (a contrast cell axe could not resolve). Not re-run after the review (the changes were text, chart label positions and scene plumbing). |
-| Contract conformance | Pass | `tests/test_ui_static.py` calls the live `profile_json`, `predict_json`, `run_json` and `curves_json` and asserts every field path the JS reads (and the evidence fields of a failed run) exists with that exact name. |
-| Nothing hover-only | Pass (by inspection) | No tooltips; every label is always visible. |
+| Check                                   | Result               | How                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No console errors                       | Pass                 | Console read after load, three runs (the three demo acts), tab switches, and the ionq / error / none / reduce scenarios; the only error-level messages are the deliberate ones from the failing stand-in and the missing-backend path, which the page also shows.                                                                                                                                                    |
+| Scene renders and follows the data      | Pass                 | Screenshots after act 1 (49.7 / 50.3 %), act 2 (100 / 0 % with the ghost labelled "previous 49.7 %"), act 3 (w = 1: thick bright bridge, capacity 0.007, interval 0.000–0.099, "No resolved influence at this shot count.").                                                                                                                                                                                         |
+| Everything on the canvas exists as text | Pass                 | Futures cards (p and counts), the three readings, the scene caption, the canvas `aria-label` (rewritten per run), the chart summary + data table, the four count tables.                                                                                                                                                                                                                                             |
+| Persona tabs by keyboard                | Pass                 | Focus on "The Self", ArrowRight moves focus and selection to the Demon (comparison table shown), ArrowRight again to the Observer; Home/End supported. The persona line is rewritten 600 ms after the last change, so arrowing announces one line.                                                                                                                                                                   |
+| One job, clicked three times            | Pass                 | IonQ-shaped stand-in: three programmatic clicks in one tick gave one job; the lock note received focus and says the job was used.                                                                                                                                                                                                                                                                                    |
+| Failure path                            | Pass                 | Failing stand-in: visible error note with the job evidence; Run stays usable; readings still say "No run yet".                                                                                                                                                                                                                                                                                                       |
+| Missing backend                         | Pass                 | `?backend=none`: badge says profile unavailable, forecast and curves still work, Run allows one press.                                                                                                                                                                                                                                                                                                               |
+| Every control has a label               | Pass                 | `<label for>` on every input/select (also a test); range inputs carry `aria-valuetext` in radians and degrees.                                                                                                                                                                                                                                                                                                       |
+| Live regions                            | Pass                 | Only the status line and the persona line are live (also a test).                                                                                                                                                                                                                                                                                                                                                    |
+| Visible focus                           | Pass (by inspection) | 3 px yellow `:focus-visible` outline on every interactive element (12:1 on navy).                                                                                                                                                                                                                                                                                                                                    |
+| Text contrast ≥ 4.5:1                   | Pass                 | Computed from the CSS variables in `tests/test_ui_static.py`: body text 16:1, muted 9:1+, teal and amber 11:1+ on every surface, dark text on the teal button 9:1, note colours 8:1+. Non-text (focus ring, borders, chart strokes) ≥ 3:1.                                                                                                                                                                           |
+| Reduced motion                          | Pass                 | `?reduce=1`: the Motion box starts unchecked with an explanation; after a run the canvas pixels were identical 0.7 s apart (no transition, no particle flow). The CSS rule that removes transitions under the media query is verified by inspection only (the JS switch cannot change what CSS sees). Fixed: when the OS preference changes back to "no preference" the checkbox and the scene now agree.            |
+| WebGL unavailable                       | Pass (fixed)         | `?nowebgl=1`: a text note replaces the canvas, the Motion box is disabled and says why, Run still works and the futures, readings, chart and caption ("it would show ...") populate. A lost context later (`WEBGL_lose_context`) also falls back to text.                                                                                                                                                            |
+| Canvas text alternative is accurate     | Pass (fixed)         | The canvas `aria-label` used to call Future 0 the left sphere and Future 1 the right one; both sit on the right (Future 1 upper, Future 0 lower) and the label now says so.                                                                                                                                                                                                                                          |
+| Narrow chart labels                     | Pass (fixed)         | At 360 px the value labels of neighbouring bars touched ("50.7%50.0%"); they now alternate in height on narrow charts.                                                                                                                                                                                                                                                                                               |
+| Failure evidence                        | Pass (fixed)         | The error view said "a submission may have been attempted" whenever `job_id` was null, even when nothing reached the backend. It now reads the submission markers (`n_circuits` / `submitted_as`, written just before the call; `job_returned` just after) and, after an earlier successful run, recognises stale job evidence instead of attributing it to the failed attempt.                                      |
+| 360 px wide                             | Pass                 | Viewport 360 × 780 with every `details` open after a run: `scrollWidth` = 360, no element past the right edge except table cells inside their keyboard-focusable scroll regions; all six scene labels measured inside the canvas.                                                                                                                                                                                    |
+| Keyboard walk                           | Pass                 | From the Self tab, Tab visits the panel, the three sliders, Job settings, Run, Motion and the two details summaries in visual order; every stop matched `:focus-visible` with the 3 px outline (computed style read at each stop). Arrow keys move the sliders; Home/End/arrows move the persona tabs.                                                                                                               |
+| Performance                             | Pass                 | 100 instanced nodes, 188 link segments, 520 points, five tubes: about 60 frames/s with motion on; the per-frame loop allocates nothing (tube geometry is rebuilt only when its pixel width or the scale changes, and the old buffers are released); the JS heap did not grow over a 5 s sample. The loop idles when motion is off and nothing animates, and disposes the renderer if the canvas leaves the document. |
+| 200 % zoom                              | Pass                 | Emulated as a 640 × 400 viewport: single column, no horizontal scroll.                                                                                                                                                                                                                                                                                                                                               |
+| axe-core 4.10.2                         | 0 violations         | Run on `#fwo-app` after a run with every `details` open; 1 item "needs review" (a contrast cell axe could not resolve). Not re-run after the review (the changes were text, chart label positions and scene plumbing).                                                                                                                                                                                               |
+| Contract conformance                    | Pass                 | `tests/test_ui_static.py` calls the live `profile_json`, `predict_json`, `run_json` and `curves_json` and asserts every field path the JS reads (and the evidence fields of a failed run) exists with that exact name.                                                                                                                                                                                               |
+| Nothing hover-only                      | Pass (by inspection) | No tooltips; every label is always visible.                                                                                                                                                                                                                                                                                                                                                                          |
 
 Not verified: screen readers (VoiceOver, NVDA), the page inside Qollab itself (Pyodide, the
 CommonJS transform, three.js from Qollab's import map), and a real IonQ job. Checks on the
@@ -1336,23 +1336,23 @@ uploaded; Qollab brings its own Pyodide-side qiskit.
 `pytest.ini` points `testpaths` at `tests/` and registers one marker, `slow` (opt-in with
 `FWO_SLOW=1`). The suite is organized by what it covers rather than by source file:
 
-| Test file | Covers |
-|---|---|
-| `test_observatory.py`, `test_observatory_api.py` | The Observatory engine and its JSON bridge: settings validation, the circuit, bit order, the three readings, the Hoeffding interval, the explanation text, `run_json`/`predict_json`/`profile_json` contracts. |
-| `test_integration_fwo.py`, `test_fwo_experiments.py` | End-to-end runs against a real `BasicSimulator`, and the `lab/experiments.py` registry used by `lab/sweep.py`. |
-| `test_qk_bounds.py`, `test_qk_estimators.py`, `test_qk_mitigation.py`, `test_qk_primitives.py`, `test_qk_noise.py`, `test_qk_data.py`, `test_qk_cards.py` | The general toolkit modules, independent of the Observatory (shared with the CHSH reference project). |
-| `test_runtime.py`, `test_packer.py` | `qk_runtime` (backend classification, the one-job guard, `prepare`) and `qk_packer` (tile/list/tiles packing, canary blocks, unpacking). |
-| `test_chsh_e2e.py`, `test_bounds_lp.py` | The CHSH reference experiment end to end, and the linear-programming classical-bound check (`lab/bounds_lp.py`). |
-| `test_ui_static.py` | Static contract checks on the JS/HTML: platform rules (no inline scripts, one stylesheet), every control labelled, live regions, computed contrast ratios, and that `profile_json`/`predict_json`/`run_json`/`curves_json` return every field path `main.js` reads. |
-| `test_ui_api.py`, `test_ui_dialogue.py`, `test_ui_plate.py` | The stub API contract, the persona dialogue/sprite state machine, and the `ui/plate.js` flat-scene renderer. |
-| `test_smoke.py`, `test_tools.py` | `smoke/main.py` (see below) and the `tools/*.py` build scripts. |
-| `test_project_data.py` | The three shipped `qollab_project/data/fwo_*.json` files actually exist and validate against the `qk_data` schema. |
+| Test file                                                                                                                                                 | Covers                                                                                                                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `test_observatory.py`, `test_observatory_api.py`                                                                                                          | The Observatory engine and its JSON bridge: settings validation, the circuit, bit order, the three readings, the Hoeffding interval, the explanation text, `run_json`/`predict_json`/`profile_json` contracts.                                                      |
+| `test_integration_fwo.py`, `test_fwo_experiments.py`                                                                                                      | End-to-end runs against a real `BasicSimulator`, and the `lab/experiments.py` registry used by `lab/sweep.py`.                                                                                                                                                      |
+| `test_qk_bounds.py`, `test_qk_estimators.py`, `test_qk_mitigation.py`, `test_qk_primitives.py`, `test_qk_noise.py`, `test_qk_data.py`, `test_qk_cards.py` | The general toolkit modules, independent of the Observatory (shared with the CHSH reference project).                                                                                                                                                               |
+| `test_runtime.py`, `test_packer.py`                                                                                                                       | `qk_runtime` (backend classification, the one-job guard, `prepare`) and `qk_packer` (tile/list/tiles packing, canary blocks, unpacking).                                                                                                                            |
+| `test_chsh_e2e.py`, `test_bounds_lp.py`                                                                                                                   | The CHSH reference experiment end to end, and the linear-programming classical-bound check (`lab/bounds_lp.py`).                                                                                                                                                    |
+| `test_ui_static.py`                                                                                                                                       | Static contract checks on the JS/HTML: platform rules (no inline scripts, one stylesheet), every control labelled, live regions, computed contrast ratios, and that `profile_json`/`predict_json`/`run_json`/`curves_json` return every field path `main.js` reads. |
+| `test_ui_api.py`, `test_ui_dialogue.py`, `test_ui_plate.py`                                                                                               | The stub API contract, the persona dialogue/sprite state machine, and the `ui/plate.js` flat-scene renderer.                                                                                                                                                        |
+| `test_smoke.py`, `test_tools.py`                                                                                                                          | `smoke/main.py` (see below) and the `tools/*.py` build scripts.                                                                                                                                                                                                     |
+| `test_project_data.py`                                                                                                                                    | The three shipped `qollab_project/data/fwo_*.json` files actually exist and validate against the `qk_data` schema.                                                                                                                                                  |
 
 ### The smoke test
 
 (`smoke/`)
 
-`smoke/main.py` is a standalone Qollab platform probe — it is what the team ran *before*
+`smoke/main.py` is a standalone Qollab platform probe — it is what the team ran _before_
 writing `observatory.py`, to settle platform unknowns rather than assume them: library
 versions, how the injected `backend` behaves, flat vs. package imports, data-file loading
 rules, which types the Run-settings form accepts, count-key format and bit order, one-job
@@ -1373,11 +1373,11 @@ used only to confirm Qollab's import scanner prefetches packages as well as flat
 `lab/` runs on a workstation, never in the browser, and produces the numbers and datasets
 that `qollab_project/` ships or that [Claims and validation](#claims-and-validation) quotes.
 
-| Script | Purpose |
-|---|---|
-| `lab/bounds_lp.py` | Confirms the classical (local/macrorealist) CHSH bound by linear programming over the local polytope (`scipy.optimize.linprog`, HiGHS), cross-checking the enumeration-based bound in `qk_bounds.classical_max_enumerate`. |
-| `lab/experiments.py` | The experiment registry for `lab/sweep.py`: `fwo_theory` (exact readings vs. `w`), `fwo_noise` (readings vs. noise scale), `fwo_coverage` (empirical Hoeffding-interval coverage from seeded sampling), plus the CHSH reference experiment. |
-| `lab/sweep.py` | Runs one experiment over a parameter grid (`--grid name=start:stop:num` or an explicit list, `--fixed name=value`) and writes a `qk_data`-schema JSON file with full provenance. `--shots 0` means exact (density-matrix); `--shots N > 0` adds a seeded sampled estimate. Size-capped at 2 MB by default. |
+| Script               | Purpose                                                                                                                                                                                                                                                                                                    |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lab/bounds_lp.py`   | Confirms the classical (local/macrorealist) CHSH bound by linear programming over the local polytope (`scipy.optimize.linprog`, HiGHS), cross-checking the enumeration-based bound in `qk_bounds.classical_max_enumerate`.                                                                                 |
+| `lab/experiments.py` | The experiment registry for `lab/sweep.py`: `fwo_theory` (exact readings vs. `w`), `fwo_noise` (readings vs. noise scale), `fwo_coverage` (empirical Hoeffding-interval coverage from seeded sampling), plus the CHSH reference experiment.                                                                |
+| `lab/sweep.py`       | Runs one experiment over a parameter grid (`--grid name=start:stop:num` or an explicit list, `--fixed name=value`) and writes a `qk_data`-schema JSON file with full provenance. `--shots 0` means exact (density-matrix); `--shots N > 0` adds a seeded sampled estimate. Size-capped at 2 MB by default. |
 
 Regenerate the three shipped datasets with these exact commands:
 
@@ -1399,14 +1399,14 @@ commands above, trust the file's own provenance over this document.
 
 ### Build and packaging scripts (tools/)
 
-| Script | Purpose |
-|---|---|
-| `tools/pack_for_qollab.py` | **The pre-submission gate.** Builds `build/upload-<entry>/` (and its zip) from `qollab_project/`, refusing anything the platform would silently break on: missing entry files, >100 files or a file over 2 MB, a `.py` file that doesn't parse, a `data/` file not named by a literal path string anywhere in the uploaded source, or (for the Python entry) a `main.py` signature that wouldn't produce a Run-settings form. Run with `--entry js` (the submission) or `--entry python` (the fallback). |
-| `tools/scrub_check.py` | Public-repo hygiene tripwire: scans files (and optionally `--git-log` for the whole git history) against a **private**, locally-configured pattern file (`$QOLLAB_SCRUB_PATTERNS` or `~/.config/qollab-hackathon/scrub-patterns.txt`) and fails closed if that file is missing, unreadable, or invalid — it never reports a false "clean." The pattern list itself is deliberately excluded from the repository. |
-| `tools/run_smoke_local.py` | Runs `smoke/main.py` locally the way Qollab would (injects `backend`, `chdir`s into the project folder); see above. |
-| `tools/make_ui_stubs.py` | Regenerates `dev/stub_data.js` by calling the real `observatory_api` functions against local stand-in backends (a seeded `BasicSimulator`, an IonQ-shaped one-job wrapper, a failing backend), so stub mode never drifts from the real API. See [Stub mode (local testing)](#stub-mode-local-testing). |
-| `tools/ui_shots.py` | Drives `dev/index.html?auto=...` in a headless Chromium-family browser and captures baseline screenshots for design review (`build/ui-baseline/`), per [Design brief and inspiration](#design-brief-and-inspiration). |
-| `tools/build_sprites.py`, `tools/build_eggs.py` | Convert the team's sprite-sheet and GIF art exports into the data-URI JS modules (`ui/sprites.js`, `ui/eggs.js`) the page embeds directly, since JavaScript on Qollab cannot fetch project files at runtime. |
+| Script                                          | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tools/pack_for_qollab.py`                      | **The pre-submission gate.** Builds `build/upload-<entry>/` (and its zip) from `qollab_project/`, refusing anything the platform would silently break on: missing entry files, >100 files or a file over 2 MB, a `.py` file that doesn't parse, a `data/` file not named by a literal path string anywhere in the uploaded source, or (for the Python entry) a `main.py` signature that wouldn't produce a Run-settings form. Run with `--entry js` (the submission) or `--entry python` (the fallback). |
+| `tools/scrub_check.py`                          | Public-repo hygiene tripwire: scans files (and optionally `--git-log` for the whole git history) against a **private**, locally-configured pattern file (`$QOLLAB_SCRUB_PATTERNS` or `~/.config/qollab-hackathon/scrub-patterns.txt`) and fails closed if that file is missing, unreadable, or invalid — it never reports a false "clean." The pattern list itself is deliberately excluded from the repository.                                                                                         |
+| `tools/run_smoke_local.py`                      | Runs `smoke/main.py` locally the way Qollab would (injects `backend`, `chdir`s into the project folder); see above.                                                                                                                                                                                                                                                                                                                                                                                      |
+| `tools/make_ui_stubs.py`                        | Regenerates `dev/stub_data.js` by calling the real `observatory_api` functions against local stand-in backends (a seeded `BasicSimulator`, an IonQ-shaped one-job wrapper, a failing backend), so stub mode never drifts from the real API. See [Stub mode (local testing)](#stub-mode-local-testing).                                                                                                                                                                                                   |
+| `tools/ui_shots.py`                             | Drives `dev/index.html?auto=...` in a headless Chromium-family browser and captures baseline screenshots for design review (`build/ui-baseline/`), per [Design brief and inspiration](#design-brief-and-inspiration).                                                                                                                                                                                                                                                                                    |
+| `tools/build_sprites.py`, `tools/build_eggs.py` | Convert the team's sprite-sheet and GIF art exports into the data-URI JS modules (`ui/sprites.js`, `ui/eggs.js`) the page embeds directly, since JavaScript on Qollab cannot fetch project files at runtime.                                                                                                                                                                                                                                                                                             |
 
 ### Packaging for Qollab
 
@@ -1474,8 +1474,8 @@ design tool, together with the baseline screenshots in `build/ui-baseline/` (reg
 ### Inspiration: Laplace's Demon and the limits of calculation
 
 One of the Observatory's three personas is **Laplace's Demon**, and the name is not
-decoration. In 1814, Pierre-Simon Laplace opened his *Essai philosophique sur les
-probabilités* with a thought experiment: an intellect that knew, at a single instant, the
+decoration. In 1814, Pierre-Simon Laplace opened his _Essai philosophique sur les
+probabilités_ with a thought experiment: an intellect that knew, at a single instant, the
 precise position and momentum of every particle in the universe could — given Newtonian
 mechanics and enough calculating power — derive the entire past and future with certainty.
 "Nothing would be uncertain, and the future, as the past, would be present to its eyes."
@@ -1495,18 +1495,18 @@ could not reproduce what quantum systems actually do.
 
 The Observatory borrows this history rather than re-running it: the live page does not
 perform a CHSH test (see [Card C](#card-c-coupling-writes-information-into-the-world) —
-Connection is explicitly *not* an entanglement certification), but its Demon persona
+Connection is explicitly _not_ an entanglement certification), but its Demon persona
 dramatizes the same tension in miniature. The Demon computes an exact forecast from the
 quantum state before any shots are taken — Laplace's "present to its eyes" — yet what it
-computes is a *probability*, not a certainty, and the project's central result (the same
+computes is a _probability_, not a certainty, and the project's central result (the same
 50/50 outcome is high-capacity under one setting and zero-capacity under another,
 [The question](#the-question)) is a question Laplace's framework has no room for: knowing
-the odds perfectly is not the same as them being fixed, and whether an input can *move*
+the odds perfectly is not the same as them being fixed, and whether an input can _move_
 those odds is a different question from whether the Demon can predict them. The Self, Demon
 and Observer personas stage that three-way disagreement — about the same job's counts — as
 a dialogue rather than an equation.
 
-**Where the honesty rule still applies.** Bell tests rule out *local hidden-variable*
+**Where the honesty rule still applies.** Bell tests rule out _local hidden-variable_
 determinism specifically; they say nothing about superdeterminism, non-local hidden-variable
 accounts (Bohmian mechanics survives them by construction), or determinism in general, and
 nothing at all about free will as philosophers debate it. The Observatory's fiction goes
@@ -1600,7 +1600,7 @@ What the code in this repo relies on about the Qollab runtime. Sources: Qollab d
 (qollab.xyz/learn/docs: runtime-environment, python-qiskit-projects, js-qiskit-projects,
 compute-backends, primitives, transpilation, error-mitigation), the hackathon rules page,
 IonQ's noise-model guide, and the qiskit-ionq / qiskit-braket-provider sources.
-Read 2026-10-09; items marked *(smoke)* are confirmed or refuted by `smoke/` runs. These
+Read 2026-10-09; items marked _(smoke)_ are confirmed or refuted by `smoke/` runs. These
 are contributor-facing notes, not user-facing documentation; see
 [The two Qollab entry points](#the-two-qollab-entry-points) for how this project's own code
 uses the rules below.
@@ -1652,16 +1652,16 @@ uses the rules below.
 
 ### Backends
 
-| Dialog entry | Object | Notes |
-|---|---|---|
-| Built-in simulator | `BasicSimulator()` | ideal, 24 qubits |
-| AWS Braket local | `BraketLocalBackend()` | ideal, 25; count keys not zero-padded |
-| IBM noise models (8) | `qiskit_ibm_runtime` Fake backends on Aer | noisy, in browser; transpile first |
-| IonQ Forte 1 / Forte Enterprise 1 (sim) | qiskit-ionq simulator + noise model | remote, 29, **one job per run** |
-| IonQ Forte QPUs | qiskit-ionq QPU | credits; not used by this project |
+| Dialog entry                            | Object                                    | Notes                                 |
+| --------------------------------------- | ----------------------------------------- | ------------------------------------- |
+| Built-in simulator                      | `BasicSimulator()`                        | ideal, 24 qubits                      |
+| AWS Braket local                        | `BraketLocalBackend()`                    | ideal, 25; count keys not zero-padded |
+| IBM noise models (8)                    | `qiskit_ibm_runtime` Fake backends on Aer | noisy, in browser; transpile first    |
+| IonQ Forte 1 / Forte Enterprise 1 (sim) | qiskit-ionq simulator + noise model       | remote, 29, **one job per run**       |
+| IonQ Forte QPUs                         | qiskit-ionq QPU                           | credits; not used by this project     |
 
 - IonQ: one job per run. One `backend.run([c1, c2, ...])` is a single multi-circuit job
-  *(smoke: list mode)*. Counts from noisy simulation are `round(prob × shots)`, so totals can
+  _(smoke: list mode)_. Counts from noisy simulation are `round(prob × shots)`, so totals can
   differ slightly from `shots`.
 - IonQ's cloud simulators never apply debiasing (QPU-only feature).
 - IonQ strips barriers and recompiles server side, so gate folding for ZNE is likely undone
@@ -1680,7 +1680,7 @@ these published rates on our own (non-native) gate decomposition, so it is an ap
 
 ## Design-tool prompt log
 
-This is a process record of the prompts used with an AI design tool (Kimi Design) during the
+This is a process record of the prompts used with Kimi Design during the
 visual overhaul; [Design brief and inspiration](#design-brief-and-inspiration) above is the
 actual specification. Prompt 1 is pasted with the current-state screenshots and the team
 build guide attached; prompts 2 and 3 follow once a direction is chosen.
@@ -1729,11 +1729,11 @@ From the explanation drawer, in the team's own words:
 > change a distribution of outcomes. The measurements are real outputs of the simulator; the
 > Self and its philosophical meaning are our artistic construction.
 
-- **Designed, not discovered.** Phase is called *intention* because varying it changes
-  interference; coupling is called *World coupling* because it wires the Self to a second
+- **Designed, not discovered.** Phase is called _intention_ because varying it changes
+  interference; coupling is called _World coupling_ because it wires the Self to a second
   qubit that records which alternative it took (the World never pushes the Self toward a
   future; its record only reduces the interference the Self can use); the readout angle is
-  called *perspective* because it changes the measured observable. Each metaphor points to
+  called _perspective_ because it changes the measured observable. Each metaphor points to
   an inspectable operation. In the ideal state Capacity = cos γ is the Self's interference
   visibility and the World's distinguishability is sin γ, with C² + D² = 1: the slider rides
   the wave–particle duality relation ([§2](#2-the-state-before-readout)).
@@ -1747,7 +1747,7 @@ From the explanation drawer, in the team's own words:
   how a noise model degrades it; it does not test nature. No result here is evidence about
   the physical world.
 - **The readings stay separate.** They are never averaged into a "free will percentage". A
-  Capacity shown as a percentage is labelled *Capacity in this model*.
+  Capacity shown as a percentage is labelled _Capacity in this model_.
 - **Connection** is measured information in a reference basis, not an entanglement
   certification; a classical copy of the Self bit into the World scores the same.
 - **"Not resolved" is not "zero".** An interval that includes zero is absence of evidence at
@@ -1769,11 +1769,6 @@ Everything in this repository was created during the hackathon window (Fri 2026-
 and its first commit is from 23:04. [BUILDLOG.md](../BUILDLOG.md) records what was built
 and when. The team's design note and build guide for the Observatory are dated 10 October
 2026, inside the window. No pre-existing project code is included.
-
-The circuit and its philosophical mapping are the team's original design. The code, tests
-and documentation were written with substantial help from an AI coding assistant (Claude
-Code), directed and reviewed by the team. Who did what, the references, the libraries and
-their licenses are in [CREDITS.md](../CREDITS.md).
 
 [MIT](../LICENSE). The libraries this project relies on are under MIT-compatible open
 licenses (Apache-2.0, BSD-3-Clause, MIT); see [CREDITS.md](../CREDITS.md).
